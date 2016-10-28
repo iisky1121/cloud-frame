@@ -15,7 +15,7 @@ import com.jfinal.plugin.activerecord.Page;
 /**
  *BaseQueryController
  */
-public class BaseQueryController<M extends Model<M>> extends CommonController {
+public abstract class BaseQueryController<M extends Model<M>> extends CommonController {
 	
 	protected M getM(){
 		try {

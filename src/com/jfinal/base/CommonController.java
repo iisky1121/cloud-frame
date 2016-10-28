@@ -151,7 +151,7 @@ public abstract class CommonController extends Controller{
 	public void checkAttrValue(String attr, Class enumClass){
 		String attrValue = getPara(attr);
 		if(!StrKit.isBlank(attrValue) && enumClass != null){
-			if("class java.lang.Enum".equals(enumClass.getSuperclass())){
+			if(Enum.class.isAssignableFrom(enumClass)){
 				throw new IllegalArgumentException("Attribute enumClass type must be enumerated");
 			}
 			Object[] objects = enumClass.getEnumConstants();

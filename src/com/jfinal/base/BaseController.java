@@ -7,11 +7,10 @@ import com.jfinal.plugin.activerecord.Model;
 /**
  *BaseController
  */
-public class BaseController<M extends Model<M>> extends BaseQueryController<M> {
+public abstract class BaseController<M extends Model<M>> extends BaseQueryController<M> {
 	/**
 	 * 通用删除
 	 * 
-	 * @throws Exception
 	 */
 	public void delete() {
 		String id = getPara();
@@ -30,7 +29,6 @@ public class BaseController<M extends Model<M>> extends BaseQueryController<M> {
 	/**
 	 * 通用批量删除
 	 * 
-	 * @throws Exception
 	 */
 	public void deletes() {
 		checkNotNull("ids");

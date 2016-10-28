@@ -57,12 +57,15 @@ public class BaseConfig {
 	public static Map<String, Object> renderResult(ReturnResult result){
 		return render(result.getCode(), result.getMsg(), result.getError_code(), result.getResult(), result.getException());
 	}
+	
 	private static Map<String, Object> render(String code, String msg, String error_code){
 		return render(code, msg, error_code, null, null);
 	}
+	
 	private static Map<String, Object> render(String code, String msg, String error_code, Exception e){
 		return render(code, msg, error_code, null, e);
 	}
+	
 	private static Map<String, Object> render(String code, String msg, String error_code, Object result, Exception e){
 		Map<String,Object> map = new HashMap<String,Object>();
 		if(!StrKit.isBlank(code)){

@@ -25,7 +25,7 @@ public class ErrorInterceptor implements Interceptor {
 		}
 	}
 	
-	public void defRender(Controller c, Exception e){
+	protected void defRender(Controller c, Exception e){
 		if(e != null){
 			c.renderJson(BaseConfig.error(e));
 		}

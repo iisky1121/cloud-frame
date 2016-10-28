@@ -9,7 +9,7 @@ import com.jfinal.ext.interceptor.NotAction;
 import com.jfinal.ext.kit.ModelKit;
 import com.jfinal.plugin.activerecord.Model;
 
-public class ApiController extends CommonController{
+public abstract class ApiController extends CommonController{
 	
 	@SuppressWarnings("unchecked")
 	@Before(NotAction.class)
