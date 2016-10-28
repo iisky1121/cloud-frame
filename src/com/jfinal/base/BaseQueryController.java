@@ -26,7 +26,7 @@ public class BaseQueryController<M extends Model<M>> extends CommonController {
 		return null;
 	}
 	
-	protected M getData(){
+	public M getData(){
 		M m = getM();
 		if(m != null){
 			if(m instanceof IBean){

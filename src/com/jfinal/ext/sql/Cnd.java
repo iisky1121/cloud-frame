@@ -10,10 +10,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import com.google.common.base.CaseFormat;
 import com.jfinal.ext.kit.ModelKit;
-import com.jfinal.ext.plugin.tablemapping.AutoTableMapping;
-import com.jfinal.ext.plugin.tablemapping.Table;
 import com.jfinal.kit.StrKit;
 import com.jfinal.plugin.activerecord.IBean;
 import com.jfinal.plugin.activerecord.Model;
@@ -132,10 +129,6 @@ public class Cnd {
 				else if(IBean.class.isAssignableFrom((Class<?>) object)){
 					cnd.initForBeanClass(paras, (Class<?>) object, (String) alias);
 				}
-			}
-			else if(object instanceof String && alias instanceof String){
-				//初始化tableName
-				cnd.initForTableName(paras, (String)object, (String)alias);
 			}
 			else{
 				throw new IllegalArgumentException(String.format("%s 参数需为Model.Class、String类型,参数位置：%s", object, i+1));
@@ -359,35 +352,6 @@ public class Cnd {
     		//初始化query column
     		if(Arrays.asList(model._getAttrNames()).contains(entry.getKey()) && model.get(entry.getKey()) != null){
     			querys.put(newKey, Param.create(newKey, model.get(entry.getKey()), entry.getValue()));
-    		}
-    	}
-    }
-    
-    /**
-     * 初始化Model, for tableName
-     */
-	private void initForTableName(Map<String, String[]> paras, String tableName, String alias){
-    	alias = (alias==null?CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, tableName):("".equals(alias.trim())?"":(alias+".")));
-    	if(StrKit.isBlank(tableName)){
-    		return;
-    	}
-    	Table table = AutoTableMapping.getTable(tableName);
-    	if(table != null){
-    		Set<Entry<String, Class<?>>> attrs = table.getColumnTypeMap().entrySet();
-    		for(Entry<String, Class<?>> entry : attrs){
-    			String newKey = alias + entry.getKey();
-    			columns.put(newKey, entry.getValue());
-    			
-    			//初始化query column, 默认String
-        		if(entry.getClass().equals(String.class)){
-        			fuzzyQueryColumns.add(newKey);
-        		}
-    			//初始化order column,默认全部
-    			orderByColumns.add(newKey);
-    			//初始化query column
-    			if(paras.containsKey(newKey) && !StrKit.isBlank(paras.get(newKey)[0])){
-    				querys.put(newKey, Param.create(newKey, paras.get(newKey)[0], entry.getValue()));
-    			}
     		}
     	}
     }

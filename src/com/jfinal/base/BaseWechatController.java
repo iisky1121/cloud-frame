@@ -2,11 +2,11 @@ package com.jfinal.base;
 
 import com.apis.wechat.Wechat;
 import com.apis.wechat.msg.InMsgParser;
-import com.apis.wechat.msg.OutMsgXmlBuilder;
 import com.apis.wechat.msg.in.InImageMsg;
 import com.apis.wechat.msg.in.InLinkMsg;
 import com.apis.wechat.msg.in.InLocationMsg;
 import com.apis.wechat.msg.in.InMsg;
+import com.apis.wechat.msg.in.InNotDefinedMsg;
 import com.apis.wechat.msg.in.InShortVideoMsg;
 import com.apis.wechat.msg.in.InTextMsg;
 import com.apis.wechat.msg.in.InVideoMsg;
@@ -16,12 +16,19 @@ import com.apis.wechat.msg.in.event.InFollowEvent;
 import com.apis.wechat.msg.in.event.InLocationEvent;
 import com.apis.wechat.msg.in.event.InMassEvent;
 import com.apis.wechat.msg.in.event.InMenuEvent;
+import com.apis.wechat.msg.in.event.InMerChantOrderEvent;
+import com.apis.wechat.msg.in.event.InNotDefinedEvent;
 import com.apis.wechat.msg.in.event.InPoiCheckNotifyEvent;
 import com.apis.wechat.msg.in.event.InQrCodeEvent;
 import com.apis.wechat.msg.in.event.InShakearoundUserShakeEvent;
+import com.apis.wechat.msg.in.event.InSubmitMemberCardEvent;
 import com.apis.wechat.msg.in.event.InTemplateMsgEvent;
+import com.apis.wechat.msg.in.event.InUpdateMemberCardEvent;
+import com.apis.wechat.msg.in.event.InUserPayFromCardEvent;
+import com.apis.wechat.msg.in.event.InUserViewCardEvent;
 import com.apis.wechat.msg.in.event.InVerifyFailEvent;
 import com.apis.wechat.msg.in.event.InVerifySuccessEvent;
+import com.apis.wechat.msg.in.event.InWifiEvent;
 import com.apis.wechat.msg.in.speech_recognition.InSpeechRecognitionResults;
 import com.apis.wechat.msg.out.OutMsg;
 import com.apis.wechat.msg.out.OutTextMsg;
@@ -72,6 +79,8 @@ public abstract class BaseWechatController extends Controller {
 			processInTextMsg((InTextMsg) msg);
 		else if (msg instanceof InImageMsg)
 			processInImageMsg((InImageMsg) msg);
+		else if (msg instanceof InSpeechRecognitionResults)  //update by unas at 2016-1-29, 由于继承InVoiceMsg，需要在InVoiceMsg前判断类型
+			processInSpeechRecognitionResults((InSpeechRecognitionResults) msg);
 		else if (msg instanceof InVoiceMsg)
 			processInVoiceMsg((InVoiceMsg) msg);
 		else if (msg instanceof InVideoMsg)
@@ -94,8 +103,6 @@ public abstract class BaseWechatController extends Controller {
 			processInMassEvent((InMassEvent) msg);
 		else if (msg instanceof InMenuEvent)
 			processInMenuEvent((InMenuEvent) msg);
-		else if (msg instanceof InSpeechRecognitionResults)
-			processInSpeechRecognitionResults((InSpeechRecognitionResults) msg);
 		else if (msg instanceof InTemplateMsgEvent)
 			processInTemplateMsgEvent((InTemplateMsgEvent) msg);
 		else if (msg instanceof InShakearoundUserShakeEvent)
@@ -106,15 +113,32 @@ public abstract class BaseWechatController extends Controller {
 			processInVerifyFailEvent((InVerifyFailEvent) msg);
 		else if (msg instanceof InPoiCheckNotifyEvent)
 			processInPoiCheckNotifyEvent((InPoiCheckNotifyEvent) msg);
-		else
+		else if (msg instanceof InWifiEvent)
+			processInWifiEvent((InWifiEvent) msg);
+		else if (msg instanceof InUserViewCardEvent)
+			processInUserViewCardEvent((InUserViewCardEvent) msg);
+		else if (msg instanceof InSubmitMemberCardEvent)
+			processInSubmitMemberCardEvent((InSubmitMemberCardEvent) msg);
+		else if (msg instanceof InUpdateMemberCardEvent)
+			processInUpdateMemberCardEvent((InUpdateMemberCardEvent) msg);
+		else if (msg instanceof InUserPayFromCardEvent)
+			processInUserPayFromCardEvent((InUserPayFromCardEvent) msg);
+		else if (msg instanceof InMerChantOrderEvent)
+			processInMerChantOrderEvent((InMerChantOrderEvent) msg);
+		else if (msg instanceof InNotDefinedEvent) {
+			log.error("未能识别的事件类型。 消息 xml 内容为：\n" + getInMsgXml());
+			processIsNotDefinedEvent((InNotDefinedEvent) msg);
+		} else if (msg instanceof InNotDefinedMsg) {
 			log.error("未能识别的消息类型。 消息 xml 内容为：\n" + getInMsgXml());
+			processIsNotDefinedMsg((InNotDefinedMsg) msg);
+		}
 	}
 	
 	/**
 	 * 在接收到微信服务器的 InMsg 消息后后响应 OutMsg 消息
 	 */
 	protected void render(OutMsg outMsg) {
-		String outMsgXml = OutMsgXmlBuilder.build(outMsg);
+		String outMsgXml = outMsg.toXml();
 		// 开发模式向控制台输出即将发送的 OutMsg 消息的 xml 内容
 		if (PropKit.getBoolean("devMode", false)) {
 			System.out.println("发送消息:\n"+outMsgXml);
@@ -170,62 +194,86 @@ public abstract class BaseWechatController extends Controller {
 			log.error("验证失败：configServer");
 	}
 	
-	// 处理接收到的文本消息
-	protected abstract void processInTextMsg(InTextMsg inTextMsg);
-	
-	// 处理接收到的图片消息
-	protected abstract void processInImageMsg(InImageMsg inImageMsg);
-	
-	// 处理接收到的语音消息
-	protected abstract void processInVoiceMsg(InVoiceMsg inVoiceMsg);
-	
-	// 处理接收到的视频消息
-	protected abstract void processInVideoMsg(InVideoMsg inVideoMsg);
-
-	// 处理接收到的视频消息
-	protected abstract void processInShortVideoMsg(InShortVideoMsg inShortVideoMsg);
-	
-	// 处理接收到的地址位置消息
-	protected abstract void processInLocationMsg(InLocationMsg inLocationMsg);
-
-	// 处理接收到的链接消息
-	protected abstract void processInLinkMsg(InLinkMsg inLinkMsg);
-
-    // 处理接收到的多客服管理事件
-    protected abstract void processInCustomEvent(InCustomEvent inCustomEvent);
-
-	// 处理接收到的关注/取消关注事件
+	//  关注/取消关注事件
 	protected abstract void processInFollowEvent(InFollowEvent inFollowEvent);
 	
-	// 处理接收到的扫描带参数二维码事件
-	protected abstract void processInQrCodeEvent(InQrCodeEvent inQrCodeEvent);
+	// 接收文本消息事件
+	protected abstract void processInTextMsg(InTextMsg inTextMsg);
 	
-	// 处理接收到的上报地理位置事件
-	protected abstract void processInLocationEvent(InLocationEvent inLocationEvent);
-
-    // 处理接收到的群发任务结束时通知事件
-    protected abstract void processInMassEvent(InMassEvent inMassEvent);
-
-	// 处理接收到的自定义菜单事件
+	// 自定义菜单事件
 	protected abstract void processInMenuEvent(InMenuEvent inMenuEvent);
 	
-	// 处理接收到的语音识别结果
-	protected abstract void processInSpeechRecognitionResults(InSpeechRecognitionResults inSpeechRecognitionResults);
+	// 接收图片消息事件
+	protected void processInImageMsg(InImageMsg inImageMsg) {}
 	
-	// 处理接收到的模板消息是否送达成功通知事件
-	protected abstract void processInTemplateMsgEvent(InTemplateMsgEvent inTemplateMsgEvent);
-
-	// 处理微信摇一摇事件
-	protected abstract void processInShakearoundUserShakeEvent(InShakearoundUserShakeEvent inShakearoundUserShakeEvent);
-
-	// 资质认证成功 || 名称认证成功 || 年审通知 || 认证过期失效通知
-	protected abstract void processInVerifySuccessEvent(InVerifySuccessEvent inVerifySuccessEvent);
-
-	// 资质认证失败 || 名称认证失败
-	protected abstract void processInVerifyFailEvent(InVerifyFailEvent inVerifyFailEvent);
+	// 接收语音消息事件
+	protected void processInVoiceMsg(InVoiceMsg inVoiceMsg) {}
 	
-	// 门店在审核事件消息
-	protected abstract void processInPoiCheckNotifyEvent(InPoiCheckNotifyEvent inPoiCheckNotifyEvent);
+	// 接收视频消息事件
+	protected void processInVideoMsg(InVideoMsg inVideoMsg) {}
+	
+	// 接收地理位置消息事件
+	protected void processInLocationMsg(InLocationMsg inLocationMsg) {}
+	
+	// 接收链接消息事件
+	protected void processInLinkMsg(InLinkMsg inLinkMsg) {}
+	
+	// 扫描带参数二维码事件
+	protected void processInQrCodeEvent(InQrCodeEvent inQrCodeEvent) {}
+	
+	// 上报地理位置事件
+	protected void processInLocationEvent(InLocationEvent inLocationEvent) {}
+	
+	// 接收语音识别结果，与 InVoiceMsg 唯一的不同是多了一个 Recognition 标记
+	protected void processInSpeechRecognitionResults(InSpeechRecognitionResults inSpeechRecognitionResults) {}
+	
+	// 在模版消息发送任务完成后事件
+	protected void processInTemplateMsgEvent(InTemplateMsgEvent inTemplateMsgEvent) {}
+
+	// 群发完成事件
+	protected void processInMassEvent(InMassEvent inMassEvent) {}
+
+	// 接收小视频消息
+	protected void processInShortVideoMsg(InShortVideoMsg inShortVideoMsg) {}
+
+	// 接客服入会话事件
+	protected void processInCustomEvent(InCustomEvent inCustomEvent) {}
+
+	// 用户进入摇一摇界面，在“周边”页卡下摇一摇时事件
+	protected void processInShakearoundUserShakeEvent(InShakearoundUserShakeEvent inShakearoundUserShakeEvent) {}
+
+	// 资质认证事件
+	protected void processInVerifySuccessEvent(InVerifySuccessEvent inVerifySuccessEvent) {}
+
+	// 资质认证失败事件
+	protected void processInVerifyFailEvent(InVerifyFailEvent inVerifyFailEvent){}
+
+	// 门店在审核通过后下发消息事件
+	protected void processInPoiCheckNotifyEvent(InPoiCheckNotifyEvent inPoiCheckNotifyEvent) {}
+
+	// WIFI连网后下发消息 by unas at 2016-1-29
+	protected void processInWifiEvent(InWifiEvent inWifiEvent) {}
+
+	// 微信会员卡二维码扫描领取事件
+	protected void processInUserViewCardEvent(InUserViewCardEvent msg) {}
+
+	// 微信会员卡激活事件
+	protected void processInSubmitMemberCardEvent(InSubmitMemberCardEvent msg) {}
+
+	// 微信会员卡积分变更事件
+	protected void processInUpdateMemberCardEvent(InUpdateMemberCardEvent msg) {}
+
+	// 微信会员卡快速买单事件
+	protected void processInUserPayFromCardEvent(InUserPayFromCardEvent msg) {}
+
+	// 微信小店订单支付成功接口事件
+	protected void processInMerChantOrderEvent(InMerChantOrderEvent inMerChantOrderEvent) {}
+
+	// 没有找到对应的事件消息
+	protected void processIsNotDefinedEvent(InNotDefinedEvent inNotDefinedEvent) {}
+
+	// 没有找到对应的消息
+	protected void processIsNotDefinedMsg(InNotDefinedMsg inNotDefinedMsg) {}
 	
 	/**
 	 * 检测签名

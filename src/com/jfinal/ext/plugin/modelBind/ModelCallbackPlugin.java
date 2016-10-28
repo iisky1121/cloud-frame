@@ -1,4 +1,4 @@
-package com.jfinal.ext.plugin.modelcallback;
+package com.jfinal.ext.plugin.modelBind;
 
 import com.jfinal.plugin.IPlugin;
 

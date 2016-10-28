@@ -33,11 +33,7 @@ public class BaseController<M extends Model<M>> extends BaseQueryController<M> {
 	 * @throws Exception
 	 */
 	public void deletes() {
-		String checkMsg = checkNotNull("ids");
-		if (checkMsg!=null) {
-			renderError(checkMsg);
-			return;
-		}
+		checkNotNull("ids");
 		
 		String ids[] = getPara("ids").split(",");
 		renderJson(getM().deletes(ids));

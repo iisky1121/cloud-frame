@@ -1,4 +1,4 @@
-package com.jfinal.ext.plugin.modelcallback;
+package com.jfinal.ext.plugin.modelBind;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -47,10 +47,10 @@ public class ModelCallbackBuilder {
 	static void init(){
 		List<Class<? extends IModelCallback>> callbackLists = ClassSearcher.of(IModelCallback.class).includeAllJarsInLib(false).search();
 		Class modelClass;
-		ModelCallback mcb;
+		ModelBind mcb;
 		try {
 			for(Class<? extends IModelCallback> callbackClass : callbackLists){
-				mcb = (ModelCallback) callbackClass.getAnnotation(ModelCallback.class);
+				mcb = (ModelBind) callbackClass.getAnnotation(ModelBind.class);
 				if(mcb != null){
 					modelClass = mcb.modelClass();
 					if(callbackClasses.contains(callbackClass)){

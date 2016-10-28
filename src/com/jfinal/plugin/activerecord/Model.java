@@ -34,7 +34,7 @@ import java.util.Set;
 
 import com.jfinal.base.UserSession;
 import com.jfinal.ext.kit.ThreadPool;
-import com.jfinal.ext.plugin.modelcallback.ModelCallbackBuilder;
+import com.jfinal.ext.plugin.modelBind.ModelCallbackBuilder;
 import com.jfinal.ext.plugin.tablebind.TableBind;
 import com.jfinal.ext.sql.Cnd;
 import com.jfinal.kit.StrKit;

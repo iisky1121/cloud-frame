@@ -1,9 +1,9 @@
-package com.jfinal.ext.plugin.rule;
+package com.jfinal.ext.plugin.uribind;
 
 import com.jfinal.aop.Invocation;
 import com.jfinal.core.Controller;
 
-public class RuleService {
+public class UriRuleService {
 	private Controller controller;
 
 	public Controller getController() {
@@ -17,6 +17,6 @@ public class RuleService {
 	protected void invoke(String ruleId, Invocation ai) throws Exception{
 		this.controller = ai.getController();
 		this.controller.isRuleControl(true);
-		RuleBuilder.invoke(ruleId, ai);
+		UriRuleBuilder.invoke(ruleId, ai);
 	}
 }

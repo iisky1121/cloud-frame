@@ -1,4 +1,4 @@
-package com.jfinal.ext.plugin.rule;
+package com.jfinal.ext.plugin.uribind;
 
 import com.jfinal.aop.Interceptor;
 import com.jfinal.aop.Invocation;
@@ -6,13 +6,13 @@ import com.jfinal.aop.Invocation;
 /**
  * RuleInterceptor
  */
-public class RuleInterceptor implements Interceptor {
+public class UriRuleInterceptor implements Interceptor {
 	@Override
 	public void intercept(Invocation ai) {
 		//规则判断
 		String actionKey = ai.getActionKey();
-		if(RuleBuilder.contains(actionKey)){
-			RuleBuilder.execute(actionKey, ai);
+		if(UriRuleBuilder.contains(actionKey)){
+			UriRuleBuilder.execute(actionKey, ai);
 		}
 		else{
 			ai.invoke();
