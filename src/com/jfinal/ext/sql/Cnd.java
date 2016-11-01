@@ -101,6 +101,15 @@ public class Cnd {
 		return cnd;
 	}
 	
+	public static Cnd queryToCnd(Map<String, String[]> paras, Class<?>... classes){
+		List<Object> list = new ArrayList<Object>();
+		for(Class<?> c : classes){
+			list.add(c);
+			list.add(StrKit.firstCharToLowerCase(c.getSimpleName()));
+		}
+		return queryToCnd(paras, list.toArray());
+	}
+	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public static Cnd queryToCnd(Map<String, String[]> paras, Object ...modelClassAndAlias){
 		Cnd cnd = new Cnd();
@@ -131,7 +140,7 @@ public class Cnd {
 				}
 			}
 			else{
-				throw new IllegalArgumentException(String.format("%s 参数需为Model.Class、String类型,参数位置：%s", object, i+1));
+				throw new IllegalArgumentException(String.format("%s 参数需为Model.Class、IBean.class类型,参数位置：%s", object, i+1));
 			}
 		}
 		if(paras.get("fuzzyQuery")!=null){
