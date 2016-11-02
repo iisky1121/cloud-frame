@@ -10,8 +10,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.METHOD })
 public @interface UriBind {
-    String rule();//规则 key
-    int level() default 0;//等级，执行顺序1-2-3，默认0
-    boolean before() default true;//是否在拦截uri之前执行，默认true
+    String uri();//规则 key
     boolean async() default true;//是否异步执行，默认true
 }

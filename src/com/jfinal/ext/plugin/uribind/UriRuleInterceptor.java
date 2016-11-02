@@ -12,7 +12,7 @@ public class UriRuleInterceptor implements Interceptor {
 		//规则判断
 		String actionKey = ai.getActionKey();
 		if(UriRuleBuilder.contains(actionKey)){
-			UriRuleBuilder.execute(actionKey, ai);
+			UriRuleBuilder.execute(ai);
 		}
 		else{
 			ai.invoke();

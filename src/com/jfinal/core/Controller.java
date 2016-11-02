@@ -20,16 +20,13 @@ import java.io.File;
 import java.text.ParseException;
 import java.util.Date;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-
 import com.jfinal.aop.Enhancer;
 import com.jfinal.aop.Interceptor;
 import com.jfinal.kit.StrKit;
@@ -49,8 +46,7 @@ import com.jfinal.upload.UploadFile;
  */
 @SuppressWarnings({"unchecked", "rawtypes"})
 public abstract class Controller {
-	private boolean ruleControl = false;
-	private Map<String,Object> models = new HashMap<String, Object>();
+	
 	private HttpServletRequest request;
 	private HttpServletResponse response;
 	
@@ -77,10 +73,6 @@ public abstract class Controller {
 	public void setUrlPara(String urlPara) {
 		this.urlPara = urlPara;
 		this.urlParaArray = null;
-	}
-	
-	public void isRuleControl(boolean isControl){
-		this.ruleControl = isControl;
 	}
 	
 	/**
@@ -696,36 +688,24 @@ public abstract class Controller {
 	 * Get model from http request.
 	 */
 	public <T> T getModel(Class<T> modelClass) {
-		return getModel(modelClass, false);
+		return (T)Injector.injectModel(modelClass, request, false);
 	}
 	
 	public <T> T getModel(Class<T> modelClass, boolean skipConvertError) {
-		String key = modelClass.getSimpleName()+"_"+modelClass.getSimpleName();
-		if(ruleControl && models != null && models.containsKey(key)){
-			return (T) models.get(key);
-		}
-		T t = (T)Injector.injectModel(modelClass, request, skipConvertError);
-		models.put(key, t);
-		return t;
-	}
-	
-	public <T> T getModel(Class<T> modelClass, String modelName) {
-		return getModel(modelClass, modelName, false);
-	}
-	
-	public <T> T getModel(Class<T> modelClass, String modelName, boolean skipConvertError) {
-		String key = modelName+"_"+modelClass.getSimpleName();
-		if(ruleControl && models != null && models.containsKey(key)){
-			return (T) models.get(key);
-		}
-		T t = (T)Injector.injectModel(modelClass, modelName, request, skipConvertError);
-		models.put(key, t);
-		return t;
+		return (T)Injector.injectModel(modelClass, request, skipConvertError);
 	}
 	
 	/**
-	 * Get bean from http request.
+	 * Get model from http request.
 	 */
+	public <T> T getModel(Class<T> modelClass, String modelName) {
+		return (T)Injector.injectModel(modelClass, modelName, request, false);
+	}
+	
+	public <T> T getModel(Class<T> modelClass, String modelName, boolean skipConvertError) {
+		return (T)Injector.injectModel(modelClass, modelName, request, skipConvertError);
+	}
+	
 	public <T> T getBean(Class<T> beanClass) {
 		return (T)Injector.injectBean(beanClass, request, false);
 	}

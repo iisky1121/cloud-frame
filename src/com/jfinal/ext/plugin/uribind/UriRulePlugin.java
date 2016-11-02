@@ -5,36 +5,42 @@ import java.util.List;
 
 import com.jfinal.ext.kit.ClassSearcher;
 import com.jfinal.ext.kit.JFinalKit;
-import com.jfinal.kit.StrKit;
 import com.jfinal.plugin.IPlugin;
 
 public class UriRulePlugin implements IPlugin{
+	private UriRuleInterceptor interceptor;
+	public UriRuleInterceptor getInterceptor() {
+		if(interceptor == null){
+			interceptor = new UriRuleInterceptor();
+		}
+		return interceptor;
+	}
+
+	public void setInterceptor(UriRuleInterceptor interceptor) {
+		this.interceptor = interceptor;
+	}
 	public boolean start() {
 		//扫描注解
-		List<Class<? extends UriRuleService>> serviceClasses = ClassSearcher.of(UriRuleService.class).includeAllJarsInLib(false).search();
+		List<Class<? extends UriRule>> rules = ClassSearcher.of(UriRule.class).includeAllJarsInLib(false).search();
         UriBind ub;
-        String ruleId;
         Method[] methods;
-        for (Class<? extends UriRuleService> serviceClass : serviceClasses) {
-        	methods = serviceClass.getMethods();
+        for (Class<? extends UriRule> rule : rules) {
+        	methods = rule.getMethods();
         	for(Method method : methods){
         		ub = (UriBind)method.getAnnotation(UriBind.class);
             	if (ub != null) {
-            		ruleId = ub.rule();
-            		if(!StrKit.isBlank(ruleId)){
-            			if(ub.before()){//设置before
-            				UriRuleBuilder.setBefore(ruleId, new UriRule(serviceClass, method, ub.level()));
-            			}
-            			else{//设置after
-            				UriRuleBuilder.setAfter(ruleId, new UriRule(serviceClass, method, ub.level()));
-            			}
-            		}
+            		try {
+						UriRuleBuilder.addRule(ub, rule.newInstance());
+					} catch (InstantiationException e) {
+						e.printStackTrace();
+					} catch (IllegalAccessException e) {
+						e.printStackTrace();
+					}
             	}
         	}
-        	
         }
         //加入全局规则拦截器
-		JFinalKit.getInterceptors().add(new UriRuleInterceptor());
+		JFinalKit.getInterceptors().add(getInterceptor());
 		return true;
 	}
 
