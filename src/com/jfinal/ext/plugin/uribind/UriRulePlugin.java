@@ -1,6 +1,5 @@
 package com.jfinal.ext.plugin.uribind;
 
-import java.lang.reflect.Method;
 import java.util.List;
 
 import com.jfinal.ext.kit.ClassSearcher;
@@ -23,20 +22,16 @@ public class UriRulePlugin implements IPlugin{
 		//扫描注解
 		List<Class<? extends UriRule>> rules = ClassSearcher.of(UriRule.class).includeAllJarsInLib(false).search();
         UriBind ub;
-        Method[] methods;
         for (Class<? extends UriRule> rule : rules) {
-        	methods = rule.getMethods();
-        	for(Method method : methods){
-        		ub = (UriBind)method.getAnnotation(UriBind.class);
-            	if (ub != null) {
-            		try {
-						UriRuleBuilder.addRule(ub, rule.newInstance());
-					} catch (InstantiationException e) {
-						e.printStackTrace();
-					} catch (IllegalAccessException e) {
-						e.printStackTrace();
-					}
-            	}
+        	ub = rule.getAnnotation(UriBind.class);
+        	if (ub != null) {
+        		try {
+					UriRuleBuilder.addRule(ub, rule.newInstance());
+				} catch (InstantiationException e) {
+					e.printStackTrace();
+				} catch (IllegalAccessException e) {
+					e.printStackTrace();
+				}
         	}
         }
         //加入全局规则拦截器

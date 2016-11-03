@@ -8,8 +8,9 @@ import java.lang.annotation.Target;
 
 @Inherited
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.METHOD })
+@Target({ ElementType.TYPE })
 public @interface UriBind {
-    String uri();//规则 key
-    boolean async() default true;//是否异步执行，默认true
+    String uri();//拦截的url
+    boolean beforeAsync() default false;//是否异步执行，默认false,该场景一般是使用在拦截，并对参数进行注入，必须同步才能处理
+    boolean afterAsync() default true;//是否异步执行，默认true，该场景一般是使用在统计，只需要统计还执行的结果，异步处理更优
 }
