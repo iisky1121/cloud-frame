@@ -172,10 +172,30 @@ class Param {
 			return timeStr;
 		}
 		if(classType.equals(Date.class)){
-			return subTimeStr(timeStr, isStart, 8);
+			timeStr = subTimeStr(timeStr, isStart, 8);
+			return new StringBuffer()
+					.append(timeStr.substring(0,4))
+					.append("-")
+					.append(timeStr.substring(4,6))
+					.append("-")
+					.append(timeStr.substring(6,8))
+					.toString();
 		}
 		else if(classType.equals(Timestamp.class)){
-			return subTimeStr(timeStr, isStart, 14);
+			timeStr = subTimeStr(timeStr, isStart, 14);
+			return new StringBuffer()
+					.append(timeStr.substring(0,4))
+					.append("-")
+					.append(timeStr.substring(4,6))
+					.append("-")
+					.append(timeStr.substring(6,8))
+					.append(" ")
+					.append(timeStr.substring(8,10))
+					.append(":")
+					.append(timeStr.substring(10,12))
+					.append(":")
+					.append(timeStr.substring(12,14))
+					.toString();
 		}
 		return timeStr;
 	}
