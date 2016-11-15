@@ -58,9 +58,9 @@ class Param {
 			String value = (String)val;
 			if(!StrKit.isBlank(value)){
 				//判断属性值 between_and
-				if((isTime(classType) || isNumber(classType)) 
+				if((isDateOrTime(classType) || isNumber(classType)) 
 						&& value.indexOf("-") != -1 && value.split("-").length == 2){
-					if(isTime(classType)){
+					if(isDateOrTime(classType)){
 						return new Param(key,Cnd.Type.between_and,timeFmt(value.split("-"), classType));
 					}
 					else{
@@ -84,22 +84,22 @@ class Param {
 				//判断属性值 >=
 				else if(value.startsWith(">=")){
 					value = value.replaceFirst(">=", "");
-					return new Param(key,Cnd.Type.greater_equal,isTime(classType)?timeFmt(value, classType, true):value);
+					return new Param(key,Cnd.Type.greater_equal,isDateOrTime(classType)?timeFmt(value, classType, true):value);
 				}
 				//判断属性值 >
 				else if(value.startsWith(">")){
 					value = value.replaceFirst(">", "");
-					return new Param(key,Cnd.Type.greater_then,isTime(classType)?timeFmt(value, classType, true):value);
+					return new Param(key,Cnd.Type.greater_then,isDateOrTime(classType)?timeFmt(value, classType, true):value);
 				}
 				//判断属性值 <=
 				else if(value.startsWith("<=")){
 					value = value.replaceFirst("<=", "");
-					return new Param(key,Cnd.Type.less_equal,isTime(classType)?timeFmt(value, classType, false):value);
+					return new Param(key,Cnd.Type.less_equal,isDateOrTime(classType)?timeFmt(value, classType, false):value);
 				}
 				//判断属性值 <
 				else if(value.startsWith("<")){
 					value = value.replaceFirst("<", "");
-					return new Param(key,Cnd.Type.less_then,isTime(classType)?timeFmt(value, classType, false):value);
+					return new Param(key,Cnd.Type.less_then,isDateOrTime(classType)?timeFmt(value, classType, false):value);
 				}
 				//判断属性值 %*%
 				else if(value.startsWith("%") && value.endsWith("%")){
@@ -148,11 +148,18 @@ class Param {
 		return new Param(key,Cnd.Type.equal, val);
 	}
 	
+	private static boolean isDateOrTime(Class<?> classType){
+		return isTime(classType) || isDate(classType);
+	}
+	
 	private static boolean isTime(Class<?> classType){
 		return classType.equals(Date.class) 
 				|| classType.equals(Time.class)
-				|| classType.equals(Timestamp.class)
-				|| classType.equals(java.util.Date.class);
+				|| classType.equals(Timestamp.class);
+	}
+	
+	private static boolean isDate(Class<?> classType){
+		return classType.equals(java.util.Date.class);
 	}
 	
 	private static boolean isNumber(Class<?> classType){
@@ -171,7 +178,7 @@ class Param {
 		if(StrKit.isBlank(timeStr)){
 			return timeStr;
 		}
-		if(classType.equals(Date.class)){
+		if(isDate(classType)){
 			timeStr = subTimeStr(timeStr, isStart, 8);
 			return new StringBuffer()
 					.append(timeStr.substring(0,4))
@@ -181,7 +188,7 @@ class Param {
 					.append(timeStr.substring(6,8))
 					.toString();
 		}
-		else if(classType.equals(Timestamp.class)){
+		else if(isTime(classType)){
 			timeStr = subTimeStr(timeStr, isStart, 14);
 			return new StringBuffer()
 					.append(timeStr.substring(0,4))
