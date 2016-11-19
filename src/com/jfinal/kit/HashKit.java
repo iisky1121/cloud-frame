@@ -16,7 +16,19 @@
 
 package com.jfinal.kit;
 
+import java.io.UnsupportedEncodingException;
+import java.security.InvalidKeyException;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.KeyGenerator;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 
 public class HashKit {
 	
@@ -54,6 +66,12 @@ public class HashKit {
 		}
 	}
 	
+	/**
+	 * 将二进制转换成16进制
+	 * 
+	 * @param bytes
+	 * @return
+	 */
 	private static String toHex(byte[] bytes) {
 		StringBuilder ret = new StringBuilder(bytes.length * 2);
 		for (int i=0; i<bytes.length; i++) {
@@ -61,6 +79,24 @@ public class HashKit {
 			ret.append(HEX_DIGITS[bytes[i] & 0x0f]);
 		}
 		return ret.toString();
+	}
+	
+	/**
+	 * 将16进制转换为二进制
+	 * 
+	 * @param hexStr
+	 * @return
+	 */
+	public static byte[] hexToByte(String hexStr) {
+		if (hexStr.length() < 1)
+			return null;
+		byte[] result = new byte[hexStr.length() / 2];
+		for (int i = 0; i < hexStr.length() / 2; i++) {
+			int high = Integer.parseInt(hexStr.substring(i * 2, i * 2 + 1), 16);
+			int low = Integer.parseInt(hexStr.substring(i * 2 + 1, i * 2 + 2), 16);
+			result[i] = (byte) (high * 16 + low);
+		}
+		return result;
 	}
 	
 	/**
@@ -75,8 +111,78 @@ public class HashKit {
 		random.nextBytes(salt);
 		return toHex(salt);
 	}
+	
+	/**
+	 * AES加密
+	 * @param content
+	 * @param pwd
+	 * @return
+	 */
+	private static SecretKey getKey(String strKey) {
+		try {
+			KeyGenerator _generator = KeyGenerator.getInstance("AES");
+			SecureRandom secureRandom = SecureRandom.getInstance("SHA1PRNG");
+			secureRandom.setSeed(strKey.getBytes());
+			_generator.init(128, secureRandom);
+			return _generator.generateKey();
+		} catch (Exception e) {
+			throw new RuntimeException(" 初始化密钥出现异常 ");
+		}
+	}
+	
+	public static String encryptToAes(String content, String pwd) {
+		if(StrKit.isBlank(content) || StrKit.isBlank(pwd)){
+			return null;
+		}
+		try {
+			SecretKeySpec key = new SecretKeySpec(getKey(pwd).getEncoded(), "AES");
+			Cipher cipher = Cipher.getInstance("AES");
+			cipher.init(Cipher.ENCRYPT_MODE, key);
+			byte[] result = cipher.doFinal(content.getBytes("utf-8"));
+			return toHex(result);
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+		} catch (NoSuchPaddingException e) {
+			e.printStackTrace();
+		} catch (InvalidKeyException e) {
+			e.printStackTrace();
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		} catch (IllegalBlockSizeException e) {
+			e.printStackTrace();
+		} catch (BadPaddingException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	/**
+	 * AES解密
+	 * @param content
+	 * @param pwd
+	 * @return
+	 */
+	public static String decryptToAes(String content, String pwd) {
+		if(StrKit.isBlank(content) || StrKit.isBlank(pwd)){
+			return null;
+		}
+		try {
+			SecretKeySpec key = new SecretKeySpec(getKey(pwd).getEncoded(), "AES");
+			Cipher cipher = Cipher.getInstance("AES");
+			cipher.init(Cipher.DECRYPT_MODE, key);
+			byte[] result = cipher.doFinal(hexToByte(content));
+			return new String(result);
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+		} catch (NoSuchPaddingException e) {
+			e.printStackTrace();
+		} catch (InvalidKeyException e) {
+			e.printStackTrace();
+		} catch (IllegalBlockSizeException e) {
+			e.printStackTrace();
+		} catch (BadPaddingException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
 }
-
-
-
-
