@@ -12,7 +12,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +31,8 @@ import jxl.Sheet;
 import jxl.Workbook;
 import jxl.read.biff.BiffException;
 import jxl.write.Label;
+import jxl.write.Number;
+import jxl.write.WritableCell;
 import jxl.write.WritableSheet;
 import jxl.write.WritableWorkbook;
 
@@ -122,13 +127,10 @@ public class ExcelKit {
 		// 生成名为“sheet1”的工作表，参数0表示这是第一页
 		WritableSheet sheet = wbook.createSheet("sheet1", 0);
 
-		Label label=null;
 		for(int i=0;i<list.size();i++){ 
-			String[] str = (String[])list.get(i);
-		
-			for(int j=0;j<str.length;j++){ 
-				label=new Label(j, i, str[j]);
-				sheet.addCell(label);
+			Object[] datas = (Object[])list.get(i);
+			for(int j=0;j<datas.length;j++){ 
+				sheet.addCell(toFmt(j, i, datas[j]));
 			} 
 		}
 		
@@ -137,6 +139,36 @@ public class ExcelKit {
 		wbook.close();
 		os.flush();
 		os.close();
+	}
+	
+	/**
+	 * 自动转换成对应格式
+	 * @param c
+	 * @param r
+	 * @param object
+	 * @return
+	 */
+	private static WritableCell toFmt(int c, int r, Object object){
+		if(object == null || StrKit.isBlank(object.toString())){
+			return new Label(c, r, "");
+		}
+		Class<?> classType = object.getClass();
+		if(classType.equals(Integer.class)){
+			return new Number(c, r, (Integer)object);
+		}
+		else if(classType.equals(Long.class)){
+			return new Number(c, r, (Long)object);
+		}
+		else if(classType.equals(Double.class)){
+			return new Number(c, r, (Double)object);
+		}
+		else if(classType.equals(BigDecimal.class)){
+			return new Number(c, r, ((BigDecimal)object).doubleValue());
+		}
+		else if(classType.equals(Date.class) || classType.equals(Timestamp.class)){
+			return new Label(c, r, DateKit.toDateTimeStr((Date)object));
+		}
+		return new Label(c, r, object.toString());
 	}
 	
 	/**
@@ -180,7 +212,7 @@ public class ExcelKit {
     	//String[] keys = new String[]{"refundCount","exceptionCount","refundBalanceSum","payBalanceCount","balanceCount","singleSum","refundBalanceCount","billDate","paySum","balanceSum","statisticId","createTime","payCount","offsetSum","singleCount","payBalanceSum","offsetCount","exceptionSum"};
         //String[] titles = new String[]{"字段1","字段2","字段3","字段4","字段5","字段6","字段7","字段8","字段9","字段10","字段11","字段12","字段13","字段14","字段15","字段16","字段17","字段18"};
         try {
-        	List<String[]> rows = new ArrayList<String[]>();
+        	List<Object[]> rows = new ArrayList<Object[]>();
         	rows.add(titles);
 
         	Map<String,Object> map = new HashMap<String, Object>();
@@ -197,16 +229,16 @@ public class ExcelKit {
         		else{
         			throw new IllegalArgumentException(String.format("%s类型不支持，暂时只支持Map<String,Object>,Model和Record类型", object.getClass().getName()));
         		}
-        		List<String> row = new ArrayList<String>();
+        		List<Object> row = new ArrayList<Object>();
         		for(String key : keys){
         			if(StrKit.isBlank(key)){
         				row.add("");
         			}
         			else{
-        				row.add(map.get(key)==null?"":(map.get(key)+""));
+        				row.add(map.get(key)==null?"":map.get(key));
         			}
         		}
-        		rows.add(row.toArray(new String[0]));
+        		rows.add(row.toArray());
         	}
         	if(fileName != null && fileName.indexOf(".xls") == -1){
         		fileName +=".xls";

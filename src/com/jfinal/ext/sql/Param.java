@@ -1,5 +1,6 @@
 package com.jfinal.ext.sql;
 
+import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
@@ -163,7 +164,7 @@ class Param {
 	}
 	
 	private static boolean isNumber(Class<?> classType){
-		return classType.equals(Integer.class) || classType.equals(Long.class) || classType.equals(Double.class);
+		return classType.equals(Integer.class) || classType.equals(Long.class) || classType.equals(Double.class) || classType.equals(BigDecimal.class);
 	}
 	
 	private final static String START_TIME_STR="####0101000000";
