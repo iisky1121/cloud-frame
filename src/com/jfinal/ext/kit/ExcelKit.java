@@ -114,8 +114,7 @@ public class ExcelKit {
 	 * @return void 返回类型
 	 * @throws
 	 */
-	@SuppressWarnings({ "rawtypes" })
-	public static void writeListToExcel(String fileName,List list,HttpServletResponse response) throws Exception {
+	public static void writeListToExcel(String fileName,List<Object[]> list,HttpServletResponse response) throws Exception {
 		// 设这输出的类型和文件格式
 		response.setContentType("application/vnd.ms-excel;charset=utf-8");
 		// 设置文件名和并且解决中文名不能下载
@@ -128,7 +127,7 @@ public class ExcelKit {
 		WritableSheet sheet = wbook.createSheet("sheet1", 0);
 
 		for(int i=0;i<list.size();i++){ 
-			Object[] datas = (Object[])list.get(i);
+			Object[] datas = list.get(i);
 			for(int j=0;j<datas.length;j++){ 
 				sheet.addCell(toFmt(j, i, datas[j]));
 			} 
