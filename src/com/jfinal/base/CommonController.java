@@ -108,47 +108,45 @@ public abstract class CommonController extends Controller{
 	/**
 	 * 检查必填属性
 	 * 
-	 * 返回null则全部通过
 	 */
 	@Before(NotAction.class)
-	public void checkNotNull(String... attrs){
+	public ReturnResult checkNotNull(String... attrs){
 		Map<String, String[]> map = getParaMap();
 		for(String str : attrs){
 			if(map.get(str) == null || map.get(str).length == 0 || StrKit.isBlank(map.get(str)[0])){
-				throw new IllegalArgumentException(String.format("属性[%s]不允许为空", str));
+				return ReturnResult.failure(String.format("属性[%s]不允许为空", str));
 			}
 			else{
 				for(String attr : map.get(str)){
 					if(StrKit.isBlank(attr)){
-						throw new IllegalArgumentException(String.format("属性[%s]不允许为空", str));
+						return ReturnResult.failure(String.format("属性[%s]不允许为空", str));
 					}
 				}
 			}
 		}
+		return ReturnResult.success();
 	}
 	
 	/**
 	 * 检查属性值
 	 * 
-	 * 返回null则全部通过
 	 */
 	@Before(NotAction.class)
-	public void checkAttrValue(String attr, String... values){
+	public ReturnResult checkAttrValue(String attr, String... values){
 		String attrValue = getPara(attr);
 		if(!StrKit.isBlank(attrValue) && Arrays.asList(values).contains(attrValue)){
-			return;
+			return ReturnResult.success();
 		}
-		throw new IllegalArgumentException(String.format("属性[%s]值有误", attr));
+		return ReturnResult.failure(String.format("属性[%s]值有误", attr));
 	}
 	
 	/**
 	 * 检查属性值
 	 * 
-	 * 返回null则全部通过
 	 */
 	@SuppressWarnings("rawtypes")
 	@Before(NotAction.class)
-	public void checkAttrValue(String attr, Class enumClass){
+	public ReturnResult checkAttrValue(String attr, Class enumClass){
 		String attrValue = getPara(attr);
 		if(!StrKit.isBlank(attrValue) && enumClass != null){
 			if(Enum.class.isAssignableFrom(enumClass)){
@@ -157,10 +155,10 @@ public abstract class CommonController extends Controller{
 			Object[] objects = enumClass.getEnumConstants();
 			for(Object object : objects){
 				if(attrValue.equals(object.toString())){
-					return;
+					return ReturnResult.success();
 				}
 			}
 		}
-		throw new IllegalArgumentException(String.format("属性[%s]值有误", attr));
+		return ReturnResult.failure(String.format("属性[%s]值有误", attr));
 	}
 }
