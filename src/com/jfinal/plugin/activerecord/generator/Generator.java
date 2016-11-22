@@ -38,6 +38,7 @@ public class Generator {
 	protected MappingKitGenerator mappingKitGenerator;
 	protected DataDictionaryGenerator dataDictionaryGenerator;
 	protected boolean generateDataDictionary = false;
+	protected boolean isBuildBaseModelColunms = false;
 	
 	/**
 	 * 构造 Generator，生成 BaseModel、Model、MappingKit 三类文件，其中 MappingKit 输出目录与包名与 Model相同
@@ -193,6 +194,13 @@ public class Generator {
 	}
 	
 	/**
+	 * 设置是否在 Model 中生成 dao 对象，默认生成
+	 */
+	public void setIsBuildBaseModelColunms(boolean isBuildBaseModelColunms) {
+		this.isBuildBaseModelColunms = isBuildBaseModelColunms;
+	}
+	
+	/**
 	 * 设置是否生成数据字典 Dictionary 文件，默认不生成
 	 */
 	public void setGenerateDataDictionary(boolean generateDataDictionary) {
@@ -245,7 +253,7 @@ public class Generator {
 			return ;
 		}
 		
-		baseModelGenerator.generate(tableMetas);
+		baseModelGenerator.generate(tableMetas, isBuildBaseModelColunms);
 		
 		if (modelGenerator != null) {
 			modelGenerator.generate(tableMetas);

@@ -1,7 +1,6 @@
 package com.jfinal.ext.sql;
 
 import java.math.BigDecimal;
-import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.Collection;
@@ -154,13 +153,13 @@ class Param {
 	}
 	
 	private static boolean isTime(Class<?> classType){
-		return classType.equals(Date.class) 
+		return classType.equals(java.util.Date.class) 
 				|| classType.equals(Time.class)
 				|| classType.equals(Timestamp.class);
 	}
 	
 	private static boolean isDate(Class<?> classType){
-		return classType.equals(java.util.Date.class);
+		return classType.equals(java.sql.Date.class);
 	}
 	
 	private static boolean isNumber(Class<?> classType){

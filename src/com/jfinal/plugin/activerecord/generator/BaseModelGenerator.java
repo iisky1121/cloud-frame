@@ -65,18 +65,21 @@ public class BaseModelGenerator {
 		this.baseModelOutputDir = baseModelOutputDir;
 	}
 	
-	public void generate(List<TableMeta> tableMetas) {
+	public void generate(List<TableMeta> tableMetas, boolean isBuildColunms) {
 		System.out.println("Generate base model ...");
 		for (TableMeta tableMeta : tableMetas)
-			genBaseModelContent(tableMeta);
+			genBaseModelContent(tableMeta, isBuildColunms);
 		wirtToFile(tableMetas);
 	}
 	
-	protected void genBaseModelContent(TableMeta tableMeta) {
+	protected void genBaseModelContent(TableMeta tableMeta, boolean isBuildColunms) {
 		StringBuilder ret = new StringBuilder();
 		genPackage(ret);
 		genImport(ret);
 		genClassDefine(tableMeta, ret);
+		if(isBuildColunms){
+			genCloumsEnumDefine(tableMeta, ret);
+		}
 		for (ColumnMeta columnMeta : tableMeta.columnMetas) {
 			genSetMethodName(columnMeta, ret);
 			genGetMethodName(columnMeta, ret);
@@ -95,6 +98,14 @@ public class BaseModelGenerator {
 	
 	protected void genClassDefine(TableMeta tableMeta, StringBuilder ret) {
 		ret.append(String.format(classDefineTemplate, tableMeta.baseModelName, tableMeta.baseModelName));
+	}
+	
+	protected void genCloumsEnumDefine(TableMeta tableMeta, StringBuilder ret) {
+		ret.append(String.format("\tpublic enum c {%n"));
+		for(ColumnMeta meta : tableMeta.columnMetas){
+			ret.append(String.format("\t\t%s,%n", meta.name));
+		}
+		ret.append(String.format("\t}%n%n"));
 	}
 	
 	protected void genSetMethodName(ColumnMeta columnMeta, StringBuilder ret) {
@@ -138,9 +149,3 @@ public class BaseModelGenerator {
 		}
 	}
 }
-
-
-
-
-
-
