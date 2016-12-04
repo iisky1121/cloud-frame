@@ -53,6 +53,10 @@ class Param {
 		return classType;
 	}
 	
+	public static Param create(String key, Object val){
+		return create(key, val, val.getClass());
+	}
+	
 	public static Param create(String key, Object val, Class<?> classType){
 		if(val instanceof String){
 			String value = (String)val;

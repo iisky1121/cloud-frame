@@ -161,6 +161,22 @@ public class Cnd {
     }
     
     /**
+     * 设置值
+     */
+    public Cnd set(String key, Class<?> classType, Object val){
+    	querys.put(key, Param.create(key, val, classType));
+    	return this;
+    }
+    
+    /**
+     * 设置值
+     */
+    public Cnd set(String key, Object val){
+    	querys.put(key, Param.create(key, val));
+    	return this;
+    }
+    
+    /**
      * 设置默认值
      */
     public Cnd setDefault(String key, Cnd.Type type){

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sqls namespace="user">
+	<sql id="getusers">
+		<![CDATA[
+		    select * from user t where 1 =1 and
+		    <%if(typeof(state) != 'undefined'){%>
+		        t.state = <%=state%>
+		    <%}%>
+		    <%if(typeof(ids) != 'undefined'){%>
+		        and t.id in (<%for(var i=0;i<ids.length;i++){%> <%=ids[i]%> <%if(i < ids.length-1){%> , <%}%> <%}%>)  
+		    <%}%>
+		    order by name desc
+		]]>
+	</sql>
+	
+	<sql id="getusers1">
+		<![CDATA[
+		${Cnd({},{},{})}
+		    select * from user t where 1 =1 and
+		    <%if(typeof(state) != 'undefined'){%>
+		        t.state = <%=state%>
+		    <%}%>
+		    <%if(typeof(ids) != 'undefined'){%>
+		        and t.id in (<%for(var i=0;i<ids.length;i++){%> <%=ids[i]%> <%if(i < ids.length-1){%> , <%}%> <%}%>)  
+		    <%}%>
+		    order by name desc
+		]]>
+	</sql>
+</sqls>

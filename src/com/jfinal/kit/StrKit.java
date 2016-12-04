@@ -129,6 +129,11 @@ public class StrKit {
 		return true;
 	}
 	
+	/**
+	 * toCamelCase 下划线转驼峰
+	 * @param stringWithUnderline
+	 * @return
+	 */
 	public static String toCamelCase(String stringWithUnderline) {
 		if (stringWithUnderline.indexOf('_') == -1)
 			return stringWithUnderline;
@@ -149,6 +154,29 @@ public class StrKit {
 			}
 		}
 		return new String(toArray, 0, j);
+	}
+	
+	/**
+	 * toUnderlineCase 驼峰转下划线
+	 * @param stringWithUnderline
+	 * @return
+	 */
+	public static String toUnderlineCase(String stringWithCamel) {
+		if (isBlank(stringWithCamel)) {
+			return "";
+		}
+		int len = stringWithCamel.length();
+		StringBuilder sb = new StringBuilder(len);
+		for (int i = 0; i < len; i++) {
+			char c = stringWithCamel.charAt(i);
+			if (Character.isUpperCase(c)) {
+				sb.append('_');
+				sb.append(Character.toLowerCase(c));
+			} else {
+				sb.append(c);
+			}
+		}
+		return sb.toString();
 	}
 	
 	public static String join(String[] stringArray) {

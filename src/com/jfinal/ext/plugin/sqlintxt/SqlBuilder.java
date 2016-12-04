@@ -6,7 +6,7 @@ import java.util.Vector;
 import com.jfinal.kit.PathKit;
 import com.jfinal.plugin.activerecord.Sqls;
 
-public class SqlBuilder {
+class SqlBuilder {
 	private static Vector<File> vecFiles = new Vector<File>();
 
 	static void clearSqlMap() {
