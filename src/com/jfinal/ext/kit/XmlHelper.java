@@ -19,7 +19,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -225,5 +227,41 @@ public class XmlHelper {
     	}
     	return node.getNodeValue();
 	}
+    
+    public static List<Node> getChildNodes(Node node){
+    	List<Node> nodelist = new ArrayList<Node>();
+    	if(node != null && node.hasChildNodes()){
+    		NodeList list = node.getChildNodes();
+    		for (int i = 0; i < list.getLength(); i++) {
+    			node = list.item(i);
+    			if(node.getNodeName().equals("#text")){
+    				continue;
+    			}
+    			else if(node.getNodeName().equals("#cdata-section")){
+    				continue;
+    			}
+    			nodelist.add(node);
+    		}
+    	}
+    	return nodelist;
+    }
+    
+    public static List<Element> getChildElement(Node node){
+    	List<Element> nodelist = new ArrayList<Element>();
+    	if(node != null && node.hasChildNodes()){
+			NodeList list = node.getChildNodes();
+			for (int i = 0; i < list.getLength(); i++) {
+				Element element = (Element) list.item(i);
+				if(element.getTagName().equals("#text")){
+					continue;
+				}
+				else if(element.getNodeName().equals("#cdata-section")){
+					continue;
+				}
+				nodelist.add(element);
+			}
+    	}
+    	return nodelist;
+    }
 
 }

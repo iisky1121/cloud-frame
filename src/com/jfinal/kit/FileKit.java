@@ -203,14 +203,17 @@ public class FileKit {
 	 * 读取文件内容
 	 */
 	public static String read(String filePath){
+		return read(new File(filePath));
+	}
+	
+	public static String read(File file){
         try {
-        	File file = new File(filePath);
         	BufferedReader reader = new BufferedReader(new FileReader(file));
             StringBuilder sb = new StringBuilder();
             String line = null;
             // 一次读入一行，直到读入null为文件结束
             while ((line = reader.readLine()) != null) {
-            	sb.append(line);
+            	sb.append(line).append("\n");
             }
             reader.close();
             
