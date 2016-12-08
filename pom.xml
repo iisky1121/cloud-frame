@@ -163,9 +163,9 @@
 	<resources>
         <resource>
             <directory>res</directory>
-            <excludes>
+            <!-- <excludes>
                 <exclude>*.*</exclude>
-            </excludes>
+            </excludes> -->
         </resource>
     </resources>
 	<plugins>

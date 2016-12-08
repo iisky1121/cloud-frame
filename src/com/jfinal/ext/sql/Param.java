@@ -9,7 +9,7 @@ import com.jfinal.ext.kit.ArrayKit;
 import com.jfinal.ext.sql.Cnd.Type;
 import com.jfinal.kit.StrKit;
 
-class Param {
+public class Param {
 	private String key;
 	private Object value;
 	private Cnd.Type type;

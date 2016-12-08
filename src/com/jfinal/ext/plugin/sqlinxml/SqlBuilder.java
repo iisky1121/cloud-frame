@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.w3c.dom.Node;
 
@@ -83,7 +85,7 @@ class SqlBuilder {
 		}
 	}
 	
-	static String get(String sqlId, Map<String, String> params){
+	static String get(String sqlId, Map<String, Object> params){
 		if(StrKit.isBlank(sqlId)){
 			return null;
 		}
@@ -105,7 +107,10 @@ class SqlBuilder {
 		return null;
 	}
 	
-	static String get(String namespace, String sqlId, Map<String, String> params){
+	final protected static Pattern CND_PATTERN = Pattern.compile(
+    		"\\%\\{(.+)?\\}",
+    		Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
+	static String get(String namespace, String sqlId, Map<String, Object> params){
 		if(cfg == null){
 			cfg =new Configuration();
 		}
@@ -115,6 +120,11 @@ class SqlBuilder {
 		String sql = getXmlSql(namespace, sqlId);
 		if(StrKit.isBlank(sql)){
 			throw new IllegalArgumentException(String.format("sqlId:%s ,不存在", templateId));
+		}
+		
+		Matcher m = CND_PATTERN.matcher(sql);
+		while(m.find()){
+			System.out.println(m.group(0));
 		}
 		
 		try {
@@ -145,7 +155,7 @@ class SqlBuilder {
 		System.out.println(sw.toString());*/
 		init("/", true);
 		Map root =new HashMap();
-		root.put("loginName","Tom");
+		root.put("createTime","Tom");
 		System.out.println(get("user.getusers1", root));
 	}
 }

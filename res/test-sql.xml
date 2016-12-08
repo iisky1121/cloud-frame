@@ -12,18 +12,125 @@
 		    order by name desc
 		]]>
 	</sql>
-	
+
 	<sql id="getusers1">
 		<![CDATA[
-		${Cnd({},{},{})}
-		    select * from user t where 1 =1 and
-		    <%if(typeof(state) != 'undefined'){%>
-		        t.state = <%=state%>
-		    <%}%>
-		    <%if(typeof(ids) != 'undefined'){%>
-		        and t.id in (<%for(var i=0;i<ids.length;i++){%> <%=ids[i]%> <%if(i < ids.length-1){%> , <%}%> <%}%>)  
-		    <%}%>
-		    order by name desc
-		]]>
+			SELECT
+			date_format(
+			`a`.`create_time`,
+			'%Y-%m-%d'
+			) AS `billDate`,
+			`a`.`bill_id` AS `billId`,
+			`a`.`trade_time1` AS `tradeTime1`,
+			`a`.`pay_time2` AS `payTime2`,
+			`a`.`refund_time2` AS `refundTime2`,
+			`a`.`order_id1` AS `orderId1`,
+			`a`.`order_id2` AS `orderId2`,
+			`a`.`trade_status1` AS `tradeStatus1`,
+			`a`.`trade_status2` AS `tradeStatus2`,
+			`a`.`amount1` AS `amount1`,
+			`a`.`amount2` AS `amount2`,
+			`a`.`refund_fee1` AS `refundFee1`,
+			`a`.`refund_fee2` AS `refundFee2`,
+			`a`.`refund_status1` AS `refundStatus1`,
+			`a`.`refund_status2` AS `refundStatus2`,
+			`a`.`refund_id` AS `refundId`,
+			`a`.`mch_id` AS `mchId`,
+			`a`.`transaction_id` AS `transactionId`,
+			`a`.`mc_refund_order_no` AS `mcRefundOrderNo`,
+			`a`.`open_id` AS `openId`,
+			`a`.`agent_user_id` AS `agentUserId`,
+			`a`.`fee_type` AS `feeType`,
+			`a`.`device_id` AS `deviceId`,
+			`a`.`mac` AS `mac`,
+			`a`.`plat_type` AS `platType`,
+			`a`.`plat_info` AS `platInfo`,
+			`a`.`plat_info_return` AS `platInfoReturn`,
+			`a`.`cnt` AS `cnt`,
+			`a`.`pulse_num` AS `pulseNum`,
+			`a`.`order_return` AS `orderReturn`,
+			`a`.`order_type` AS `orderType`,
+			`a`.`bill_result` AS `billResult`,
+			`a`.`err_type` AS `errType`,
+			`a`.`create_time` AS `createTime`,
+			`a`.`menoy_discount` AS `menoyDiscount`,
+			`a`.`trade_type` AS `tradeType`,
+			`a`.`user_id` AS `userId`,
+			`a`.`app_id` AS `appId`,
+			(
+			CASE `a`.`bill_result`
+			WHEN 2 THEN
+			`s`.`check_result`
+			WHEN 3 THEN
+			`o`.`status`
+			WHEN 4 THEN
+			`e`.`status`
+			END
+			) AS `dealStatus`,
+			(
+			CASE `a`.`bill_result`
+			WHEN 2 THEN
+			date_format(
+			`s`.`check_time`,
+			'%Y-%m-%d'
+			)
+			WHEN 3 THEN
+			date_format(
+			`o`.`check_time`,
+			'%Y-%m-%d'
+			)
+			WHEN 4 THEN
+			date_format(
+			`e`.`check_time`,
+			'%Y-%m-%d'
+			)
+			END
+			) AS `dealTime`,
+			`s`.`is_refund` AS `isRefund`,
+			date_format(
+			`s`.`refund_time`,
+			'%Y-%m-%d'
+			) AS `refundTime`,
+			`t5`.`company_short_name` AS `companyShortName`
+			FROM
+			(
+			(
+			(
+			(
+			( select * from `allPay`.`acc_bill` where 1>0 
+			<#if createTime??> 
+				and create_time %{"=",createTime}
+			</#if>
+			) `a`
+			LEFT JOIN `allPay`.`acc_single` `s` ON (
+			(
+			`s`.`bill_id` = `a`.`bill_id`
+			)
+			)
+			)
+			LEFT JOIN `allPay`.`acc_offset_balance` `o` ON (
+			(
+			`o`.`bill_id` = `a`.`bill_id`
+			)
+			)
+			)
+			LEFT JOIN `allPay`.`acc_err_check_log` `e` ON (
+			(
+			`e`.`order_id` = ifnull(
+			`a`.`order_id1`,
+			`a`.`order_id2`
+			)
+			)
+			)
+			)
+			LEFT JOIN `allPay`.`agents` `t5` ON (
+			(
+			`t5`.`user_id` = `a`.`agent_user_id`
+			)
+			)
+			)
+			GROUP BY
+			`a`.`bill_id`
+			]]>
 	</sql>
 </sqls>
