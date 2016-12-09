@@ -1,7 +1,6 @@
 package com.jfinal.ext.sql;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -18,106 +17,26 @@ class CndBuild {
 	public static void buildSQL(StringBuilder sb, Cnd.Type queryType, String fieldName, Object fieldValue, ArrayList<Object> params) {
         // 非空的时候进行设置
         if (StrKit.notNull(fieldValue) && StrKit.notNull(fieldName)) {
-            if (Cnd.Type.equal.equals(queryType)) {
-                sb.append(" and " +fieldName + " = ? ");
-                params.add(fieldValue);
-            } 
-            else if (Cnd.Type.not_equal.equals(queryType)) {
-                sb.append(" and " +fieldName + " <> ? ");
-                params.add(fieldValue);
-            } 
-            else if (Cnd.Type.less_then.equals(queryType)) {
-                sb.append(" and " +fieldName + " < ? ");
-                params.add(fieldValue);
-            } 
-            else if (Cnd.Type.less_equal.equals(queryType)) {
-                sb.append(" and " +fieldName + " <= ? ");
-                params.add(fieldValue);
-            } 
-            else if (Cnd.Type.greater_then.equals(queryType)) {
-                sb.append(" and " +fieldName + " > ? ");
-                params.add(fieldValue);
-            } 
-            else if (Cnd.Type.greater_equal.equals(queryType)) {
-                sb.append(" and " +fieldName + " >= ? ");
-                params.add(fieldValue);
-            } 
-            else if (Cnd.Type.fuzzy.equals(queryType)) {
-                sb.append(" and " +fieldName + " like ? ");
-                params.add("%" + fieldValue + "%");
-            } 
-            else if (Cnd.Type.fuzzy_left.equals(queryType)) {
-                sb.append(" and " +fieldName + " like ? ");
-                params.add("%" + fieldValue);
-            } 
-            else if (Cnd.Type.fuzzy_right.equals(queryType)) {
-                sb.append(" and " +fieldName + " like ? ");
-                params.add(fieldValue + "%");
-            } 
-            else if (Cnd.Type.in.equals(queryType)) {
-            	Object[] values = toValues(fieldValue);
-            	if(values == null){
-            		throw new IllegalArgumentException("使用IN条件的时候传入的值必须是个Collection对象或者Object[]对象或者String对象(多个以,分隔)");
-            	}
-                StringBuilder instr = new StringBuilder();
-                sb.append(" and " +fieldName + " in (");
-                for (Object obj : values) {
-                    instr.append(StrKit.notBlank(instr.toString()) ? ",?" : "?");
-                    params.add(obj);
-                }
-                sb.append(instr + ") ");
-            } 
-            else if (Cnd.Type.not_in.equals(queryType)) {
-            	Object[] values = toValues(fieldValue);
-            	if(values == null){
-            		throw new IllegalArgumentException("使用Not IN条件的时候传入的值必须是个Collection对象或者Object[]对象或者String对象(多个以,分隔)");
-            	}
-                StringBuilder instr = new StringBuilder();
-                sb.append(" and " +fieldName + " not in (");
-                for (Object obj : values) {
-                    instr.append(StrKit.notBlank(instr.toString()) ? ",?" : "?");
-                    params.add(obj);
-                }
-                sb.append(instr + ") ");
-            } 
-            else if (Cnd.Type.between_and.equals(queryType)) {
-            	Object[] values = toValues(fieldValue);
-            	if(values == null){
-            		throw new IllegalArgumentException("使用BETWEEN And条件的时候传入的值必须是个Collection对象或者Object[]对象或者String对象(多个以,分隔),且长度为2");
-            	}
-            	
-            	if (values.length != 2) {
-        			throw new IllegalArgumentException(String.format("Illegal between params size:%s", values.length));
+        	Object[] values = CndKit.buildValue(queryType, fieldValue);
+        	if(values == null){
+        		return;
+        	}
+        	sb.append(Cnd.AND +fieldName + values[0]);
+        	if(values[1] == null){
+        		return;
+        	}
+        	
+        	if(values[1] instanceof String[]){
+        		for(Object obj : (Object[])values[1]){
+        			params.add(obj);
         		}
-            	sb.append(" and (" +fieldName + " between ? and ?) ");
-                params.add(values[0]);
-                params.add(values[1]);
-            }
-        } 
-        else {
-            if (Cnd.Type.empty.equals(queryType)) {
-                sb.append(" and " +fieldName + " is null ");
-            } 
-            else if (Cnd.Type.not_empty.equals(queryType)) {
-                sb.append(" and " +fieldName + " is not null ");
-            }
+        	}
+        	else{
+        		params.add(values[1]);
+        	}
         }
     }
 	
-	@SuppressWarnings("rawtypes")
-	private static Object[] toValues(Object object){
-		Object[] values = null;
-    	if (object instanceof Collection) {
-			values = ((Collection)object).toArray();
-    	}
-    	else if(object instanceof Object[]){
-    		values = ((String[]) object);
-    	}
-    	else if(object instanceof String){
-    		values = ((String) object).split(",");
-    	}
-    	return values;
-	}
 	
 	/**
 	 * 组建各种order by及赋值

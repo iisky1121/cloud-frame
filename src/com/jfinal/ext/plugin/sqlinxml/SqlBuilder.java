@@ -124,7 +124,7 @@ class SqlBuilder {
 		
 		Matcher m = CND_PATTERN.matcher(sql);
 		while(m.find()){
-			System.out.println(m.group(0));
+			System.out.println(m.group(0).replace("", ""));
 		}
 		
 		try {
