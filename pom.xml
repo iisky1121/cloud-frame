@@ -3,7 +3,7 @@
 
   <groupId>com.xpg.frame</groupId>
   <artifactId>cloud-frame</artifactId>
-  <version>1.1.1</version>
+  <version>1.1.2</version>
   <packaging>jar</packaging>
 
   <name>cloud-frame</name>
@@ -150,6 +150,16 @@
 	    <artifactId>jxl</artifactId>
 	    <version>2.6.12.1</version>
 	</dependency>
+	<dependency>
+		<groupId>com.thoughtworks.xstream</groupId>
+		<artifactId>xstream</artifactId>
+		<version>1.4.9</version>
+	</dependency>
+	<dependency>
+		<groupId>org.mozilla</groupId>
+		<artifactId>rhino</artifactId>
+		<version>1.7.7.1</version>
+	</dependency>
     <dependency>
   		<groupId>com.xpg</groupId>
   		<artifactId>apis</artifactId>
@@ -163,9 +173,6 @@
 	<resources>
         <resource>
             <directory>res</directory>
-            <!-- <excludes>
-                <exclude>*.*</exclude>
-            </excludes> -->
         </resource>
     </resources>
 	<plugins>
