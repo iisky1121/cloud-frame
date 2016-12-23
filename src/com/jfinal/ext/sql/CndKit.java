@@ -1,8 +1,10 @@
 package com.jfinal.ext.sql;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
@@ -11,8 +13,11 @@ import com.jfinal.ext.kit.ModelKit;
 import com.jfinal.ext.plugin.jsql.JSqlKit;
 import com.jfinal.ext.plugin.jsql.core.SqlArgs;
 import com.jfinal.kit.StrKit;
+import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.IBean;
 import com.jfinal.plugin.activerecord.Model;
+import com.jfinal.plugin.activerecord.Page;
+import com.jfinal.plugin.activerecord.Record;
 
 public class CndKit {
 	@SuppressWarnings("rawtypes")
@@ -144,5 +149,38 @@ public class CndKit {
 	
 	public static SqlArgs getSqlArgs(String sqlId, Object args){
 		return JSqlKit.getSqlArgs(sqlId, args);
+	}
+	
+	public static Long getCount(String sqlId, Map<String, String[]> params, Class<?> entryClass){
+		return getCount(sqlId, false, params, entryClass);
+	}
+	public static Long getCount(String sqlId, boolean isGroupBy, Map<String, String[]> params, Class<?> entryClass){
+		params.remove("pageNumber");
+		params.remove("pageSize");
+		Map<String,Object> map = formatValues(params, entryClass);
+		SqlArgs sqlArgs = getSqlArgs(sqlId.concat("$count"), map);
+		if(isGroupBy){
+			return (long) Db.query(sqlArgs.getSql(), sqlArgs.getArgs().toArray()).size();
+		}
+		return Db.queryLong(sqlArgs.getSql(), sqlArgs.getArgs().toArray());
+	}
+	
+	public static Page<Record> paginate(String sqlId, int pageNumber, int pageSize, Map<String, String[]> params, Class<?> entryClass){
+		return paginate(sqlId, pageNumber, pageSize, false, params, entryClass);
+	}
+	
+	public static Page<Record> paginate(String sqlId, int pageNumber, int pageSize, boolean isGroupBy, Map<String, String[]> params, Class<?> entryClass){
+		Long totalRow = getCount(sqlId, isGroupBy, params, entryClass);
+		if(totalRow != null && totalRow > 0){
+			Map<String,Object> map = formatValues(params, entryClass);
+			map.put("limit", pageSize);
+			map.put("offset", (pageNumber-1)*pageSize);
+			SqlArgs sqlArgs = getSqlArgs(sqlId, map);
+			List<Record> list = Db.find(sqlArgs.getSql(), sqlArgs.getArgs().toArray());
+			
+			int total = Integer.parseInt(String.valueOf(totalRow));
+			return new Page<Record>(list, pageNumber, pageSize, total/pageSize, total);
+		}
+		return new Page<Record>(new ArrayList<Record>(), pageNumber, pageSize, 0, 0); 
 	}
 }

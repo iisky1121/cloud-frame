@@ -1,5 +1,6 @@
 package com.jfinal.ext.plugin.jsql.core;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -31,7 +32,8 @@ public class SqlMapping {
 	public static void init(String configPath){
 		SqlMapping.configPath = configPath;
 		sqlMap.clear();
-		JSqlConfig jSqlConfig = JsqlXmlUtil.toJSqlConfig(SqlMapping.class.getResourceAsStream(configPath));
+		InputStream inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream(configPath);
+		JSqlConfig jSqlConfig = JsqlXmlUtil.toJSqlConfig(inputStream);
 		List<JSql> jSqls = new ArrayList<JSql>();
 		for (JSqlPath jSqlPath : jSqlConfig.getJsqlpaths()) {
 			jSqls.add(JsqlXmlUtil.toJSql(SqlMapping.class.getResourceAsStream(jSqlPath.getPath())));
