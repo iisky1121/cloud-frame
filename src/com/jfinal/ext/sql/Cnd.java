@@ -55,9 +55,11 @@ public class Cnd {
 	//排序值设置
 	private Map<String,String> orderBys = new HashMap<String, String>();
 	private Set<String> orderByColumns = new HashSet<String>();
-	 // 用于接收SQL语句
+	//分组值设置
+	private Set<String> groupBys = new HashSet<String>();
+	//用于接收SQL语句
     private StringBuilder sql = new StringBuilder();
-    // 用于接收参数数组
+    //用于接收参数数组
     private List<Object> paramList = new ArrayList<Object>();
     
     public static Cnd toCnd(){
@@ -216,10 +218,10 @@ public class Cnd {
     	return this;
     }
     
-    /**
+	/**
 	 * 设置OrderBy属性
 	 */
-    private static List<String> reg = Arrays.asList(new String[]{"asc","desc"});
+	private static List<String> reg = Arrays.asList(new String[]{"asc","desc"});
 	public Cnd setOrderBy(String... orderByStrs){
 		if(orderByStrs != null  && orderByStrs.length > 0){
 			orderBys.clear();
@@ -241,6 +243,22 @@ public class Cnd {
 						orderBys.put(column, strs[1].toLowerCase());
 					}
 				}
+			}
+		}
+		return this;
+	}
+	
+    /**
+	 * 设置GroupBy属性
+	 */
+	public Cnd setGroupBy(String... groupByStrs){
+		if(groupByStrs != null  && groupByStrs.length > 0){
+			groupBys.clear();
+			for(String groupByStr : groupByStrs){
+				if(StrKit.isBlank(groupByStr)){
+					continue;
+				}
+				groupBys.add(groupByStr);
 			}
 		}
     	return this;
@@ -284,6 +302,8 @@ public class Cnd {
 		}
 		//构建全文搜索
 		CndBuild.bulidFuzzyQuery(fuzzyQuerys, sb, paramArrayList);
+		//构建分组
+		CndBuild.buildGroupBy(groupBys, sb);
 		//构建排序
 		CndBuild.buildOrderBy(orderBys, sb);
 		

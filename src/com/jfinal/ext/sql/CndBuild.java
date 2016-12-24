@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import com.jfinal.kit.StrKit;
 
@@ -49,6 +50,23 @@ class CndBuild {
 			}
 			sql.append(entry.getKey()+ " " + entry.getValue());
 			if(i != orderByMap.size() -1){
+				sql.append(",");
+			}
+			i++;
+		}
+	}
+	
+	/**
+	 * 组建各种group by及赋值
+	 */
+	public static void buildGroupBy(Set<String> groupBySet, StringBuilder sql){
+		int i = 0;
+		for(String groupBy : groupBySet){
+			if(i == 0){
+				sql.append(" group by ");
+			}
+			sql.append(groupBy);
+			if(i != groupBySet.size() -1){
 				sql.append(",");
 			}
 			i++;

@@ -6,8 +6,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import com.jfinal.ext.kit.ModelKit;
 import com.jfinal.ext.plugin.jsql.JSqlKit;
@@ -165,6 +165,21 @@ public class CndKit {
 		return Db.queryLong(sqlArgs.getSql(), sqlArgs.getArgs().toArray());
 	}
 	
+	public static List<Record> getList(String sqlId, Map<String, String[]> params, Class<?> entryClass){
+		Map<String,Object> map = formatValues(params, entryClass);
+		SqlArgs sqlArgs = getSqlArgs(sqlId, map);
+		return Db.find(sqlArgs.getSql(), sqlArgs.getArgs().toArray());
+	}
+	
+	public static List<Record> getList(String sqlId, int pageNumber, int pageSize, Map<String, String[]> params, Class<?> entryClass){
+		Map<String,Object> map = formatValues(params, entryClass);
+		map.put("limit", pageSize);
+		map.put("offset", (pageNumber-1)*pageSize);
+		
+		SqlArgs sqlArgs = getSqlArgs(sqlId, map);
+		return Db.find(sqlArgs.getSql(), sqlArgs.getArgs().toArray());
+	}
+	
 	public static Page<Record> paginate(String sqlId, int pageNumber, int pageSize, Map<String, String[]> params, Class<?> entryClass){
 		return paginate(sqlId, pageNumber, pageSize, false, params, entryClass);
 	}
@@ -172,11 +187,7 @@ public class CndKit {
 	public static Page<Record> paginate(String sqlId, int pageNumber, int pageSize, boolean isGroupBy, Map<String, String[]> params, Class<?> entryClass){
 		Long totalRow = getCount(sqlId, isGroupBy, params, entryClass);
 		if(totalRow != null && totalRow > 0){
-			Map<String,Object> map = formatValues(params, entryClass);
-			map.put("limit", pageSize);
-			map.put("offset", (pageNumber-1)*pageSize);
-			SqlArgs sqlArgs = getSqlArgs(sqlId, map);
-			List<Record> list = Db.find(sqlArgs.getSql(), sqlArgs.getArgs().toArray());
+			List<Record> list = getList(sqlId, pageNumber, pageSize, params, entryClass);
 			
 			int total = Integer.parseInt(String.valueOf(totalRow));
 			return new Page<Record>(list, pageNumber, pageSize, total/pageSize, total);
