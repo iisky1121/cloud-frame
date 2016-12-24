@@ -190,7 +190,8 @@ public class CndKit {
 			List<Record> list = getList(sqlId, pageNumber, pageSize, params, entryClass);
 			
 			int total = Integer.parseInt(String.valueOf(totalRow));
-			return new Page<Record>(list, pageNumber, pageSize, total/pageSize, total);
+			int totalPage = total%pageSize==0?(total/pageSize):(total/pageSize+1);
+			return new Page<Record>(list, pageNumber, pageSize, totalPage, total);
 		}
 		return new Page<Record>(new ArrayList<Record>(), pageNumber, pageSize, 0, 0); 
 	}
