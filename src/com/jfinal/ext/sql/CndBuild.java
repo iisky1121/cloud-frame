@@ -17,7 +17,8 @@ class CndBuild {
 	}
 	public static void buildSQL(StringBuilder sb, Cnd.Type queryType, String fieldName, Object fieldValue, ArrayList<Object> params) {
         // 非空的时候进行设置
-        if (StrKit.notNull(fieldValue) && StrKit.notNull(fieldName)) {
+        if ((StrKit.notNull(fieldValue) || queryType.equals(Cnd.Type.empty) || queryType.equals(Cnd.Type.not_empty)) 
+        		&& StrKit.notNull(fieldName)) {
         	Object[] values = CndKit.buildValue(queryType, fieldValue);
         	if(values == null){
         		return;
