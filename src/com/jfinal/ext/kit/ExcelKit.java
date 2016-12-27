@@ -139,10 +139,10 @@ public class ExcelKit {
 					sheetNum++;
 					sheet = wbook.createSheet("sheet"+(sheetNum+1), sheetNum);
 				}
-				addSheetRow(sheet, list.get(0), 0, sheetNum);
+				addSheetRow(sheet, list.get(0), 0);
 			}
 			if(i != 0){
-				addSheetRow(sheet, list.get(i), startIndex+1, sheetNum);
+				addSheetRow(sheet, list.get(i), startIndex+1);
 			}
 		}
 		
@@ -153,9 +153,9 @@ public class ExcelKit {
 		os.close();
 	}
 	
-	private static void addSheetRow(WritableSheet sheet, Object[] datas, int i, int sheetNum) throws RowsExceededException, WriteException{
+	private static void addSheetRow(WritableSheet sheet, Object[] datas, int i) throws RowsExceededException, WriteException{
 		for(int j=0;j<datas.length;j++){ 
-			sheet.addCell(toFmt(j, i+sheetNum, datas[j]));
+			sheet.addCell(toFmt(j, i, datas[j]));
 		}
 	}
 	
