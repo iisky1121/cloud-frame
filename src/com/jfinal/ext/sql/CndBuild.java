@@ -28,7 +28,7 @@ class CndBuild {
         		return;
         	}
         	
-        	if(values[1] instanceof String[]){
+        	if(values[1] instanceof Object[]){
         		for(Object obj : (Object[])values[1]){
         			params.add(obj);
         		}

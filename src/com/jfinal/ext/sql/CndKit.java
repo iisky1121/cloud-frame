@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import com.jfinal.ext.kit.ArrayKit;
 import com.jfinal.ext.kit.ModelKit;
 import com.jfinal.ext.plugin.jsql.JSqlKit;
 import com.jfinal.ext.plugin.jsql.core.SqlArgs;
@@ -27,8 +28,11 @@ public class CndKit {
 			values = ((Collection)object).toArray();
     	}
     	else if(object instanceof Object[]){
-    		values = ((String[]) object);
+    		values = ((Object[]) object);
     	}
+    	else if(object.getClass().isArray()){
+			return ArrayKit.toObjectArray(object);
+		}
     	else if(object instanceof String && queryType.equals(Cnd.Type.between_and)){
     		values = ((String) object).split("-");
     	}

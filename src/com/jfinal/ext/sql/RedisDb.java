@@ -12,15 +12,13 @@ import com.jfinal.plugin.activerecord.Model;
 import com.jfinal.plugin.activerecord.Record;
 import com.jfinal.plugin.redis.Redis;
 
+@SuppressWarnings("rawtypes")
 public class RedisDb {
-	private Map<String,Object> map;
-	void setMap(Map<String, Object> map) {
-		this.map = map;
-	}
+	private Object object;
 
-	public static RedisDb create(Map<String,Object> map){
+	public static RedisDb create(Object Object){
 		RedisDb db = new RedisDb();
-		db.setMap(map);
+		db.object = Object;
 		return db;
 	}
 	
@@ -29,7 +27,7 @@ public class RedisDb {
 	 * @param beanId
 	 * @param bean
 	 */
-	public static <T extends IBean> void save(Object beanId, T bean){
+	public static void save(Object beanId, IBean bean){
 		setRedisBean(beanId, bean);
 	}
 	
@@ -38,7 +36,7 @@ public class RedisDb {
 	 * @param beanId
 	 * @param bean
 	 */
-	public static <T extends IBean> void update(Object beanId, T bean){
+	public static void update(Object beanId, IBean bean){
 		setRedisBean(beanId, bean);
 	}
 	
@@ -48,28 +46,107 @@ public class RedisDb {
 	 * @param beanClass
 	 * @return
 	 */
-	public RedisDb select(String key, Class<IBean> beanClass){
-		Object beanId = map.get(key);
-		if(beanId != null){
-			Map<String, Object> redisMap = getRedisMap(beanClass, beanId.toString());
-			selectCondition(beanClass, redisMap);
+	public <T extends IBean> RedisDb select(String key, Class<T> beanClass){
+		return select(key, beanClass, null);
+	}
+	public <T extends IBean> RedisDb select(String key, Class<T> beanClass, String[] beanAttrs){
+		if(object == null || StrKit.isBlank(key) || beanClass == null){
+			return this;
+		}
+		if(object instanceof List){
+			selectList(key, beanClass, beanAttrs, (List)object);
+		}
+		else{
+			selectObject(key, beanClass, beanAttrs, object);
 		}
 		return this;
 	}
 	
-	/**
-	 * 对map进行数据拼接
-	 * @param beanClass
-	 * @param redisMap
-	 */
-	private void selectCondition(Class<IBean> beanClass, Map<String, Object> redisMap){
-		if(redisMap == null){
+	private <T extends IBean> void selectList(String key, Class<T> beanClass, String[] beanAttrs, List list){
+		if(list == null || StrKit.isBlank(key) || beanClass == null){
 			return;
 		}
-		//遍历设置 对应bean的值
-		for(Entry<String, Object> entry : redisMap.entrySet()){
-			map.put(beanClass.getSimpleName().concat(entry.getKey()), entry.getValue());
+		for(Object o : list){
+			selectObject(key, beanClass, beanAttrs, o);
 		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	private <T extends IBean> void selectObject(String key, Class<T> beanClass, String[] beanAttrs, Object o){
+		if(o == null || StrKit.isBlank(key) || beanClass == null){
+			return;
+		}
+		Object beanId;
+		if(o instanceof Model){
+			Model model = (Model)o;
+			beanId = model.get(key);
+			
+			if(beanId != null){
+				Map<String, Object> redisMap = getRedisMap(beanClass, beanId.toString());
+				if(redisMap == null){
+					return;
+				}
+				//遍历设置 对应bean的值
+				if(beanAttrs != null){
+					for(String attr : beanAttrs){
+						model.put(getKey(beanClass, attr), redisMap.get(attr));
+					}
+				}
+				else{
+					for(Entry<String, Object> entry : redisMap.entrySet()){
+						model.put(getKey(beanClass, entry.getKey()), entry.getValue());
+					}
+				}
+			}
+		}
+		else if(o instanceof Record){
+			Record record = (Record)o;
+			beanId = record.get(key);
+			
+			if(beanId != null){
+				Map<String, Object> redisMap = getRedisMap(beanClass, beanId.toString());
+				if(redisMap == null){
+					return;
+				}
+				//遍历设置 对应bean的值
+				if(beanAttrs != null){
+					for(String attr : beanAttrs){
+						record.set(getKey(beanClass, attr), redisMap.get(attr));
+					}
+				}
+				else{
+					for(Entry<String, Object> entry : redisMap.entrySet()){
+						record.set(getKey(beanClass, entry.getKey()), entry.getValue());
+					}
+				}
+			}
+		}
+		else if(o instanceof Map){
+			Map<String, Object> map = (Map<String, Object>)o;
+			beanId = map.get(key);
+			
+			if(beanId != null){
+				Map<String, Object> redisMap = getRedisMap(beanClass, beanId.toString());
+				if(redisMap == null){
+					return;
+				}
+				//遍历设置 对应bean的值
+				if(beanAttrs != null){
+					for(String attr : beanAttrs){
+						map.put(getKey(beanClass, attr), redisMap.get(attr));
+					}
+				}
+				else{
+					for(Entry<String, Object> entry : redisMap.entrySet()){
+						map.put(getKey(beanClass, entry.getKey()), entry.getValue());
+					}
+				}
+			}
+		}
+	}
+	
+	private static <T extends IBean> String getKey(Class<T> beanClass, String key){
+		return StrKit.firstCharToLowerCase(beanClass.getSimpleName()).concat("."+key);
 	}
 	
 	/**
@@ -94,11 +171,16 @@ public class RedisDb {
 		return (JSONObject) JSONObject.toJSON(redisMap);
 	}
 	
+	@SuppressWarnings("unchecked")
 	public static <T extends IBean> Map<String, Object> getRedisMap(Class<T> beanClass, Object beanId){
 		if(beanClass == null || beanId == null){
 			return null;
 		}
-		return Redis.use().get(beanClass.getSimpleName().concat("."+beanId));
+		Object data = Redis.use().get(beanClass.getSimpleName().concat("."+beanId));
+		if(data == null || "nil".equals(data.toString())){
+			return null;
+		}
+		return (Map<String, Object>) data;
 	}
 	
 	/**
@@ -127,7 +209,7 @@ public class RedisDb {
 		if(beanClass == null || beanId == null || map == null){
 			return;
 		}
-		Redis.use().set(beanClass.getSimpleName().concat("."+beanId), map);
+		Redis.use().set(getKey(beanClass, beanId.toString()), map);
 	}
 	
 	/**
@@ -136,7 +218,7 @@ public class RedisDb {
 	 * @param beanId
 	 * @param map
 	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@SuppressWarnings({ "unchecked" })
 	public static <T extends IBean> void setRedisList(Class<T> beanClass, String idKey, List list){
 		if(beanClass == null || StrKit.isBlank(idKey) || list == null){
 			return;

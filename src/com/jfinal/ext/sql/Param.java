@@ -136,11 +136,6 @@ class Param {
 				else if(Cnd.IS_NOT_EMPTY.equals(value)){
 					return new Param(key,Cnd.Type.not_equal, "");
 				}
-				else if (key.toLowerCase().endsWith("name")
-						|| key.toLowerCase().endsWith("content")
-						|| key.toLowerCase().endsWith("remark")) {
-					return new Param(key,Cnd.Type.fuzzy,value);
-				}
 			}
 		}
 		else if(val instanceof Object[] || val instanceof Collection){
