@@ -176,7 +176,7 @@ public class RedisDb {
 		if(beanClass == null || beanId == null){
 			return null;
 		}
-		Object data = Redis.use().get(beanClass.getSimpleName().concat("."+beanId));
+		Object data = Redis.use().get(getKey(beanClass, beanId.toString()));
 		if(data == null || "nil".equals(data.toString())){
 			return null;
 		}

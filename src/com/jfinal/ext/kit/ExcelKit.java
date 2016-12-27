@@ -35,6 +35,8 @@ import jxl.write.Number;
 import jxl.write.WritableCell;
 import jxl.write.WritableSheet;
 import jxl.write.WritableWorkbook;
+import jxl.write.WriteException;
+import jxl.write.biff.RowsExceededException;
 
 /**
  * @ClassName: ExcelKit
@@ -45,6 +47,7 @@ import jxl.write.WritableWorkbook;
  */
 
 public class ExcelKit {
+	private static final int maxRowCount = 60000;//不能够超过Excel的最大容量
 	/**
 	 * @throws IOException 
 	 * @throws BiffException 
@@ -124,13 +127,23 @@ public class ExcelKit {
 
 		WritableWorkbook wbook = Workbook.createWorkbook(os);
 		// 生成名为“sheet1”的工作表，参数0表示这是第一页
-		WritableSheet sheet = wbook.createSheet("sheet1", 0);
-
-		for(int i=0;i<list.size();i++){ 
-			Object[] datas = list.get(i);
-			for(int j=0;j<datas.length;j++){ 
-				sheet.addCell(toFmt(j, i, datas[j]));
-			} 
+		int listSize = list.size();
+		int sheetNum = 0;
+		
+		WritableSheet sheet = wbook.createSheet("sheet"+(sheetNum+1), sheetNum);
+		
+		for(int i=0;i<listSize;i++){
+			int startIndex = i%maxRowCount;
+			if(startIndex == 0){
+				if(i != 0){
+					sheetNum++;
+					sheet = wbook.createSheet("sheet"+(sheetNum+1), sheetNum);
+				}
+				addSheetRow(sheet, list.get(0), 0, sheetNum);
+			}
+			if(i != 0){
+				addSheetRow(sheet, list.get(i), startIndex+1, sheetNum);
+			}
 		}
 		
 		//写入数据并关闭文件   
@@ -138,6 +151,12 @@ public class ExcelKit {
 		wbook.close();
 		os.flush();
 		os.close();
+	}
+	
+	private static void addSheetRow(WritableSheet sheet, Object[] datas, int i, int sheetNum) throws RowsExceededException, WriteException{
+		for(int j=0;j<datas.length;j++){ 
+			sheet.addCell(toFmt(j, i+sheetNum, datas[j]));
+		}
 	}
 	
 	/**
