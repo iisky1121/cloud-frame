@@ -30,9 +30,13 @@ public class SqlMapping {
 	 * @param path
 	 */
 	public static void init(String configPath){
+		InputStream inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream(configPath);
+		if (inputStream == null){
+			throw new IllegalArgumentException("Properties file not found in classpath: " + configPath);
+		}
+		
 		SqlMapping.configPath = configPath;
 		sqlMap.clear();
-		InputStream inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream(configPath);
 		JSqlConfig jSqlConfig = JsqlXmlUtil.toJSqlConfig(inputStream);
 		List<JSql> jSqls = new ArrayList<JSql>();
 		for (JSqlPath jSqlPath : jSqlConfig.getJsqlpaths()) {
