@@ -1,6 +1,9 @@
 package com.jfinal.ext.sql;
 
 import java.lang.reflect.Field;
+import java.math.BigDecimal;
+import java.sql.Time;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -21,6 +24,91 @@ import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
 
 public class CndKit {
+
+	public static boolean isDateOrTime(Class<?> classType){
+		return isTime(classType) || isDate(classType);
+	}
+	
+	public static boolean isTime(Class<?> classType){
+		return classType.equals(java.util.Date.class) 
+				|| classType.equals(Time.class)
+				|| classType.equals(Timestamp.class);
+	}
+	
+	private static boolean isDate(Class<?> classType){
+		return classType.equals(java.sql.Date.class);
+	}
+	
+	public static boolean isNumber(Class<?> classType){
+		return classType.equals(Integer.class) || classType.equals(Long.class) || classType.equals(Double.class) || classType.equals(BigDecimal.class);
+	}
+	
+	private final static String START_TIME_STR="####0101000000";
+	private final static String END_TIME_STR="####1231235959";
+	public static String[] timeFmt(String[] timeStrs, Class<?> classType){
+		if(timeStrs == null || timeStrs.length < 2){
+			return timeStrs;
+		}
+		return new String[]{timeFmt(timeStrs[0], classType, true), timeFmt(timeStrs[1], classType, false)};
+	}
+	
+	static String dateFmt(String timeStr, boolean isStart){
+		return timeFmt(timeStr, java.sql.Date.class, isStart);
+	}
+	
+	static String dateTimeFmt(String timeStr, boolean isStart){
+		return timeFmt(timeStr, java.util.Date.class, isStart);
+	}
+	
+	static String timeFmt(String timeStr, Class<?> classType, boolean isStart){
+		if(StrKit.isBlank(timeStr)){
+			return timeStr;
+		}
+		if(isDate(classType)){
+			timeStr = subTimeStr(timeStr, isStart, 8);
+			return new StringBuffer()
+					.append(timeStr.substring(0,4))
+					.append("-")
+					.append(timeStr.substring(4,6))
+					.append("-")
+					.append(timeStr.substring(6,8))
+					.toString();
+		}
+		else if(isTime(classType)){
+			timeStr = subTimeStr(timeStr, isStart, 14);
+			return new StringBuffer()
+					.append(timeStr.substring(0,4))
+					.append("-")
+					.append(timeStr.substring(4,6))
+					.append("-")
+					.append(timeStr.substring(6,8))
+					.append(" ")
+					.append(timeStr.substring(8,10))
+					.append(":")
+					.append(timeStr.substring(10,12))
+					.append(":")
+					.append(timeStr.substring(12,14))
+					.toString();
+		}
+		return timeStr;
+	}
+	
+	private static String subTimeStr(String timeStr, boolean isStart, int length){
+		int len = timeStr.length();
+		if(len >length){
+			return timeStr.substring(0, length);
+		}
+		else if(len == length){
+			return timeStr;
+		}
+		else if(len >= 4){
+			return timeStr.concat((isStart?START_TIME_STR:END_TIME_STR).substring(len, length));
+		}
+		else{
+			throw new IllegalArgumentException("时间参数最少需要输入年份（4位）");
+		}
+	}
+	
 	@SuppressWarnings("rawtypes")
 	public static Object[] toValues(Cnd.Type queryType, Object object){
 		Object[] values = null;

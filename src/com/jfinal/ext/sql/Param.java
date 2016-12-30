@@ -1,8 +1,5 @@
 package com.jfinal.ext.sql;
 
-import java.math.BigDecimal;
-import java.sql.Time;
-import java.sql.Timestamp;
 import java.util.Collection;
 
 import com.jfinal.ext.kit.ArrayKit;
@@ -62,10 +59,10 @@ class Param {
 			String value = (String)val;
 			if(!StrKit.isBlank(value)){
 				//判断属性值 between_and
-				if((isDateOrTime(classType) || isNumber(classType)) 
+				if((CndKit.isDateOrTime(classType) || CndKit.isNumber(classType)) 
 						&& value.indexOf("-") != -1 && value.split("-").length == 2){
-					if(isDateOrTime(classType)){
-						return new Param(key,Cnd.Type.between_and,timeFmt(value.split("-"), classType));
+					if(CndKit.isDateOrTime(classType)){
+						return new Param(key,Cnd.Type.between_and,CndKit.timeFmt(value.split("-"), classType));
 					}
 					else{
 						return new Param(key,Cnd.Type.between_and,value.split("-"));
@@ -88,22 +85,22 @@ class Param {
 				//判断属性值 >=
 				else if(value.startsWith(">=")){
 					value = value.replaceFirst(">=", "");
-					return new Param(key,Cnd.Type.greater_equal,isDateOrTime(classType)?timeFmt(value, classType, true):value);
+					return new Param(key,Cnd.Type.greater_equal,CndKit.isDateOrTime(classType)?CndKit.timeFmt(value, classType, true):value);
 				}
 				//判断属性值 >
 				else if(value.startsWith(">")){
 					value = value.replaceFirst(">", "");
-					return new Param(key,Cnd.Type.greater_then,isDateOrTime(classType)?timeFmt(value, classType, true):value);
+					return new Param(key,Cnd.Type.greater_then,CndKit.isDateOrTime(classType)?CndKit.timeFmt(value, classType, true):value);
 				}
 				//判断属性值 <=
 				else if(value.startsWith("<=")){
 					value = value.replaceFirst("<=", "");
-					return new Param(key,Cnd.Type.less_equal,isDateOrTime(classType)?timeFmt(value, classType, false):value);
+					return new Param(key,Cnd.Type.less_equal,CndKit.isDateOrTime(classType)?CndKit.timeFmt(value, classType, false):value);
 				}
 				//判断属性值 <
 				else if(value.startsWith("<")){
 					value = value.replaceFirst("<", "");
-					return new Param(key,Cnd.Type.less_then,isDateOrTime(classType)?timeFmt(value, classType, false):value);
+					return new Param(key,Cnd.Type.less_then,CndKit.isDateOrTime(classType)?CndKit.timeFmt(value, classType, false):value);
 				}
 				//判断属性值 %*%
 				else if(value.startsWith("%") && value.endsWith("%")){
@@ -147,78 +144,4 @@ class Param {
 		return new Param(key,Cnd.Type.equal, val);
 	}
 	
-	private static boolean isDateOrTime(Class<?> classType){
-		return isTime(classType) || isDate(classType);
-	}
-	
-	private static boolean isTime(Class<?> classType){
-		return classType.equals(java.util.Date.class) 
-				|| classType.equals(Time.class)
-				|| classType.equals(Timestamp.class);
-	}
-	
-	private static boolean isDate(Class<?> classType){
-		return classType.equals(java.sql.Date.class);
-	}
-	
-	private static boolean isNumber(Class<?> classType){
-		return classType.equals(Integer.class) || classType.equals(Long.class) || classType.equals(Double.class) || classType.equals(BigDecimal.class);
-	}
-	
-	private final static String START_TIME_STR="####0101000000";
-	private final static String END_TIME_STR="####1231235959";
-	private static String[] timeFmt(String[] timeStrs, Class<?> classType){
-		if(timeStrs == null || timeStrs.length < 2){
-			return timeStrs;
-		}
-		return new String[]{timeFmt(timeStrs[0], classType, true), timeFmt(timeStrs[1], classType, false)};
-	}
-	private static String timeFmt(String timeStr, Class<?> classType, boolean isStart){
-		if(StrKit.isBlank(timeStr)){
-			return timeStr;
-		}
-		if(isDate(classType)){
-			timeStr = subTimeStr(timeStr, isStart, 8);
-			return new StringBuffer()
-					.append(timeStr.substring(0,4))
-					.append("-")
-					.append(timeStr.substring(4,6))
-					.append("-")
-					.append(timeStr.substring(6,8))
-					.toString();
-		}
-		else if(isTime(classType)){
-			timeStr = subTimeStr(timeStr, isStart, 14);
-			return new StringBuffer()
-					.append(timeStr.substring(0,4))
-					.append("-")
-					.append(timeStr.substring(4,6))
-					.append("-")
-					.append(timeStr.substring(6,8))
-					.append(" ")
-					.append(timeStr.substring(8,10))
-					.append(":")
-					.append(timeStr.substring(10,12))
-					.append(":")
-					.append(timeStr.substring(12,14))
-					.toString();
-		}
-		return timeStr;
-	}
-	
-	private static String subTimeStr(String timeStr, boolean isStart, int length){
-		int len = timeStr.length();
-		if(len >length){
-			return timeStr.substring(0, length);
-		}
-		else if(len == length){
-			return timeStr;
-		}
-		else if(len >= 4){
-			return timeStr.concat((isStart?START_TIME_STR:END_TIME_STR).substring(len, length));
-		}
-		else{
-			throw new IllegalArgumentException("时间参数最少需要输入年份（4位）");
-		}
-	}
 }
