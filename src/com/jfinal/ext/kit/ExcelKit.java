@@ -47,7 +47,7 @@ import jxl.write.biff.RowsExceededException;
  */
 
 public class ExcelKit {
-	private static final int maxRowCount = 60000;//不能够超过Excel的最大容量
+	private static final int maxRowCount = 60001;//不能够超过Excel的最大容量
 	/**
 	 * @throws IOException 
 	 * @throws BiffException 
@@ -142,7 +142,7 @@ public class ExcelKit {
 				addSheetRow(sheet, list.get(0), 0);
 			}
 			if(i != 0){
-				addSheetRow(sheet, list.get(i), startIndex+1);
+				addSheetRow(sheet, list.get(i), startIndex+sheetNum);
 			}
 		}
 		
