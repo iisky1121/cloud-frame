@@ -151,7 +151,10 @@ public class Cnd {
 			cnd.setFuzzyQuery(paras.get("fuzzyQuery")[0]);
 		}
 		if(paras.get("orderBy")!=null){
-			cnd.setOrderBy(paras.get("orderBy")[0]);
+			String orderBy = paras.get("orderBy")[0];
+			if(!StrKit.isBlank(orderBy)){
+				cnd.setOrderBy(orderBy.split(","));
+			}
 		}
 		return cnd;
 	}
