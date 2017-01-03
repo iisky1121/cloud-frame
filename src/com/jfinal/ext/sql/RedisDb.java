@@ -24,20 +24,47 @@ public class RedisDb {
 	
 	/**
 	 * 保存
-	 * @param beanId
 	 * @param bean
+	 * @param beanId
 	 */
-	public static void save(Object beanId, IBean bean){
+	public static void save(IBean bean, Object beanId){
 		setRedisBean(beanId, bean);
 	}
 	
 	/**
 	 * 更新
-	 * @param beanId
 	 * @param bean
+	 * @param beanId
 	 */
-	public static void update(Object beanId, IBean bean){
+	public static void update(IBean bean, Object beanId){
 		setRedisBean(beanId, bean);
+	}
+	
+	/**
+	 * 查找
+	 * @param bean
+	 * @param beanId
+	 */
+	public static <T extends IBean> RedisDb find(Class<T> beanClass, Object beanId){
+		RedisDb db = new RedisDb();
+		if(beanId != null){
+			db.object = getRedisMap(beanClass, beanId.toString());
+		}
+		return db;
+	}
+	
+	/**
+	 * 删除
+	 * @param beanClass
+	 * @param beanId
+	 */
+	public static <T extends IBean> void delete(Class<T> beanClass, Object... beanId){
+		if(beanId == null || beanClass == null){
+			return;
+		}
+		for(Object bId : beanId){
+			Redis.use().del(getKey(beanClass, bId.toString()));
+		}
 	}
 	
 	/**
@@ -54,25 +81,25 @@ public class RedisDb {
 			return this;
 		}
 		if(object instanceof List){
-			selectList(key, beanClass, beanAttrs, (List)object);
+			selectList(beanClass, key, beanAttrs, (List)object);
 		}
 		else{
-			selectObject(key, beanClass, beanAttrs, object);
+			selectObject(beanClass, key, beanAttrs, object);
 		}
 		return this;
 	}
 	
-	private <T extends IBean> void selectList(String key, Class<T> beanClass, String[] beanAttrs, List list){
+	private <T extends IBean> void selectList(Class<T> beanClass, String key, String[] beanAttrs, List list){
 		if(list == null || StrKit.isBlank(key) || beanClass == null){
 			return;
 		}
 		for(Object o : list){
-			selectObject(key, beanClass, beanAttrs, o);
+			selectObject(beanClass, key, beanAttrs, o);
 		}
 	}
 	
 	@SuppressWarnings("unchecked")
-	private <T extends IBean> void selectObject(String key, Class<T> beanClass, String[] beanAttrs, Object o){
+	private <T extends IBean> void selectObject(Class<T> beanClass, String key, String[] beanAttrs, Object o){
 		if(o == null || StrKit.isBlank(key) || beanClass == null){
 			return;
 		}
@@ -151,8 +178,8 @@ public class RedisDb {
 	
 	/**
 	 * 获取redis对应beanId集合
-	 * @param beanClass
 	 * @param beanId
+	 * @param beanClass
 	 * @return
 	 */
 	public static <T extends IBean> T getRedisBean(Class<T> beanClass, Object beanId){
