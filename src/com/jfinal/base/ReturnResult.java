@@ -97,6 +97,9 @@ public class ReturnResult {
 	public static ReturnResult failure(String msg) {
 		return new ReturnResult(BaseConfig.failure_code, msg);
 	}
+	public static ReturnResult failure(String msg, Exception exception) {
+		return new ReturnResult(BaseConfig.failure_code, msg, null, null, exception);
+	}
 	public static ReturnResult failure(String msg, Object result) {
 		return new ReturnResult(BaseConfig.failure_code, msg, result);
 	}
