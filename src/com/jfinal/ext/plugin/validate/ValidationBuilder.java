@@ -1,13 +1,12 @@
 package com.jfinal.ext.plugin.validate;
 
 import java.lang.reflect.Method;
-import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.jfinal.base.BaseConfig;
 import com.jfinal.base.ReturnResult;
 import com.jfinal.core.Controller;
-import com.jfinal.core.TypeConverter;
 import com.jfinal.kit.StrKit;
 
 import groovy.lang.Binding;
@@ -39,19 +38,15 @@ class ValidationBuilder {
 		for(Validation v : validates){
 			name = v.name();
 			if(v.required() && paraMap.get(name) == null || paraMap.get(name).length == 0 || StrKit.isBlank(paraMap.get(name)[0])){
-				return ReturnResult.failure(String.format("属性[%s]不允许为空", name), new ValidationException());
+				return BaseConfig.attrNotNull(name);
 			}
 			
-			try {
-				value = TypeConverter.convert(v.type(), paraMap.get(name)[0]);
-				if(value != null && !StrKit.isBlank(v.groovyExp())){
-					bind.getVariables().put(name, value);
-					if(!ValidationKit.groovyCheck(bind, v.groovyExp())){
-						return ReturnResult.failure(String.format("属性[%s]格式不正确", name), new ValidationException());
-					}
+			value = paraMap.get(name)[0];
+			if(value != null && !StrKit.isBlank(v.groovyExp())){
+				bind.getVariables().put(name, value);
+				if(!ValidationKit.groovyCheck(bind, v.groovyExp())){
+					return BaseConfig.attrValueError(name);
 				}
-			} catch (ParseException e) {
-				return ReturnResult.failure(String.format("属性[%s]类型应该为%s", name, v.type()), e);
 			}
 		}
 		return ReturnResult.success();

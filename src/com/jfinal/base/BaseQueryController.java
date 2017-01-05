@@ -155,12 +155,12 @@ public abstract class BaseQueryController<M extends Model<M>> extends CommonCont
 	public void getById() {
 		String id = getPara();
 		if(StrKit.isBlank(id)){
-			renderError("id不能为空");
+			renderResult(BaseConfig.attrNotNull("id"));
 			return;
 		}
 		M data = getM().findById(id);
 		if(data == null){
-			renderError("数据不存在");
+			renderResult(BaseConfig.dataNotExist());
 			return;
 		}
 		renderSucc(data);

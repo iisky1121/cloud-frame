@@ -54,7 +54,7 @@ public abstract class CommonController extends Controller{
 			renderJson((Boolean)object);
 		}
 		else if(object instanceof ReturnResult){
-			renderJson(BaseConfig.renderResult((ReturnResult)object));
+			renderJson(object);
 		}
 		else if(object instanceof String){
 			renderError((String)object);
@@ -70,12 +70,7 @@ public abstract class CommonController extends Controller{
 	 */
 	@Before(NotAction.class)
 	public void renderJson(boolean b) {
-		if(b){
-			renderJson(BaseConfig.succ());
-		}
-		else{
-			renderJson(BaseConfig.error());
-		}
+		renderResult(b);
 	}
 	
 	/**
@@ -84,7 +79,7 @@ public abstract class CommonController extends Controller{
 	 */
 	@Before(NotAction.class)
 	public void renderError(String errorStr){
-		renderJson(BaseConfig.error(errorStr));
+		renderResult(ReturnResult.failure(errorStr));
 	}
 	
 	/**
@@ -93,7 +88,7 @@ public abstract class CommonController extends Controller{
 	 */
 	@Before(NotAction.class)
 	public void renderSucc(String succStr){
-		renderJson(BaseConfig.succ(succStr));
+		renderResult(ReturnResult.success(succStr));
 	}
 	
 	/**
@@ -102,7 +97,7 @@ public abstract class CommonController extends Controller{
 	 */
 	@Before(NotAction.class)
 	public void renderSucc(Object object){
-		renderJson(BaseConfig.succ(object));
+		renderResult(ReturnResult.success(object));
 	}
 	
 	/**
@@ -114,12 +109,12 @@ public abstract class CommonController extends Controller{
 		Map<String, String[]> map = getParaMap();
 		for(String str : attrs){
 			if(map.get(str) == null || map.get(str).length == 0 || StrKit.isBlank(map.get(str)[0])){
-				return ReturnResult.failure(String.format("属性[%s]不允许为空", str));
+				return BaseConfig.attrNotNull(str);
 			}
 			else{
 				for(String attr : map.get(str)){
 					if(StrKit.isBlank(attr)){
-						return ReturnResult.failure(String.format("属性[%s]不允许为空", str));
+						return BaseConfig.attrNotNull(str);
 					}
 				}
 			}
@@ -137,7 +132,7 @@ public abstract class CommonController extends Controller{
 		if(!StrKit.isBlank(attrValue) && Arrays.asList(values).contains(attrValue)){
 			return ReturnResult.success();
 		}
-		return ReturnResult.failure(String.format("属性[%s]值有误", attr));
+		return BaseConfig.attrValueError(attr);
 	}
 	
 	/**
@@ -159,6 +154,6 @@ public abstract class CommonController extends Controller{
 				}
 			}
 		}
-		return ReturnResult.failure(String.format("属性[%s]值有误", attr));
+		return BaseConfig.attrValueError(attr);
 	}
 }

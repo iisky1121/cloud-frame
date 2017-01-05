@@ -13,9 +13,7 @@ import java.lang.annotation.Target;
 @Repeatable(Validations.class)
 public @interface Validation {
 	String name();//参数名称
-	Class<?> type();//参数类型
     boolean required() default false;//是否必填
-    String regExp() default "";//正则表达式
 	String groovyExp() default "";//groovy表达式
 }
 

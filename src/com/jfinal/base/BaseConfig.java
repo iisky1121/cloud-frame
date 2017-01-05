@@ -1,10 +1,5 @@
 package com.jfinal.base;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import com.jfinal.kit.StrKit;
-
 public class BaseConfig {
 	public final static String loginUserSessionAttr = "login_sys_user";
 	public final static String userAllowUrlAttr = "user_allow_urls";
@@ -14,75 +9,31 @@ public class BaseConfig {
 	public final static String failure_code = "400";
 	public final static String failure_msg = "操作失败";
 	
-	public static Map<String, Object> succ(){
-		return render(success_code, success_msg, null, null);
-	}
-
-	public static Map<String, Object> succ(String succStr){
-		return render(success_code, succStr, null);
+	public static ReturnResult notLogin(){
+		return ReturnResult.failure("请先登录再操作", "authorization_exception");
 	}
 	
-	public static Map<String, Object> succ(Object result){
-		return render(success_code, success_msg, null, result, null);
+	public static ReturnResult notPermission(String actionKey){
+		return ReturnResult.failure(String.format("未被授权访问该资源[%s]", actionKey), "no_permission");
 	}
 	
-	public static Map<String, Object> error(){
-		return render(failure_code, failure_msg, null);
+	public static ReturnResult attrValueError(String attr){
+		return ReturnResult.failure(String.format("属性[%s]值有误", attr), "attribute_value_error");
 	}
 	
-	public static Map<String, Object> error(Exception e){
-		return render(failure_code, failure_msg, null, e);
+	public static ReturnResult attrNotNull(String attr){
+		return ReturnResult.failure(String.format("属性[%s]不允许为空", attr), "attribute_not_allowed_to_empty");
 	}
 	
-	public static Map<String, Object> error(String errorStr){
-		return render(failure_code, errorStr, null);
+	public static ReturnResult dataNotExist(){
+		return ReturnResult.failure("数据不存在", "data_not_exist");
 	}
 	
-	public static Map<String, Object> notLogin(){
-		return render(failure_code, "请先登录再操作。", "authorization_exception");
+	public static ReturnResult dataError(){
+		return ReturnResult.failure("数据错误", "data_error");
 	}
 	
-	public static Map<String, Object> notPermission(String actionKey){
-		return render(failure_code, "未被授权访问该资源[" + actionKey + "]", "no_permission");
-	}
-	
-	public static Map<String, Object> attrValueError(String attr){
-		return render(failure_code, "属性["+attr+"]值有误", "attribute_value_error");
-	}
-	
-	public static Map<String, Object> attrNotNull(String attr){
-		return render(failure_code, "属性["+attr+"]不允许为空", "attribute_not_null");
-	}
-	
-	public static Map<String, Object> renderResult(ReturnResult result){
-		return render(result.getCode(), result.getMsg(), result.getError_code(), result.getResult(), result.getException());
-	}
-	
-	private static Map<String, Object> render(String code, String msg, String error_code){
-		return render(code, msg, error_code, null, null);
-	}
-	
-	private static Map<String, Object> render(String code, String msg, String error_code, Exception e){
-		return render(code, msg, error_code, null, e);
-	}
-	
-	private static Map<String, Object> render(String code, String msg, String error_code, Object result, Exception e){
-		Map<String,Object> map = new HashMap<String,Object>();
-		if(!StrKit.isBlank(code)){
-			map.put("code", code);
-		}
-		if(!StrKit.isBlank(msg)){
-			map.put("msg", msg);
-		}
-		if(!StrKit.isBlank(error_code)){
-			map.put("error_code", error_code);
-		}
-		if(result != null){
-			map.put("result", result);
-		}
-		if(e != null){
-			map.put("exception", StrKit.isBlank(e.getMessage())?e.getCause():e.getMessage());
-		}
-		return map;
+	public static ReturnResult sysError(){
+		return ReturnResult.failure("系统错误", "sys_error");
 	}
 }

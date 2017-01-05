@@ -39,6 +39,6 @@ public class ValidationKit {
 	
 	
 	public static void main(String[] args) {
-        System.out.println(groovyCheck("age1", 12, "age > 10"));
+        System.out.println(groovyCheck("age", "1!2", "age ==~ /\\d+/"));
 	}
 }

@@ -2,7 +2,6 @@ package com.jfinal.ext.plugin.validate;
 
 import com.jfinal.aop.Interceptor;
 import com.jfinal.aop.Invocation;
-import com.jfinal.base.BaseConfig;
 import com.jfinal.base.ReturnResult;
 
 public class ValidationInterceptor implements Interceptor  {
@@ -12,7 +11,7 @@ public class ValidationInterceptor implements Interceptor  {
 		if(result.isSucceed()){
 			inv.invoke();
 		} else {
-			inv.getController().renderJson(BaseConfig.renderResult(result));
+			inv.getController().renderJson(result);
 		}
 	}
 }

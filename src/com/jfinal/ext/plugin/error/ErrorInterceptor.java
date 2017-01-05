@@ -2,7 +2,7 @@ package com.jfinal.ext.plugin.error;
 
 import com.jfinal.aop.Interceptor;
 import com.jfinal.aop.Invocation;
-import com.jfinal.base.BaseConfig;
+import com.jfinal.base.ReturnResult;
 import com.jfinal.core.Controller;
 import com.jfinal.kit.LogKit;
 
@@ -27,11 +27,11 @@ public class ErrorInterceptor implements Interceptor {
 	
 	protected void defRender(Controller c, Exception e){
 		if(e != null){
-			c.renderJson(BaseConfig.error(e));
+			c.renderJson(ReturnResult.failure(e));
 		}
 		else{
 			if(c.getRender() == null){
-				c.renderJson(BaseConfig.error());
+				c.renderJson(ReturnResult.failure());
 			}
 		}
 	}

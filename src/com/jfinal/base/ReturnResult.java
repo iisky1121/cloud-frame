@@ -39,18 +39,7 @@ public class ReturnResult {
 	public Exception getException() {
 		return exception;
 	}
-
-	ReturnResult(String code, String msg) {
-		this.code = code;
-		this.msg = msg;
-	}
-
-	ReturnResult(String code, String msg, Object result) {
-		this.code = code;
-		this.msg = msg;
-		this.result = result;
-	}
-
+	
 	ReturnResult(String code, String msg, String error_code, Object result, Exception exception) {
 		this.code = code;
 		this.msg = msg;
@@ -79,29 +68,38 @@ public class ReturnResult {
 	 * 成功
 	 */
 	public static ReturnResult success() {
-		return new ReturnResult(BaseConfig.success_code, BaseConfig.success_msg);
+		return new ReturnResult(BaseConfig.success_code, BaseConfig.success_msg, null, null, null);
 	}
 	public static ReturnResult success(String msg) {
-		return new ReturnResult(BaseConfig.success_code, msg);
+		return new ReturnResult(BaseConfig.success_code, msg, null, null, null);
+	}
+	public static ReturnResult success(Object result) {
+		return new ReturnResult(BaseConfig.success_code, BaseConfig.success_msg, null, result, null);
 	}
 	public static ReturnResult success(String msg, Object result) {
-		return new ReturnResult(BaseConfig.success_code, msg, result);
+		return new ReturnResult(BaseConfig.success_code, msg, null, result, null);
 	}
 	
 	/**
 	 * 失败
 	 */
 	public static ReturnResult failure() {
-		return new ReturnResult(BaseConfig.failure_code, BaseConfig.failure_msg);
+		return new ReturnResult(BaseConfig.failure_code, BaseConfig.failure_msg, null, null, null);
 	}
 	public static ReturnResult failure(String msg) {
-		return new ReturnResult(BaseConfig.failure_code, msg);
+		return new ReturnResult(BaseConfig.failure_code, msg, null, null, null);
+	}
+	public static ReturnResult failure(Exception exception) {
+		return new ReturnResult(BaseConfig.failure_code, BaseConfig.failure_msg, null, null, exception);
 	}
 	public static ReturnResult failure(String msg, Exception exception) {
 		return new ReturnResult(BaseConfig.failure_code, msg, null, null, exception);
 	}
+	public static ReturnResult failure(String msg, String error_code) {
+		return new ReturnResult(BaseConfig.failure_code, msg, error_code, null, null);
+	}
 	public static ReturnResult failure(String msg, Object result) {
-		return new ReturnResult(BaseConfig.failure_code, msg, result);
+		return new ReturnResult(BaseConfig.failure_code, msg, null, result, null);
 	}
     public static ReturnResult failure(String msg, String error_code, Object result) {
     	return new ReturnResult(BaseConfig.failure_code, msg, error_code, result, null);

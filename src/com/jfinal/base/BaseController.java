@@ -15,12 +15,12 @@ public abstract class BaseController<M extends Model<M>> extends BaseQueryContro
 	public void delete() {
 		String id = getPara();
 		if(StrKit.isBlank(id)){
-			renderError("id不能为空");
+			renderResult(BaseConfig.attrNotNull("id"));
 			return;
 		}
 		M data = getM().findById(id);
 		if(data == null){
-			renderError("数据不存在");
+			renderResult(BaseConfig.dataNotExist());
 			return;
 		}
 		renderJson(data.delete());
@@ -31,7 +31,11 @@ public abstract class BaseController<M extends Model<M>> extends BaseQueryContro
 	 * 
 	 */
 	public void deletes() {
-		checkNotNull("ids");
+		ReturnResult result = checkNotNull("ids");;
+		if(!result.isSucceed()){
+			renderResult(result);
+			return;
+		}
 		
 		String ids[] = getPara("ids").split(",");
 		renderJson(getM().deletes(ids));
@@ -43,14 +47,21 @@ public abstract class BaseController<M extends Model<M>> extends BaseQueryContro
 	 */
 	public void save(){
 		M data = getData();
-		checkSaveOrUpdate(data);
+		ReturnResult result = checkSaveOrUpdate(data);
+		if(!result.isSucceed()){
+			renderResult(result);
+			return;
+		}
 		renderJson(save(data));
 	}
 	
 	@Before(NotAction.class)
-	public boolean save(M data){
-		checkSaveOrUpdate(data);
-		return data.save();
+	public ReturnResult save(M data){
+		ReturnResult result = checkSaveOrUpdate(data);
+		if(!result.isSucceed()){
+			return result;
+		}
+		return ReturnResult.create(data.save());
 	}
 
 	/**
@@ -59,20 +70,27 @@ public abstract class BaseController<M extends Model<M>> extends BaseQueryContro
 	 */
 	public void update(){
 		M data = getData();
-		checkSaveOrUpdate(data);
+		ReturnResult result = checkSaveOrUpdate(data);
+		if(!result.isSucceed()){
+			renderResult(result);
+			return;
+		}
 		renderJson(update(data));
 	}
 	
 	@Before(NotAction.class)
-	public boolean update(M data){
-		checkSaveOrUpdate(data);
-		return data.update();
+	public ReturnResult update(M data){
+		ReturnResult result = checkSaveOrUpdate(data);
+		if(!result.isSucceed()){
+			return result;
+		}
+		return ReturnResult.create(data.update());
 	}
 	
-	private void checkSaveOrUpdate(M data){
+	private ReturnResult checkSaveOrUpdate(M data){
 		if(data == null || data._getAttrNames() == null || data._getAttrNames().length == 0){
-			renderError("数据错误");
-			throw new IllegalArgumentException("数据错误");
+			return BaseConfig.dataError();
 		}
+		return ReturnResult.success();
 	}
 }
