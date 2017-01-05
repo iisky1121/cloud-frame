@@ -14,7 +14,11 @@ import java.lang.annotation.Target;
 public @interface Validation {
 	String name();//参数名称
     boolean required() default false;//是否必填
+    String description() default "";//描述
 	String groovyExp() default "";//groovy表达式
+	Class<?> enumClass() default Enum.class;//枚举检查
+	String[] eitherOr() default {};//多选一
+    String[] association() default {};//关联必填
 }
 
 @Inherited

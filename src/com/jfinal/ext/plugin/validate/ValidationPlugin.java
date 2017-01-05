@@ -26,9 +26,14 @@ public class ValidationPlugin implements IPlugin{
 		List<Class<? extends Controller>> controllers = ClassSearcher.of(Controller.class).includeAllJarsInLib(false).search();
 		Method[] methods;
 		Validation[] validations;
+		CheckNotNull checkNotNull;
 		for(Class<? extends Controller> controllerClass : controllers){
 			methods = controllerClass.getMethods();
 			for(Method method : methods){
+				checkNotNull = method.getAnnotation(CheckNotNull.class);
+				if(checkNotNull != null){
+					ValidationBuilder.addRule(method, checkNotNull);
+				}
 				validations = method.getDeclaredAnnotationsByType(Validation.class);
 				if(validations != null && validations.length > 0){
 					ValidationBuilder.addRule(method, validations);

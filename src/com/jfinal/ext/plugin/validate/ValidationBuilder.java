@@ -12,18 +12,26 @@ import com.jfinal.kit.StrKit;
 import groovy.lang.Binding;
 
 class ValidationBuilder {
-	private static Map<Method, Validation[]> map;
+	private static Map<Method, Validation[]> validationMap;
+	private static Map<Method, CheckNotNull> checkNotNullMap;
 	
 	public static void addRule(Method method, Validation[] validations) {
-		if(map == null){
-			map = new HashMap<Method, Validation[]>();
+		if(validationMap == null){
+			validationMap = new HashMap<Method, Validation[]>();
 		}
-		map.put(method, validations);
+		validationMap.put(method, validations);
+	}
+	
+	public static void addRule(Method method, CheckNotNull checkNotNull) {
+		if(checkNotNullMap == null){
+			checkNotNullMap = new HashMap<Method, CheckNotNull>();
+		}
+		checkNotNullMap.put(method, checkNotNull);
 	}
 	
 	public static ReturnResult validate(Method method, Controller controller){
-		if(method != null && controller != null && map.containsKey(method)){
-			return validate(controller, map.get(method));
+		if(method != null && controller != null && validationMap.containsKey(method)){
+			return validate(controller, validationMap.get(method));
 		}
 		return ReturnResult.success();
 	}

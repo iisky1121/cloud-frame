@@ -1,4 +1,4 @@
-package com.jfinal.ext.quartz;
+package com.jfinal.ext.plugin.quartz;
 
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
