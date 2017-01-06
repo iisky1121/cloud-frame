@@ -18,12 +18,12 @@ public class PermissionInterceptor implements Interceptor{
 			//登录拦截判断
 			Model user = controller.getSessionAttr(BaseConfig.loginUserSessionAttr);
 			if(user == null){
-				controller.renderJson(BaseConfig.notLogin());
+				controller.renderJson(BaseConfig.notLogin().render());
 				return;
 			}
 			//判断url是否需要被拦截
 			if(!PermissionBuilder.isAllow(controller.getSession(), actionKey)){
-				controller.renderJson(BaseConfig.notPermission(actionKey));
+				controller.renderJson(BaseConfig.notPermission(actionKey).render());
 				return;
 			}
 		}

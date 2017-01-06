@@ -27,11 +27,11 @@ public class ErrorInterceptor implements Interceptor {
 	
 	protected void defRender(Controller c, Exception e){
 		if(e != null){
-			c.renderJson(ReturnResult.failure(e));
+			c.renderJson(ReturnResult.failure(e, null).render());
 		}
 		else{
 			if(c.getRender() == null){
-				c.renderJson(ReturnResult.failure());
+				c.renderJson(ReturnResult.failure().render());
 			}
 		}
 	}

@@ -8,16 +8,16 @@ import com.jfinal.ext.kit.ClassSearcher;
 import com.jfinal.ext.kit.JFinalKit;
 import com.jfinal.plugin.IPlugin;
 
-public class ValidationPlugin implements IPlugin{
-	private ValidationInterceptor interceptor;
-	public ValidationInterceptor getInterceptor() {
+public class ValidatePlugin implements IPlugin{
+	private ValidateInterceptor interceptor;
+	public ValidateInterceptor getInterceptor() {
 		if(interceptor == null){
-			interceptor = new ValidationInterceptor();
+			interceptor = new ValidateInterceptor();
 		}
 		return interceptor;
 	}
 
-	public void setInterceptor(ValidationInterceptor interceptor) {
+	public void setInterceptor(ValidateInterceptor interceptor) {
 		this.interceptor = interceptor;
 	}
 	
@@ -25,18 +25,18 @@ public class ValidationPlugin implements IPlugin{
 		//扫描注解
 		List<Class<? extends Controller>> controllers = ClassSearcher.of(Controller.class).includeAllJarsInLib(false).search();
 		Method[] methods;
-		Validation[] validations;
+		Validate[] validates;
 		CheckNotNull checkNotNull;
 		for(Class<? extends Controller> controllerClass : controllers){
 			methods = controllerClass.getMethods();
 			for(Method method : methods){
 				checkNotNull = method.getAnnotation(CheckNotNull.class);
 				if(checkNotNull != null){
-					ValidationBuilder.addRule(method, checkNotNull);
+					ValidateBuilder.addRule(method, checkNotNull);
 				}
-				validations = method.getDeclaredAnnotationsByType(Validation.class);
-				if(validations != null && validations.length > 0){
-					ValidationBuilder.addRule(method, validations);
+				validates = method.getDeclaredAnnotationsByType(Validate.class);
+				if(validates != null && validates.length > 0){
+					ValidateBuilder.addRule(method, validates);
 				}
 			}
 		}

@@ -4,14 +4,14 @@ import com.jfinal.aop.Interceptor;
 import com.jfinal.aop.Invocation;
 import com.jfinal.base.ReturnResult;
 
-public class ValidationInterceptor implements Interceptor  {
+public class ValidateInterceptor implements Interceptor  {
 	@Override
 	public void intercept(Invocation inv) {
-		ReturnResult result = ValidationBuilder.validate(inv.getMethod(), inv.getController());
+		ReturnResult result = ValidateBuilder.validate(inv.getMethod(), inv.getController());
 		if(result.isSucceed()){
 			inv.invoke();
 		} else {
-			inv.getController().renderJson(result);
+			inv.getController().renderJson(result.render());
 		}
 	}
 }

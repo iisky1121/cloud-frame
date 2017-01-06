@@ -10,8 +10,8 @@ import java.lang.annotation.Target;
 @Inherited
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.METHOD })
-@Repeatable(Validations.class)
-public @interface Validation {
+@Repeatable(Validates.class)
+public @interface Validate {
 	String name();//参数名称
     boolean required() default false;//是否必填
     String description() default "";//描述
@@ -24,6 +24,6 @@ public @interface Validation {
 @Inherited
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.METHOD })
-@interface Validations{
-	Validation[] value();
+@interface Validates{
+	Validate[] value();
 }

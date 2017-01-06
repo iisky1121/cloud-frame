@@ -8,15 +8,15 @@ import com.jfinal.base.ReturnResult;
 import com.jfinal.core.Controller;
 import com.jfinal.kit.StrKit;
 
-class ValidationBuilder {
-	private static Map<Method, Validation[]> validationMap;
+class ValidateBuilder {
+	private static Map<Method, Validate[]> validateMap;
 	private static Map<Method, CheckNotNull> checkNotNullMap;
 	
-	public static void addRule(Method method, Validation[] validations) {
-		if(validationMap == null){
-			validationMap = new HashMap<Method, Validation[]>();
+	public static void addRule(Method method, Validate[] validates) {
+		if(validateMap == null){
+			validateMap = new HashMap<Method, Validate[]>();
 		}
-		validationMap.put(method, validations);
+		validateMap.put(method, validates);
 	}
 	
 	public static void addRule(Method method, CheckNotNull checkNotNull) {
@@ -28,47 +28,47 @@ class ValidationBuilder {
 	
 	public static ReturnResult validate(Method method, Controller controller){
 		if(method != null && controller != null){
-			if(checkNotNullMap.containsKey(method)){
+			if(checkNotNullMap != null && checkNotNullMap.containsKey(method)){
 				ReturnResult result = validate(controller, checkNotNullMap.get(method));
 				if(!result.isSucceed()){
 					return result;
 				}
 			}
-			if(validationMap.containsKey(method)){
-				return validate(controller, validationMap.get(method));
+			if(validateMap != null && validateMap.containsKey(method)){
+				return validate(controller, validateMap.get(method));
 			}
 		}
 		return ReturnResult.success();
 	}
 	
 	private static ReturnResult validate(Controller controller, CheckNotNull checkNotNull){
-		return ValidationKit.checkNotNull(controller, checkNotNull.attrs());
+		return ValidateKit.checkNotNull(controller, checkNotNull.attrs());
 	}
 	
-	private static ReturnResult validate(Controller controller, Validation[] validates){
+	private static ReturnResult validate(Controller controller, Validate[] validates){
 		Map<String,String> expressMap = new HashMap<String, String>();
 		ReturnResult result;
-		for(Validation v : validates){
+		for(Validate v : validates){
 			if(v.required()){
-				result = ValidationKit.checkNotNull(controller, v.name());
+				result = ValidateKit.checkNotNull(controller, v.name());
 				if(!result.isSucceed()){
 					return result;
 				}
 			}
 			if(v.enumClass() != null && v.enumClass() != Enum.class){
-				result = ValidationKit.checkAttrValue(controller, v.name(), v.enumClass());
+				result = ValidateKit.checkAttrValue(controller, v.name(), v.enumClass());
 				if(!result.isSucceed()){
 					return result;
 				}
 			}
 			if(v.eitherOr().length > 0){
-				result = ValidationKit.checkEitherOr(controller, v.name(), v.eitherOr());
+				result = ValidateKit.checkEitherOr(controller, v.name(), v.eitherOr());
 				if(!result.isSucceed()){
 					return result;
 				}
 			}
 			if(v.association().length > 0){
-				result = ValidationKit.checkAssociation(controller, v.name(), v.association());
+				result = ValidateKit.checkAssociation(controller, v.name(), v.association());
 				if(!result.isSucceed()){
 					return result;
 				}
@@ -78,7 +78,7 @@ class ValidationBuilder {
 			}
 		}
 		if(expressMap.size() > 0){
-			result = ValidationKit.groovyCheck(controller, expressMap);
+			result = ValidateKit.groovyCheck(controller, expressMap);
 			if(!result.isSucceed()){
 				return result;
 			}

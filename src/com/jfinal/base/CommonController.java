@@ -3,7 +3,7 @@ package com.jfinal.base;
 import com.jfinal.aop.Before;
 import com.jfinal.core.Controller;
 import com.jfinal.ext.interceptor.NotAction;
-import com.jfinal.ext.plugin.validate.ValidationKit;
+import com.jfinal.ext.plugin.validate.ValidateKit;
 
 public abstract class CommonController extends Controller{
 	/**
@@ -51,7 +51,7 @@ public abstract class CommonController extends Controller{
 			renderJson((Boolean)object);
 		}
 		else if(object instanceof ReturnResult){
-			renderJson(object);
+			renderJson(((ReturnResult)object).render());
 		}
 		else if(object instanceof String){
 			renderError((String)object);
@@ -103,15 +103,15 @@ public abstract class CommonController extends Controller{
 	 */
 	@Before(NotAction.class)
 	public ReturnResult checkNotNull(String... attrs){
-		return ValidationKit.checkNotNull(this, attrs);
+		return ValidateKit.checkNotNull(this, attrs);
 	}
 	
 	/**
 	 * 检查属性值
 	 * 
 	 */
-	public ReturnResult checkAttrValue(String attr, String... values){
-		return ValidationKit.checkAttrValue(this, attr, values);
+	public ReturnResult checkAttrValue(String attr, Object... values){
+		return ValidateKit.checkAttrValue(this, attr, values);
 	}
 	
 	/**
@@ -119,6 +119,6 @@ public abstract class CommonController extends Controller{
 	 * 
 	 */
 	public ReturnResult checkAttrValue(String attr, Class<?> enumClass){
-		return ValidationKit.checkAttrValue(this, attr, enumClass);
+		return ValidateKit.checkAttrValue(this, attr, enumClass);
 	}
 }

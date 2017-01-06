@@ -13,7 +13,7 @@ import com.jfinal.kit.StrKit;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 
-public class ValidationKit {
+public class ValidateKit {
 	@SuppressWarnings("rawtypes")
 	public static Boolean groovyCheck(Map map, String express){
         return groovyCheck(groovyBinding(map), express);
@@ -57,10 +57,11 @@ public class ValidationKit {
 	
 	public static ReturnResult groovyCheck(Controller controller, Map<String,String> expressMap){
 		Map<String, String> paraMap = toMap(controller);
-		Binding bind = ValidationKit.groovyBinding(paraMap);
+		Binding bind = ValidateKit.groovyBinding(paraMap);
 		for(Entry<String, String> express : expressMap.entrySet()){
-			if(!ValidationKit.groovyCheck(bind, express.getValue())){
-				return BaseConfig.attrValueError(express.getKey());
+			if(!isBlank(controller.getParaMap(), express.getKey()) && !ValidateKit.groovyCheck(bind, express.getValue())){
+				return BaseConfig.attrValueError(express.getKey())
+						.setCause(String.format("属性[%s]值应符合规则[%s]", express.getKey(), express.getValue()));
 			}
 		}
 		return ReturnResult.success();
@@ -78,9 +79,11 @@ public class ValidationKit {
 	
 	public static ReturnResult checkEitherOr(Controller controller, String attr, String[] eitherOr){
 		Map<String, String[]> paraMap = controller.getParaMap();
-		for(String eOr : eitherOr){
-			if(!isBlank(paraMap, eOr)){
-				return ReturnResult.success();
+		if(isBlank(paraMap, attr)){
+			for(String eOr : eitherOr){
+				if(!isBlank(paraMap, eOr)){
+					return ReturnResult.success();
+				}
 			}
 		}
 		return BaseConfig.attrEitherOr(attr, eitherOr);
@@ -91,33 +94,30 @@ public class ValidationKit {
 		if(!isBlank(paraMap, attr)){
 			for(String ass : association){
 				if(isBlank(paraMap, ass)){
-					BaseConfig.attrAssociation(attr, association);
+					return BaseConfig.attrAssociation(attr, association);
 				}
 			}
+			return ReturnResult.success();
 		}
-		return ReturnResult.success();
+		return BaseConfig.attrValueEmpty(attr);
 	}
 	
-	public static ReturnResult checkAttrValue(Controller controller, String attr, String... values){
+	public static ReturnResult checkAttrValue(Controller controller, String attr, Object... values){
 		String attrValue = controller.getPara(attr);
 		if(!StrKit.isBlank(attrValue) && Arrays.asList(values).contains(attrValue)){
 			return ReturnResult.success();
 		}
-		return BaseConfig.attrValueError(attr);
+		return BaseConfig.attrValueError(attr)
+				.setCause(String.format("属性[%s]值应在列表%s中", Arrays.toString(values)));
 	}
 	
 	public static ReturnResult checkAttrValue(Controller controller, String attr, Class<?> enumClass){
-		String attrValue = controller.getPara(attr);
-		if(!StrKit.isBlank(attrValue) && enumClass != null){
+		if(enumClass != null){
 			if(!Enum.class.isAssignableFrom(enumClass)){
 				throw new IllegalArgumentException("Attribute enumClass type must be enumerated");
 			}
 			Object[] objects = enumClass.getEnumConstants();
-			for(Object object : objects){
-				if(attrValue.equals(object.toString())){
-					return ReturnResult.success();
-				}
-			}
+			return checkAttrValue(controller, attr, objects);
 		}
 		return BaseConfig.attrValueError(attr);
 	}
