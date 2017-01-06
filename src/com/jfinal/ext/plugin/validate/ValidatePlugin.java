@@ -8,6 +8,11 @@ import com.jfinal.ext.kit.ClassSearcher;
 import com.jfinal.ext.kit.JFinalKit;
 import com.jfinal.plugin.IPlugin;
 
+/**
+ * 
+ * @author iisky1121
+ * 2017年1月6日 下午4:38:04
+ */
 public class ValidatePlugin implements IPlugin{
 	private ValidateInterceptor interceptor;
 	public ValidateInterceptor getInterceptor() {

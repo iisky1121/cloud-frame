@@ -7,6 +7,11 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * 
+ * @author iisky1121
+ * 2017年1月6日 下午4:43:20
+ */
 @Inherited
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.METHOD })

@@ -13,6 +13,11 @@ import com.jfinal.kit.StrKit;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 
+/**
+ * 
+ * @author iisky1121
+ * 2017年1月6日 下午4:43:42
+ */
 public class ValidateKit {
 	@SuppressWarnings("rawtypes")
 	public static Boolean groovyCheck(Map map, String express){

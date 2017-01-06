@@ -11,7 +11,7 @@ public class ReturnResult {
 	private String error_code;//自定义错误code
 	private Object result;//返回结果对象
 	private Exception exception;//异常信息
-	private String cause;
+	private String cause;//错误原因
 
 	public String getCode() {
 		return code;
@@ -155,9 +155,6 @@ public class ReturnResult {
 		}
 		if(exception != null){
 			map.put("exception", StrKit.isBlank(exception.getMessage())?exception.getCause():exception.getMessage());
-			if(StrKit.isBlank(cause)){
-				map.put("cause", map.get("exception"));
-			}
 		}
 		if(!StrKit.isBlank(cause)){
 			map.put("cause", cause);

@@ -8,6 +8,11 @@ import com.jfinal.base.ReturnResult;
 import com.jfinal.core.Controller;
 import com.jfinal.kit.StrKit;
 
+/**
+ * 
+ * @author iisky1121
+ * 2017年1月6日 下午4:43:28
+ */
 class ValidateBuilder {
 	private static Map<Method, Validate[]> validateMap;
 	private static Map<Method, CheckNotNull> checkNotNullMap;
