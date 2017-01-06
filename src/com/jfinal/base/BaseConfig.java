@@ -1,5 +1,9 @@
 package com.jfinal.base;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
 public class BaseConfig {
 	public final static String loginUserSessionAttr = "login_sys_user";
 	public final static String userAllowUrlAttr = "user_allow_urls";
@@ -18,11 +22,28 @@ public class BaseConfig {
 	}
 	
 	public static ReturnResult attrValueError(String attr){
-		return ReturnResult.failure(String.format("属性[%s]值有误", attr), "sys_attribute_value_error");
+		return ReturnResult.failure(String.format("属性[%s]值有误", attr), "sys_validate_attr_value_error");
 	}
 	
-	public static ReturnResult attrNotNull(String attr){
-		return ReturnResult.failure(String.format("属性[%s]不允许为空", attr), "sys_attribute_not_allowed_to_empty");
+	public static ReturnResult attrValueEmpty(String attr){
+		return ReturnResult.failure(String.format("属性[%s]不允许为空", attr), "sys_validate_attr_value_empty");
+	}
+	
+	public static ReturnResult attrEitherOr(String attr, String[] eitherOr){
+		Set<String> set = new HashSet<String>();
+		set.add(attr);
+		for(String eOr : eitherOr){
+			set.add(eOr);
+		}
+		return ReturnResult.failure(String.format("属性%s至少一个不为空", Arrays.toString(set.toArray())), "sys_validate_attr_eitherOr");
+	}
+	
+	public static ReturnResult attrAssociation(String attr, String[] association){
+		Set<String> set = new HashSet<String>();
+		for(String ass : association){
+			set.add(ass);
+		}
+		return ReturnResult.failure(String.format("属性[%s]存在,属性%s都不能为空", attr, Arrays.toString(set.toArray())), "sys_validate_attr_association");
 	}
 	
 	public static ReturnResult dataNotExist(){

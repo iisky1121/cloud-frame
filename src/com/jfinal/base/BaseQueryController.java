@@ -155,7 +155,7 @@ public abstract class BaseQueryController<M extends Model<M>> extends CommonCont
 	public void getById() {
 		String id = getPara();
 		if(StrKit.isBlank(id)){
-			renderResult(BaseConfig.attrNotNull("id"));
+			renderResult(BaseConfig.attrValueEmpty("id"));
 			return;
 		}
 		M data = getM().findById(id);

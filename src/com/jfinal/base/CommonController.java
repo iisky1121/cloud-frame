@@ -1,12 +1,9 @@
 package com.jfinal.base;
 
-import java.util.Arrays;
-import java.util.Map;
-
 import com.jfinal.aop.Before;
 import com.jfinal.core.Controller;
 import com.jfinal.ext.interceptor.NotAction;
-import com.jfinal.kit.StrKit;
+import com.jfinal.ext.plugin.validate.ValidationKit;
 
 public abstract class CommonController extends Controller{
 	/**
@@ -106,54 +103,22 @@ public abstract class CommonController extends Controller{
 	 */
 	@Before(NotAction.class)
 	public ReturnResult checkNotNull(String... attrs){
-		Map<String, String[]> map = getParaMap();
-		for(String str : attrs){
-			if(map.get(str) == null || map.get(str).length == 0 || StrKit.isBlank(map.get(str)[0])){
-				return BaseConfig.attrNotNull(str);
-			}
-			else{
-				for(String attr : map.get(str)){
-					if(StrKit.isBlank(attr)){
-						return BaseConfig.attrNotNull(str);
-					}
-				}
-			}
-		}
-		return ReturnResult.success();
+		return ValidationKit.checkNotNull(this, attrs);
 	}
 	
 	/**
 	 * 检查属性值
 	 * 
 	 */
-	@Before(NotAction.class)
 	public ReturnResult checkAttrValue(String attr, String... values){
-		String attrValue = getPara(attr);
-		if(!StrKit.isBlank(attrValue) && Arrays.asList(values).contains(attrValue)){
-			return ReturnResult.success();
-		}
-		return BaseConfig.attrValueError(attr);
+		return ValidationKit.checkAttrValue(this, attr, values);
 	}
 	
 	/**
 	 * 检查属性值
 	 * 
 	 */
-	@SuppressWarnings("rawtypes")
-	@Before(NotAction.class)
-	public ReturnResult checkAttrValue(String attr, Class enumClass){
-		String attrValue = getPara(attr);
-		if(!StrKit.isBlank(attrValue) && enumClass != null){
-			if(Enum.class.isAssignableFrom(enumClass)){
-				throw new IllegalArgumentException("Attribute enumClass type must be enumerated");
-			}
-			Object[] objects = enumClass.getEnumConstants();
-			for(Object object : objects){
-				if(attrValue.equals(object.toString())){
-					return ReturnResult.success();
-				}
-			}
-		}
-		return BaseConfig.attrValueError(attr);
+	public ReturnResult checkAttrValue(String attr, Class<?> enumClass){
+		return ValidationKit.checkAttrValue(this, attr, enumClass);
 	}
 }

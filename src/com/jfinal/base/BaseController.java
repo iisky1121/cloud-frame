@@ -15,7 +15,7 @@ public abstract class BaseController<M extends Model<M>> extends BaseQueryContro
 	public void delete() {
 		String id = getPara();
 		if(StrKit.isBlank(id)){
-			renderResult(BaseConfig.attrNotNull("id"));
+			renderResult(BaseConfig.attrValueEmpty("id"));
 			return;
 		}
 		M data = getM().findById(id);
