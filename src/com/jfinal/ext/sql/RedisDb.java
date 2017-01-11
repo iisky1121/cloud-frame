@@ -1,5 +1,6 @@
 package com.jfinal.ext.sql;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -62,9 +63,11 @@ public class RedisDb {
 		if(beanId == null || beanClass == null){
 			return;
 		}
+		List<String> keys = new ArrayList<String>();
 		for(Object bId : beanId){
-			Redis.use().del(getKey(beanClass, bId.toString()));
+			keys.add(getKey(beanClass, bId.toString()));
 		}
+		Redis.use().del(keys.toArray());
 	}
 	
 	/**
