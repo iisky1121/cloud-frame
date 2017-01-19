@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2011-2016, James Zhan 詹波 (jfinal@126.com).
+ * Copyright (c) 2011-2017, James Zhan 詹波 (jfinal@126.com).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package com.jfinal.plugin.activerecord;
 
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 import javax.sql.DataSource;
@@ -23,6 +24,7 @@ import com.jfinal.kit.StrKit;
 import com.jfinal.plugin.IPlugin;
 import com.jfinal.plugin.activerecord.cache.ICache;
 import com.jfinal.plugin.activerecord.dialect.Dialect;
+import com.jfinal.plugin.activerecord.sql.SqlKit;
 
 /**
  * ActiveRecord plugin.
@@ -32,15 +34,8 @@ import com.jfinal.plugin.activerecord.dialect.Dialect;
  */
 public class ActiveRecordPlugin implements IPlugin {
 	
-	private String configName = null;
-	private DataSource dataSource = null;
 	private IDataSourceProvider dataSourceProvider = null;
-	private Integer transactionLevel = null;
-	private ICache cache = null;
-	private Boolean showSql = null;
 	private Boolean devMode = null;
-	private Dialect dialect = null;
-	private IContainerFactory containerFactory = null;
 	
 	private Config config = null;
 	
@@ -54,9 +49,7 @@ public class ActiveRecordPlugin implements IPlugin {
 		if (dataSource == null) {
 			throw new IllegalArgumentException("dataSource can not be null");
 		}
-		this.configName = configName.trim();
-		this.dataSource = dataSource;
-		this.setTransactionLevel(transactionLevel);
+		this.config = new Config(configName, dataSource, transactionLevel);
 	}
 	
 	public ActiveRecordPlugin(DataSource dataSource) {
@@ -78,9 +71,8 @@ public class ActiveRecordPlugin implements IPlugin {
 		if (dataSourceProvider == null) {
 			throw new IllegalArgumentException("dataSourceProvider can not be null");
 		}
-		this.configName = configName.trim();
 		this.dataSourceProvider = dataSourceProvider;
-		this.setTransactionLevel(transactionLevel);
+		this.config = new Config(configName, null, transactionLevel);
 	}
 	
 	public ActiveRecordPlugin(IDataSourceProvider dataSourceProvider) {
@@ -112,16 +104,26 @@ public class ActiveRecordPlugin implements IPlugin {
 		return this;
 	}
 	
+	public ActiveRecordPlugin addSqlTemplate(String sqlTemplate) {
+		config.sqlKit.addSqlTemplate(sqlTemplate);
+		return this;
+	}
+	
+	public ActiveRecordPlugin setBaseSqlTemplatePath(String baseSqlTemplatePath) {
+		config.sqlKit.setBaseSqlTemplatePath(baseSqlTemplatePath);
+		return this;
+	}
+	
+	public SqlKit getSqlKit() {
+		return config.sqlKit;
+	}
+	
 	/**
 	 * Set transaction level define in java.sql.Connection
 	 * @param transactionLevel only be 0, 1, 2, 4, 8
 	 */
 	public ActiveRecordPlugin setTransactionLevel(int transactionLevel) {
-		int t = transactionLevel;
-		if (t != 0 && t != 1  && t != 2  && t != 4  && t != 8) {
-			throw new IllegalArgumentException("The transactionLevel only be 0, 1, 2, 4, 8");
-		}
-		this.transactionLevel = transactionLevel;
+		config.setTransactionLevel(transactionLevel);
 		return this;
 	}
 	
@@ -129,17 +131,18 @@ public class ActiveRecordPlugin implements IPlugin {
 		if (cache == null) {
 			throw new IllegalArgumentException("cache can not be null");
 		}
-		this.cache = cache;
+		config.cache = cache;
 		return this;
 	}
 	
 	public ActiveRecordPlugin setShowSql(boolean showSql) {
-		this.showSql = showSql;
+		config.showSql = showSql;
 		return this;
 	}
 	
 	public ActiveRecordPlugin setDevMode(boolean devMode) {
 		this.devMode = devMode;
+		config.setDevMode(devMode);
 		return this;
 	}
 	
@@ -151,7 +154,11 @@ public class ActiveRecordPlugin implements IPlugin {
 		if (dialect == null) {
 			throw new IllegalArgumentException("dialect can not be null");
 		}
-		this.dialect = dialect;
+		config.dialect = dialect;
+		if (config.transactionLevel == Connection.TRANSACTION_REPEATABLE_READ && dialect.isOracle()) {
+			// Oracle 不支持 Connection.TRANSACTION_REPEATABLE_READ
+			config.transactionLevel = Connection.TRANSACTION_READ_COMMITTED;
+		}
 		return this;
 	}
 	
@@ -159,7 +166,7 @@ public class ActiveRecordPlugin implements IPlugin {
 		if (containerFactory == null) {
 			throw new IllegalArgumentException("containerFactory can not be null");
 		}
-		this.containerFactory = containerFactory;
+		config.containerFactory = containerFactory;
 		return this;
 	}
 	
@@ -190,46 +197,23 @@ public class ActiveRecordPlugin implements IPlugin {
 		if (isStarted) {
 			return true;
 		}
-		if (configName == null) {
-			configName = DbKit.MAIN_CONFIG_NAME;
+		if (config.dataSource == null && dataSourceProvider != null) {
+			config.dataSource = dataSourceProvider.getDataSource();
 		}
-		if (dataSource == null && dataSourceProvider != null) {
-			dataSource = dataSourceProvider.getDataSource();
-		}
-		if (dataSource == null) {
+		if (config.dataSource == null) {
 			throw new RuntimeException("ActiveRecord start error: ActiveRecordPlugin need DataSource or DataSourceProvider");
 		}
-		if (config == null) {
-			config = new Config(configName, dataSource);
-		}
 		
-		if (dialect != null) {
-			config.dialect = dialect;
-		}
-		if (showSql != null) {
-			config.showSql = showSql;
-		}
-		if (devMode != null) {
-			config.devMode = devMode;
-		}
-		if (transactionLevel != null) {
-			config.transactionLevel = transactionLevel;
-		}
-		if (containerFactory != null) {
-			config.containerFactory = containerFactory;
-		}
-		if (cache != null) {
-			config.cache = cache;
-		}
+		config.sqlKit.parseTemplate();
 		
 		new TableBuilder().build(tableList, config);
 		DbKit.addConfig(config);
-		Db.init();
 		isStarted = true;
 		return true;
 	}
 	
 	public boolean stop() {
+		DbKit.removeConfig(config.getName());
 		isStarted = false;
 		return true;
 	}

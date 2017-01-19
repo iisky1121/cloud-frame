@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2011-2016, James Zhan 詹波 (jfinal@126.com).
+ * Copyright (c) 2011-2017, James Zhan 詹波 (jfinal@126.com).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,16 +47,21 @@ public class ModelGenerator {
 	protected boolean generateDaoInModel = true;
 	
 	public ModelGenerator(String modelPackageName, String baseModelPackageName, String modelOutputDir) {
-		if (StrKit.isBlank(modelPackageName))
+		if (StrKit.isBlank(modelPackageName)) {
 			throw new IllegalArgumentException("modelPackageName can not be blank.");
-		if (modelPackageName.contains("/") || modelPackageName.contains("\\"))
+		}
+		if (modelPackageName.contains("/") || modelPackageName.contains("\\")) {
 			throw new IllegalArgumentException("modelPackageName error : " + modelPackageName);
-		if (StrKit.isBlank(baseModelPackageName))
+		}
+		if (StrKit.isBlank(baseModelPackageName)) {
 			throw new IllegalArgumentException("baseModelPackageName can not be blank.");
-		if (baseModelPackageName.contains("/") || baseModelPackageName.contains("\\"))
+		}
+		if (baseModelPackageName.contains("/") || baseModelPackageName.contains("\\")) {
 			throw new IllegalArgumentException("baseModelPackageName error : " + baseModelPackageName);
-		if (StrKit.isBlank(modelOutputDir))
+		}
+		if (StrKit.isBlank(modelOutputDir)) {
 			throw new IllegalArgumentException("modelOutputDir can not be blank.");
+		}
 		
 		this.modelPackageName = modelPackageName;
 		this.baseModelPackageName = baseModelPackageName;
@@ -74,9 +79,10 @@ public class ModelGenerator {
 	public void generate(List<TableMeta> tableMetas) {
 		if(generateModel){
 			System.out.println("Generate model ...");
+			System.out.println("Model Output Dir: " + modelOutputDir);
 			for (TableMeta tableMeta : tableMetas)
 				genModelContent(tableMeta);
-			wirtToFile(tableMetas);
+			writeToFile(tableMetas);
 		}
 	}
 	
@@ -103,16 +109,18 @@ public class ModelGenerator {
 	}
 	
 	protected void genDao(TableMeta tableMeta, StringBuilder ret) {
-		if (generateDaoInModel)
+		if (generateDaoInModel) {
 			ret.append(String.format(daoTemplate, tableMeta.modelName, tableMeta.modelName));
-		else
+		} else {
 			ret.append(String.format("\t%n"));
+		}
 	}
 	
-	protected void wirtToFile(List<TableMeta> tableMetas) {
+	protected void writeToFile(List<TableMeta> tableMetas) {
 		try {
-			for (TableMeta tableMeta : tableMetas)
-				wirtToFile(tableMeta);
+			for (TableMeta tableMeta : tableMetas) {
+				writeToFile(tableMeta);
+			}
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
@@ -121,10 +129,11 @@ public class ModelGenerator {
 	/**
 	 * 若 model 文件存在，则不生成，以免覆盖用户手写的代码
 	 */
-	protected void wirtToFile(TableMeta tableMeta) throws IOException {
+	protected void writeToFile(TableMeta tableMeta) throws IOException {
 		File dir = new File(modelOutputDir);
-		if (!dir.exists())
+		if (!dir.exists()) {
 			dir.mkdirs();
+		}
 		
 		String target = modelOutputDir + File.separator + tableMeta.modelName + ".java";
 		

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2011-2016, James Zhan 詹波 (jfinal@126.com).
+ * Copyright (c) 2011-2017, James Zhan 詹波 (jfinal@126.com).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,8 +71,8 @@ public class InterceptorManager {
 		return result;
 	}
 	
-	public Interceptor[] buildControllerActionInterceptor(Interceptor[] classInters, Class<? extends Controller> controllerClass, Method method) {
-		return doBuild(globalActionInters, NULL_INTERS, classInters, controllerClass, method);
+	public Interceptor[] buildControllerActionInterceptor(Interceptor[] injectInters, Interceptor[] classInters, Class<? extends Controller> controllerClass, Method method) {
+		return doBuild(globalActionInters, injectInters, classInters, controllerClass, method);
 	}
 	
 	public Interceptor[] buildServiceMethodInterceptor(Interceptor[] injectInters, Class<?> serviceClass, Method method) {

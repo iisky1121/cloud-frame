@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2011-2016, James Zhan 詹波 (jfinal@126.com).
+ * Copyright (c) 2011-2017, James Zhan 詹波 (jfinal@126.com).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Pattern;
+// import java.util.regex.Pattern;
 import com.jfinal.plugin.activerecord.Model;
 import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
@@ -110,15 +110,17 @@ public abstract class Dialect {
 		}
 	}
 	
+	/*
 	protected static class Holder {
 		// "order\\s+by\\s+[^,\\s]+(\\s+asc|\\s+desc)?(\\s*,\\s*[^,\\s]+(\\s+asc|\\s+desc)?)*";
 		private static final Pattern ORDER_BY_PATTERN = Pattern.compile(
 			"order\\s+by\\s+[^,\\s]+(\\s+asc|\\s+desc)?(\\s*,\\s*[^,\\s]+(\\s+asc|\\s+desc)?)*",
 			Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
-	}
+	}*/
 	
 	public String replaceOrderBy(String sql) {
-		return Holder.ORDER_BY_PATTERN.matcher(sql).replaceAll("");
+		// return Holder.ORDER_BY_PATTERN.matcher(sql).replaceAll("");
+		return sql;
 	}
 }
 

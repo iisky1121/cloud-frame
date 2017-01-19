@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2011-2016, James Zhan 詹波 (jfinal@126.com).
+ * Copyright (c) 2011-2017, James Zhan 詹波 (jfinal@126.com).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,38 +44,44 @@ public class DataDictionaryGenerator {
 	}
 	
 	public void setDataDictionaryOutputDir(String dataDictionaryOutputDir) {
-		if (StrKit.notBlank(dataDictionaryOutputDir))
+		if (StrKit.notBlank(dataDictionaryOutputDir)) {
 			this.dataDictionaryOutputDir = dataDictionaryOutputDir;
+		}
 	}
 	
 	public void setDataDictionaryFileName(String dataDictionaryFileName) {
-		if (StrKit.notBlank(dataDictionaryFileName))
+		if (StrKit.notBlank(dataDictionaryFileName)) {
 			this.dataDictionaryFileName = dataDictionaryFileName;
+		}
 	}
 	
 	public void generate(List<TableMeta> tableMetas) {
 		System.out.println("Generate DataDictionary file ...");
+		System.out.println("Data Dictionary Output Dir: " + dataDictionaryOutputDir);
 		rebuildColumnMetas(tableMetas);
 		
 		StringBuilder ret = new StringBuilder();
-		for (TableMeta tableMeta : tableMetas)
+		for (TableMeta tableMeta : tableMetas) {
 			generateTable(tableMeta, ret);
+		}
 		
-		wirtToFile(ret);
+		writeToFile(ret);
 	}
 	
 	protected void generateTable(TableMeta tableMeta, StringBuilder ret) {
-		ret.append(tableMeta.type).append(": ").append(tableMeta.name);
-		if (StrKit.notBlank(tableMeta.remarks))
+		ret.append("Table: ").append(tableMeta.name);
+		if (StrKit.notBlank(tableMeta.remarks)) {
 			ret.append("\tRemarks: ").append(tableMeta.remarks);
+		}
 		ret.append("\n");
 		
 		String sparateLine = genSeparateLine(tableMeta);
 		ret.append(sparateLine);
 		genTableHead(tableMeta, ret);
 		ret.append(sparateLine);
-		for (ColumnMeta columnMeta : tableMeta.columnMetas)
+		for (ColumnMeta columnMeta : tableMeta.columnMetas) {
 			genColumn(tableMeta, columnMeta, ret);
+		}
 		ret.append(sparateLine);
 		ret.append("\n");
 	}
@@ -89,8 +95,9 @@ public class DataDictionaryGenerator {
 	protected void genCell(int columnMaxLen, String preChar, String value, String fillChar, String postChar, StringBuilder ret) {
 		ret.append(preChar);
 		ret.append(value);
-		for (int i=0, n=columnMaxLen-value.length() + 1; i<n; i++)
+		for (int i=0, n=columnMaxLen-value.length() + 1; i<n; i++) {
 			ret.append(fillChar);	// 值后的填充字符，值为 " "、"-"
+		}
 		ret.append(postChar);
 	}
 	
@@ -134,14 +141,16 @@ public class DataDictionaryGenerator {
 			for (TableMeta tableMeta : tableMetas) {
 				// 重建整个 TableMeta.columnMetas
 				tableMeta.columnMetas = new ArrayList<ColumnMeta>();
+				// 通过查看 dbMeta.getColumns(...) 源码注释，还可以获取到更多 meta data
 				ResultSet rs = dbMeta.getColumns(conn.getCatalog(), null, tableMeta.name, null);
 				while (rs.next()) {
 					ColumnMeta columnMeta = new ColumnMeta();
 					columnMeta.name = rs.getString("COLUMN_NAME");			// 名称
 					
 					columnMeta.type = rs.getString("TYPE_NAME");			// 类型
-					if (columnMeta.type == null)
+					if (columnMeta.type == null) {
 						columnMeta.type = "";
+					}
 					
 					int columnSize = rs.getInt("COLUMN_SIZE");				// 长度
 					if (columnSize > 0) {
@@ -154,8 +163,9 @@ public class DataDictionaryGenerator {
 					}
 					
 					columnMeta.isNullable = rs.getString("IS_NULLABLE");	// 是否允许 NULL 值
-					if (columnMeta.isNullable == null)
+					if (columnMeta.isNullable == null) {
 						columnMeta.isNullable = "";
+					}
 					
 					columnMeta.isPrimaryKey = "   ";
 					String[] keys = tableMeta.primaryKey.split(",");
@@ -167,19 +177,24 @@ public class DataDictionaryGenerator {
 					}
 					
 					columnMeta.defaultValue = rs.getString("COLUMN_DEF");	// 默认值
-					if (columnMeta.defaultValue == null)
+					if (columnMeta.defaultValue == null) {
 						columnMeta.defaultValue = "";
+					}
 					
 					columnMeta.remarks = rs.getString("REMARKS");			// 备注
-					if (columnMeta.remarks == null)
+					if (columnMeta.remarks == null) {
 						columnMeta.remarks = "";
+					}
 					
-					if (tableMeta.colNameMaxLen < columnMeta.name.length())
+					if (tableMeta.colNameMaxLen < columnMeta.name.length()) {
 						tableMeta.colNameMaxLen = columnMeta.name.length();
-					if (tableMeta.colTypeMaxLen < columnMeta.type.length())
+					}
+					if (tableMeta.colTypeMaxLen < columnMeta.type.length()) {
 						tableMeta.colTypeMaxLen = columnMeta.type.length();
-					if (tableMeta.colDefaultValueMaxLen < columnMeta.defaultValue.length())
+					}
+					if (tableMeta.colDefaultValueMaxLen < columnMeta.defaultValue.length()) {
 						tableMeta.colDefaultValueMaxLen = columnMeta.defaultValue.length();
+					}
 					
 					tableMeta.columnMetas.add(columnMeta);
 				}
@@ -190,20 +205,22 @@ public class DataDictionaryGenerator {
 			throw new RuntimeException(e);
 		}
 		finally {
-			if (conn != null)
+			if (conn != null) {
 				try {conn.close();} catch (SQLException e) {LogKit.error(e.getMessage(), e);}
+			}
 		}
 	}
 	
 	/**
 	 * _DataDictionary.txt 覆盖写入
 	 */
-	protected void wirtToFile(StringBuilder ret) {
+	protected void writeToFile(StringBuilder ret) {
 		FileWriter fw = null;
 		try {
 			File dir = new File(dataDictionaryOutputDir);
-			if (!dir.exists())
+			if (!dir.exists()) {
 				dir.mkdirs();
+			}
 			
 			String target = dataDictionaryOutputDir + File.separator + dataDictionaryFileName;
 			fw = new FileWriter(target);
@@ -213,8 +230,9 @@ public class DataDictionaryGenerator {
 			throw new RuntimeException(e);
 		}
 		finally {
-			if (fw != null)
+			if (fw != null) {
 				try {fw.close();} catch (IOException e) {LogKit.error(e.getMessage(), e);}
+			}
 		}
 	}
 }

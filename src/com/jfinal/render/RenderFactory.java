@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2011-2016, James Zhan 詹波 (jfinal@126.com).
+ * Copyright (c) 2011-2017, James Zhan 詹波 (jfinal@126.com).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,150 +17,47 @@
 package com.jfinal.render;
 
 import java.io.File;
-import java.util.Locale;
 import javax.servlet.ServletContext;
 import com.jfinal.config.Constants;
-import com.jfinal.kit.LogKit;
-import com.jfinal.kit.PathKit;
+import com.jfinal.template.Engine;
 
 /**
  * RenderFactory.
  */
-public class RenderFactory {
+public class RenderFactory implements IRenderFactory {
 	
-	private Constants constants;
-	private ServletContext servletContext;
-	private IMainRenderFactory mainRenderFactory = null;
-	private IErrorRenderFactory errorRenderFactory = null;
-	private IXmlRenderFactory xmlRenderFactory = null;
+	protected Engine engine;
+	protected Constants constants;
+	protected ServletContext servletContext;
+	protected MainRenderFactory mainRenderFactory;
 	
-	ServletContext getServletContext() {
-		return servletContext;
-	}
+	// private static final RenderFactory me = new RenderFactory();
+	// private RenderFactory() {}
 	
-	private static final RenderFactory me = new RenderFactory();
+	// public static RenderFactory me() {
+	// 	return me;
+	// }
 	
-	private RenderFactory() {
-		
-	}
-	
-	public static RenderFactory me() {
-		return me;
-	}
-	
-	public void setMainRenderFactory(IMainRenderFactory mainRenderFactory) {
-		if (mainRenderFactory != null) {
-			this.mainRenderFactory = mainRenderFactory;
-		}
-	}
-	
-	public void setErrorRenderFactory(IErrorRenderFactory errorRenderFactory) {
-		if (errorRenderFactory != null) {
-			this.errorRenderFactory = errorRenderFactory;
-		}
-	}
-	
-	public void setXmlRenderFactory(IXmlRenderFactory xmlRenderFactory) {
-		if (xmlRenderFactory != null) {
-			this.xmlRenderFactory = xmlRenderFactory;
-		}
-	}
-	
-	public void init(Constants constants, ServletContext servletContext) {
+	public void init(Engine engine, Constants constants, ServletContext servletContext) {
+		this.engine = engine;
 		this.constants = constants;
 		this.servletContext = servletContext;
 		
-		// init Render
-		Render.init(constants.getEncoding(), constants.getDevMode());
-		initFreeMarkerRender(servletContext);
-		initVelocityRender(servletContext);
-		initJspRender(servletContext);
-		initFileRender(servletContext);
-		
 		// create mainRenderFactory
-		if (mainRenderFactory == null) {
-			ViewType defaultViewType = constants.getViewType();
-			if (defaultViewType == ViewType.FREE_MARKER) {
-				mainRenderFactory = new FreeMarkerRenderFactory();
-			} else if (defaultViewType == ViewType.JSP) {
-				mainRenderFactory = new JspRenderFactory();
-			} else if (defaultViewType == ViewType.VELOCITY) {
-				mainRenderFactory = new VelocityRenderFactory();
-			} else {
-				throw new RuntimeException("View Type can not be null.");
-			}
+		switch (constants.getViewType()) {
+		case JFINAL_TEMPLATE:
+			mainRenderFactory = new MainRenderFactory();
+			break ;
+		case FREE_MARKER:
+			mainRenderFactory = new FreeMarkerRenderFactory();
+			break ;
+		case JSP:
+			mainRenderFactory = new JspRenderFactory();
+			break ;
+		case VELOCITY:
+			mainRenderFactory = new VelocityRenderFactory();
+			break ;
 		}
-		
-		// create errorRenderFactory
-		if (errorRenderFactory == null) {
-			errorRenderFactory = new ErrorRenderFactory();
-		}
-		
-		if (xmlRenderFactory == null) {
-			xmlRenderFactory = new XmlRenderFactory();
-		}
-	}
-	
-	private void initFreeMarkerRender(ServletContext servletContext) {
-		try {
-			Class.forName("freemarker.template.Template");	// detect freemarker.jar
-			FreeMarkerRender.init(servletContext, Locale.getDefault(), constants.getFreeMarkerTemplateUpdateDelay());
-		} catch (ClassNotFoundException e) {
-			// System.out.println("freemarker can not be supported!");
-			LogKit.logNothing(e);
-		}
-	}
-	
-	private void initVelocityRender(ServletContext servletContext) {
-		try {
-			Class.forName("org.apache.velocity.VelocityContext");
-			VelocityRender.init(servletContext);
-		}
-		catch (ClassNotFoundException e) {
-			// System.out.println("Velocity can not be supported!");
-			LogKit.logNothing(e);
-		}
-	}
-	
-	private void initJspRender(ServletContext servletContext) {
-		try {
-			Class.forName("javax.el.ELResolver");
-			Class.forName("javax.servlet.jsp.JspFactory");
-			com.jfinal.plugin.activerecord.ModelRecordElResolver.init(servletContext);
-		}
-		catch (ClassNotFoundException e) {
-			// System.out.println("Jsp or JSTL can not be supported!");
-			LogKit.logNothing(e);
-		}
-		catch (IllegalStateException e) {
-			throw e;
-		}
-		catch (Exception e) {
-			LogKit.logNothing(e);
-		}
-	}
-	
-	private void initFileRender(ServletContext servletContext) {
-		String downloadPath = constants.getBaseDownloadPath();
-		downloadPath = downloadPath.trim();
-		downloadPath = downloadPath.replaceAll("\\\\", "/");
-		
-		String baseDownloadPath;
-		// 如果为绝对路径则直接使用，否则把 downloadPath 参数作为项目根路径的相对路径
-		if (PathKit.isAbsolutelyPath(downloadPath)) {
-			baseDownloadPath = downloadPath;
-		} else {
-			baseDownloadPath = PathKit.getWebRootPath() + File.separator + downloadPath;
-		}
-		
-		// remove "/" postfix
-		if (baseDownloadPath.equals("/") == false) {
-			if (baseDownloadPath.endsWith("/")) {
-				baseDownloadPath = baseDownloadPath.substring(0, baseDownloadPath.length() - 1);
-			}
-		}
-		
-		FileRender.init(baseDownloadPath, servletContext);
 	}
 	
 	/**
@@ -168,6 +65,10 @@ public class RenderFactory {
 	 */
 	public Render getRender(String view) {
 		return mainRenderFactory.getRender(view);
+	}
+	
+	public Render getTemplateRender(String view) {
+		return new TemplateRender(view);
 	}
 	
 	public Render getFreeMarkerRender(String view) {
@@ -215,24 +116,15 @@ public class RenderFactory {
 	}
 	
 	public Render getDefaultRender(String view) {
-		ViewType viewType = constants.getViewType();
-		if (viewType == ViewType.FREE_MARKER) {
-			return new FreeMarkerRender(view + constants.getFreeMarkerViewExtension());
-		} else if (viewType == ViewType.JSP) {
-			return new JspRender(view + constants.getJspViewExtension());
-		} else if (viewType == ViewType.VELOCITY) {
-			return new VelocityRender(view + constants.getVelocityViewExtension());
-		} else {
-			return mainRenderFactory.getRender(view + mainRenderFactory.getViewExtension());
-		}
+		return getRender(view + constants.getViewExtension());
 	}
 	
 	public Render getErrorRender(int errorCode, String view) {
-		return errorRenderFactory.getRender(errorCode, view);
+		return new ErrorRender(errorCode, view);
 	}
 	
 	public Render getErrorRender(int errorCode) {
-		return errorRenderFactory.getRender(errorCode, constants.getErrorView(errorCode));
+		return new ErrorRender(errorCode, constants.getErrorView(errorCode));
 	}
 	
 	public Render getFileRender(String fileName) {
@@ -272,50 +164,43 @@ public class RenderFactory {
 	}
 	
 	public Render getXmlRender(String view) {
-		return xmlRenderFactory.getRender(view);
+		return new XmlRender(view);
 	}
 	
 	public Render getCaptchaRender() {
-		return new CaptchaRender();
+		return new com.jfinal.captcha.CaptchaRender();
+	}
+	
+	public Render getQrCodeRender(String content, int width, int height) {
+		return new QrCodeRender(content, width, height);
+	}
+	
+	public Render getQrCodeRender(String content, int width, int height, char errorCorrectionLevel) {
+		return new QrCodeRender(content, width, height, errorCorrectionLevel);
 	}
 	
 	// --------
-	private static final class FreeMarkerRenderFactory implements IMainRenderFactory {
+	private static class MainRenderFactory {
+		public Render getRender(String view) {
+			return new TemplateRender(view);
+		}
+	}
+	
+	private static class FreeMarkerRenderFactory extends MainRenderFactory {
 		public Render getRender(String view) {
 			return new FreeMarkerRender(view);
 		}
-		public String getViewExtension() {
-			return ".html";
-		}
 	}
 	
-	private static final class JspRenderFactory implements IMainRenderFactory {
+	private static class JspRenderFactory extends MainRenderFactory {
 		public Render getRender(String view) {
 			return new JspRender(view);
 		}
-		public String getViewExtension() {
-			return ".jsp";
-		}
 	}
 	
-	private static final class VelocityRenderFactory implements IMainRenderFactory {
+	private static class VelocityRenderFactory extends MainRenderFactory {
 		public Render getRender(String view) {
 			return new VelocityRender(view);
-		}
-		public String getViewExtension() {
-			return ".html";
-		}
-	}
-	
-	private static final class ErrorRenderFactory implements IErrorRenderFactory {
-		public Render getRender(int errorCode, String view) {
-			return new ErrorRender(errorCode, view);
-		}
-	}
-	
-	private static final class XmlRenderFactory implements IXmlRenderFactory {
-		public Render getRender(String view) {
-			return new XmlRender(view);
 		}
 	}
 }

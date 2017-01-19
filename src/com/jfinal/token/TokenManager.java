@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2011-2016, James Zhan 詹波 (jfinal@126.com).
+ * Copyright (c) 2011-2017, James Zhan 詹波 (jfinal@126.com).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,13 +38,14 @@ public class TokenManager {
 	}
 	
 	public static void init(ITokenCache tokenCache) {
-		if (tokenCache == null)
+		if (tokenCache == null) {
 			return;
+		}
 		
 		TokenManager.tokenCache = tokenCache;
 		
 		long halfTimeOut = Const.MIN_SECONDS_OF_TOKEN_TIME_OUT * 1000 / 2;	// Token最小过期时间的一半时间作为任务运行的间隔时间
-		new Timer().schedule(new TimerTask() {public void run() {removeTimeOutToken();}},
+		new Timer("TokenManager", true).schedule(new TimerTask() {public void run() {removeTimeOutToken();}},
 							 halfTimeOut,
 							 halfTimeOut);
 	}
@@ -77,15 +78,17 @@ public class TokenManager {
 	}
 	
 	private static void createTokenUseTokenIdGenerator(Controller controller, String tokenName, int secondsOfTimeOut) {
-		if (secondsOfTimeOut < Const.MIN_SECONDS_OF_TOKEN_TIME_OUT)
+		if (secondsOfTimeOut < Const.MIN_SECONDS_OF_TOKEN_TIME_OUT) {
 			secondsOfTimeOut = Const.MIN_SECONDS_OF_TOKEN_TIME_OUT;
+		}
 		
 		String tokenId = null;
 		Token token = null;
 		int safeCounter = 8;
 		do {
-			if (safeCounter-- == 0)
+			if (safeCounter-- == 0) {
 				throw new RuntimeException("Can not create tokenId.");
+			}
 			tokenId = String.valueOf(random.nextLong());
 			token = new Token(tokenId, System.currentTimeMillis() + (secondsOfTimeOut * 1000));
 		} while(tokenId == null || tokenCache.contains(token));
@@ -117,19 +120,23 @@ public class TokenManager {
 	
 	private static void removeTimeOutToken() {
 		List<Token> tokenInCache = tokenCache.getAll();
-		if (tokenInCache == null)
+		if (tokenInCache == null) {
 			return;
+		}
 		
 		List<Token> timeOutTokens = new ArrayList<Token>();
 		long currentTime = System.currentTimeMillis();
 		// find and save all time out tokens
-		for (Token token : tokenInCache)
-			if (token.getExpirationTime() <=  currentTime)
+		for (Token token : tokenInCache) {
+			if (token.getExpirationTime() <=  currentTime) {
 				timeOutTokens.add(token);
+			}
+		}
 		
 		// remove all time out tokens
-		for (Token token : timeOutTokens)
+		for (Token token : timeOutTokens) {
 			tokenCache.remove(token);
+		}
 	}
 }
 

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2011-2016, James Zhan 詹波 (jfinal@126.com).
+ * Copyright (c) 2011-2017, James Zhan 詹波 (jfinal@126.com).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -134,6 +134,13 @@ public abstract class Validator implements Interceptor {
 	}
 	
 	/**
+	 * Return the method name of this action.
+	 */
+	protected String getActionMethodName() {
+		return invocation.getMethodName();
+	}
+	
+	/**
 	 * Return view path of this controller.
 	 */
 	protected String getViewPath() {
@@ -145,8 +152,9 @@ public abstract class Validator implements Interceptor {
 	 */
 	protected void validateRequired(String field, String errorKey, String errorMessage) {
 		String value = controller.getPara(field);
-		if (value == null || "".equals(value))	// 经测试,form表单域无输入时值为"",跳格键值为"\t",输入空格则为空格" "
+		if (value == null || "".equals(value)) {	// 经测试,form表单域无输入时值为"",跳格键值为"\t",输入空格则为空格" "
 			addError(errorKey, errorMessage);
+		}
 	}
 	
 	/**
@@ -154,24 +162,27 @@ public abstract class Validator implements Interceptor {
 	 */
 	protected void validateRequired(int index, String errorKey, String errorMessage) {
 		String value = controller.getPara(index);
-		if (value == null /* || "".equals(value) */)
+		if (value == null /* || "".equals(value) */) {
 			addError(errorKey, errorMessage);
+		}
 	}
 	
 	/**
 	 * Validate required string.
 	 */
 	protected void validateRequiredString(String field, String errorKey, String errorMessage) {
-		if (StrKit.isBlank(controller.getPara(field)))
+		if (StrKit.isBlank(controller.getPara(field))) {
 			addError(errorKey, errorMessage);
+		}
 	}
 	
 	/**
 	 * Validate required string for urlPara.
 	 */
 	protected void validateRequiredString(int index, String errorKey, String errorMessage) {
-		if (StrKit.isBlank(controller.getPara(index)))
+		if (StrKit.isBlank(controller.getPara(index))) {
 			addError(errorKey, errorMessage);
+		}
 	}
 	
 	/**
@@ -186,8 +197,9 @@ public abstract class Validator implements Interceptor {
 	 */
 	protected void validateInteger(int index, int min, int max, String errorKey, String errorMessage) {
 		String value = controller.getPara(index);
-		if (value != null && (value.startsWith("N") || value.startsWith("n")))
+		if (value != null && (value.startsWith("N") || value.startsWith("n"))) {
 			value = "-" + value.substring(1);
+		}
 		validateIntegerValue(value, min, max, errorKey, errorMessage);
 	}
 	
@@ -198,8 +210,9 @@ public abstract class Validator implements Interceptor {
 		}
 		try {
 			int temp = Integer.parseInt(value.trim());
-			if (temp < min || temp > max)
+			if (temp < min || temp > max) {
 				addError(errorKey, errorMessage);
+			}
 		}
 		catch (Exception e) {
 			addError(errorKey, errorMessage);
@@ -218,8 +231,9 @@ public abstract class Validator implements Interceptor {
 	 */
 	protected void validateInteger(int index, String errorKey, String errorMessage) {
 		String value = controller.getPara(index);
-		if (value != null && (value.startsWith("N") || value.startsWith("n")))
+		if (value != null && (value.startsWith("N") || value.startsWith("n"))) {
 			value = "-" + value.substring(1);
+		}
 		validateIntegerValue(value, errorKey, errorMessage);
 	}
 	
@@ -248,8 +262,9 @@ public abstract class Validator implements Interceptor {
 	 */
 	protected void validateLong(int index, long min, long max, String errorKey, String errorMessage) {
 		String value = controller.getPara(index);
-		if (value != null && (value.startsWith("N") || value.startsWith("n")))
+		if (value != null && (value.startsWith("N") || value.startsWith("n"))) {
 			value = "-" + value.substring(1);
+		}
 		validateLongValue(value, min, max, errorKey, errorMessage);
 	}
 	
@@ -260,8 +275,9 @@ public abstract class Validator implements Interceptor {
 		}
 		try {
 			long temp = Long.parseLong(value.trim());
-			if (temp < min || temp > max)
+			if (temp < min || temp > max) {
 				addError(errorKey, errorMessage);
+			}
 		}
 		catch (Exception e) {
 			addError(errorKey, errorMessage);
@@ -280,8 +296,9 @@ public abstract class Validator implements Interceptor {
 	 */
 	protected void validateLong(int index, String errorKey, String errorMessage) {
 		String value = controller.getPara(index);
-		if (value != null && (value.startsWith("N") || value.startsWith("n")))
+		if (value != null && (value.startsWith("N") || value.startsWith("n"))) {
 			value = "-" + value.substring(1);
+		}
 		validateLongValue(value, errorKey, errorMessage);
 	}
 	
@@ -309,8 +326,9 @@ public abstract class Validator implements Interceptor {
 		}
 		try {
 			double temp = Double.parseDouble(value.trim());
-			if (temp < min || temp > max)
+			if (temp < min || temp > max) {
 				addError(errorKey, errorMessage);
+			}
 		}
 		catch (Exception e) {
 			addError(errorKey, errorMessage);
@@ -362,8 +380,9 @@ public abstract class Validator implements Interceptor {
 		}
 		try {
 			Date temp = new SimpleDateFormat(getDatePattern()).parse(value.trim());	// Date temp = Date.valueOf(value); 为了兼容 64位 JDK
-			if (temp.before(min) || temp.after(max))
+			if (temp.before(min) || temp.after(max)) {
 				addError(errorKey, errorMessage);
+			}
 		}
 		catch (Exception e) {
 			addError(errorKey, errorMessage);
@@ -389,24 +408,27 @@ public abstract class Validator implements Interceptor {
 	protected void validateEqualField(String field_1, String field_2, String errorKey, String errorMessage) {
 		String value_1 = controller.getPara(field_1);
 		String value_2 = controller.getPara(field_2);
-		if (value_1 == null || value_2 == null || (! value_1.equals(value_2)))
+		if (value_1 == null || value_2 == null || (! value_1.equals(value_2))) {
 			addError(errorKey, errorMessage);
+		}
 	}
 	
 	/**
 	 * Validate equal string.
 	 */
 	protected void validateEqualString(String s1, String s2, String errorKey, String errorMessage) {
-		if (s1 == null || s2 == null || (! s1.equals(s2)))
+		if (s1 == null || s2 == null || (! s1.equals(s2))) {
 			addError(errorKey, errorMessage);
+		}
 	}
 	
 	/**
 	 * Validate equal integer.
 	 */
 	protected void validateEqualInteger(Integer i1, Integer i2, String errorKey, String errorMessage) {
-		if (i1 == null || i2 == null || (i1.intValue() != i2.intValue()))
+		if (i1 == null || i2 == null || (i1.intValue() != i2.intValue())) {
 			addError(errorKey, errorMessage);
+		}
 	}
 	
 	/**
@@ -427,8 +449,9 @@ public abstract class Validator implements Interceptor {
 		}
 		try {
 			value = value.trim();
-			if (value.startsWith("https://"))
+			if (value.startsWith("https://")) {
 				value = "http://" + value.substring(8); // URL doesn't understand the https protocol, hack it
+			}
 			new URL(value);
 		} catch (MalformedURLException e) {
 			addError(errorKey, errorMessage);
@@ -446,8 +469,9 @@ public abstract class Validator implements Interceptor {
         }
         Pattern pattern = isCaseSensitive ? Pattern.compile(regExpression) : Pattern.compile(regExpression, Pattern.CASE_INSENSITIVE);
         Matcher matcher = pattern.matcher(value);
-        if (!matcher.matches())
+        if (!matcher.matches()) {
         	addError(errorKey, errorMessage);
+        }
 	}
 	
 	/**
@@ -476,24 +500,27 @@ public abstract class Validator implements Interceptor {
 			addError(errorKey, errorMessage);
 			return ;
 		}
-		if (value.length() < minLen || value.length() > maxLen)
+		if (value.length() < minLen || value.length() > maxLen) {
 			addError(errorKey, errorMessage);
+		}
 	}
 	
 	/**
 	 * Validate token created by Controller.createToken(String).
 	 */
 	protected void validateToken(String tokenName, String errorKey, String errorMessage) {
-		if (controller.validateToken(tokenName) == false)
+		if (controller.validateToken(tokenName) == false) {
 			addError(errorKey, errorMessage);
+		}
 	}
 	
 	/**
 	 * Validate token created by Controller.createToken().
 	 */
 	protected void validateToken(String errorKey, String errorMessage) {
-		if (controller.validateToken() == false)
+		if (controller.validateToken() == false) {
 			addError(errorKey, errorMessage);
+		}
 	}
 	
 	/**

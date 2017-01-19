@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2011-2016, James Zhan 詹波 (jfinal@126.com).
+ * Copyright (c) 2011-2017, James Zhan 詹波 (jfinal@126.com).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,15 +52,19 @@ public class JsonRender extends Render {
 	 * 仅对无参 renderJson() 起作用
 	 */
 	public static void addExcludedAttrs(String... attrs) {
-		if (attrs != null)
-			for (String attr : attrs)
+		if (attrs != null) {
+			for (String attr : attrs) {
 				excludedAttrs.add(attr);
+			}
+		}
 	}
 	
 	public static void removeExcludedAttrs(String... attrs) {
-		if (attrs != null)
-			for (String attr : attrs)
+		if (attrs != null) {
+			for (String attr : attrs) {
 				excludedAttrs.remove(attr);
+			}
+		}
 	}
 	
 	public static void clearExcludedAttrs() {
@@ -94,32 +98,36 @@ public class JsonRender extends Render {
 	
 	@SuppressWarnings("serial")
 	public JsonRender(final String key, final Object value) {
-		if (key == null)
+		if (key == null) {
 			throw new IllegalArgumentException("The parameter key can not be null.");
+		}
 		this.jsonText = JsonKit.toJson(new HashMap<String, Object>(){{put(key, value);}});
 	}
 	
 	public JsonRender(String[] attrs) {
-		if (attrs == null)
+		if (attrs == null) {
 			throw new IllegalArgumentException("The parameter attrs can not be null.");
+		}
 		this.attrs = attrs;
 	}
 	
 	public JsonRender(String jsonText) {
-		if (jsonText == null)
-			throw new IllegalArgumentException("The parameter jsonString can not be null.");
-		this.jsonText = jsonText;
+		if (jsonText == null) {
+			// throw new IllegalArgumentException("The parameter jsonString can not be null.");
+			this.jsonText = "null";
+		} else {
+			this.jsonText = jsonText;
+		}
 	}
 	
 	public JsonRender(Object object) {
-		if (object == null)
-			throw new IllegalArgumentException("The parameter object can not be null.");
 		this.jsonText = JsonKit.toJson(object);
 	}
 	
 	public void render() {
-		if (jsonText == null)
+		if (jsonText == null) {
 			buildJsonText();
+		}
 		
 		PrintWriter writer = null;
 		try {
@@ -135,8 +143,9 @@ public class JsonRender extends Render {
 			throw new RenderException(e);
 		}
 		finally {
-			if (writer != null)
+			if (writer != null) {
 				writer.close();
+			}
 		}
 	}
 	
@@ -144,14 +153,16 @@ public class JsonRender extends Render {
 	private void buildJsonText() {
 		Map map = new HashMap();
 		if (attrs != null) {
-			for (String key : attrs)
+			for (String key : attrs) {
 				map.put(key, request.getAttribute(key));
+			}
 		}
 		else {
 			for (Enumeration<String> attrs=request.getAttributeNames(); attrs.hasMoreElements();) {
 				String key = attrs.nextElement();
-				if (excludedAttrs.contains(key))
+				if (excludedAttrs.contains(key)) {
 					continue;
+				}
 				
 				Object value = request.getAttribute(key);
 				map.put(key, value);

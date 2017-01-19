@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2011-2016, James Zhan 詹波 (jfinal@126.com).
+ * Copyright (c) 2011-2017, James Zhan 詹波 (jfinal@126.com).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,16 +24,16 @@ import com.jfinal.handler.Handler;
 import com.jfinal.log.Log;
 import com.jfinal.render.Render;
 import com.jfinal.render.RenderException;
-import com.jfinal.render.RenderFactory;
+import com.jfinal.render.RenderManager;
 
 /**
  * ActionHandler
  */
-final class ActionHandler extends Handler {
+public class ActionHandler extends Handler {
 	
 	private final boolean devMode;
 	private final ActionMapping actionMapping;
-	private static final RenderFactory renderFactory = RenderFactory.me();
+	private static final RenderManager renderManager = RenderManager.me();
 	private static final Log log = Log.getLog(ActionHandler.class);
 	
 	public ActionHandler(ActionMapping actionMapping, Constants constants) {
@@ -61,7 +61,7 @@ final class ActionHandler extends Handler {
 				String qs = request.getQueryString();
 				log.warn("404 Action Not Found: " + (qs == null ? target : target + "?" + qs));
 			}
-			renderFactory.getErrorRender(404).setContext(request, response).render();
+			renderManager.getRenderFactory().getErrorRender(404).setContext(request, response).render();
 			return ;
 		}
 		
@@ -72,9 +72,9 @@ final class ActionHandler extends Handler {
 			if (devMode) {
 				if (ActionReporter.isReportAfterInvocation(request)) {
 					new Invocation(action, controller).invoke();
-					ActionReporter.report(controller, action);
+					ActionReporter.report(target, controller, action);
 				} else {
-					ActionReporter.report(controller, action);
+					ActionReporter.report(target, controller, action);
 					new Invocation(action, controller).invoke();
 				}
 			}
@@ -83,17 +83,19 @@ final class ActionHandler extends Handler {
 			}
 			
 			Render render = controller.getRender();
-			if (render instanceof ActionRender) {
-				String actionUrl = ((ActionRender)render).getActionUrl();
-				if (target.equals(actionUrl))
+			if (render instanceof ForwardActionRender) {
+				String actionUrl = ((ForwardActionRender)render).getActionUrl();
+				if (target.equals(actionUrl)) {
 					throw new RuntimeException("The forward action url is the same as before.");
-				else
+				} else {
 					handle(actionUrl, request, response, isHandled);
+				}
 				return ;
 			}
 			
-			if (render == null)
-				render = renderFactory.getDefaultRender(action.getViewPath() + action.getMethodName());
+			if (render == null) {
+				render = renderManager.getRenderFactory().getDefaultRender(action.getViewPath() + action.getMethodName());
+			}
 			render.setContext(request, response, action.getViewPath()).render();
 		}
 		catch (RenderException e) {
@@ -104,30 +106,35 @@ final class ActionHandler extends Handler {
 		}
 		catch (ActionException e) {
 			int errorCode = e.getErrorCode();
-			if (errorCode == 404 && log.isWarnEnabled()) {
-				String qs = request.getQueryString();
-				log.warn("404 Not Found: " + (qs == null ? target : target + "?" + qs));
+			String msg = null;
+			if (errorCode == 404) {
+				msg = "404 Not Found: ";
+			} else if (errorCode == 401) {
+				msg = "401 Unauthorized: ";
+			} else if (errorCode == 403) {
+				msg = "403 Forbidden: ";
 			}
-			else if (errorCode == 401 && log.isWarnEnabled()) {
-				String qs = request.getQueryString();
-				log.warn("401 Unauthorized: " + (qs == null ? target : target + "?" + qs));
+			
+			if (msg != null) {
+				if (log.isWarnEnabled()) {
+					String qs = request.getQueryString();
+					log.warn(msg + (qs == null ? target : target + "?" + qs));
+				}
+			} else {
+				if (log.isErrorEnabled()) {
+					String qs = request.getQueryString();
+					log.error(qs == null ? target : target + "?" + qs, e);
+				}
 			}
-			else if (errorCode == 403 && log.isWarnEnabled()) {
-				String qs = request.getQueryString();
-				log.warn("403 Forbidden: " + (qs == null ? target : target + "?" + qs));
-			}
-			else if (log.isErrorEnabled()) {
+			
+			e.getErrorRender().setContext(request, response, action.getViewPath()).render();
+		}
+		catch (Exception e) {
+			if (log.isErrorEnabled()) {
 				String qs = request.getQueryString();
 				log.error(qs == null ? target : target + "?" + qs, e);
 			}
-			e.getErrorRender().setContext(request, response, action.getViewPath()).render();
-		}
-		catch (Throwable t) {
-			if (log.isErrorEnabled()) {
-				String qs = request.getQueryString();
-				log.error(qs == null ? target : target + "?" + qs, t);
-			}
-			renderFactory.getErrorRender(500).setContext(request, response, action.getViewPath()).render();
+			renderManager.getRenderFactory().getErrorRender(500).setContext(request, response, action.getViewPath()).render();
 		}
 	}
 }

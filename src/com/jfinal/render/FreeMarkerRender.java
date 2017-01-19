@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2011-2016, James Zhan 詹波 (jfinal@126.com).
+ * Copyright (c) 2011-2017, James Zhan 詹波 (jfinal@126.com).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,6 +57,19 @@ public class FreeMarkerRender extends Render {
 	public static void setProperty(String propertyName, String propertyValue) {
 		try {
 			FreeMarkerRender.getConfiguration().setSetting(propertyName, propertyValue);
+		} catch (TemplateException e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
+	/**
+	 * 注入对象到 FreeMarker 页面供调用，通常注入一些辅助内容输出的工具类，相当于是 freemarker 的一种扩展方式
+	 * @param name 对象名
+	 * @param object 对象
+	 */
+	public static void setSharedVariable(String name, Object object) {
+		try {
+			FreeMarkerRender.getConfiguration().setSharedVariable(name, object);
 		} catch (TemplateException e) {
 			throw new RuntimeException(e);
 		}

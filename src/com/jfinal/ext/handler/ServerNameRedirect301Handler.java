@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2011-2016, James Zhan 詹波 (jfinal@126.com).
+ * Copyright (c) 2011-2017, James Zhan 詹波 (jfinal@126.com).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,18 +43,22 @@ public class ServerNameRedirect301Handler extends Handler {
 	}
 	
 	private final void format() {
-		if (originalServerName.endsWith("/"))
+		if (originalServerName.endsWith("/")) {
 			originalServerName = originalServerName.substring(0, originalServerName.length() - 1);
+		}
 		
-		if (targetServerName.endsWith("/"))
+		if (targetServerName.endsWith("/")) {
 			targetServerName = targetServerName.substring(0, targetServerName.length() - 1);
+		}
 		
 		// 此处没有考虑 https 的情况, 该情况由用户在 new ServerNameRedirectHandler() 时自行解决
-		if (originalServerName.indexOf("://") == -1)
+		if (originalServerName.indexOf("://") == -1) {
 			originalServerName = "http://" + originalServerName;
+		}
 		
-		if (targetServerName.indexOf("://") == -1)
+		if (targetServerName.indexOf("://") == -1) {
 			targetServerName = "http://" + targetServerName;
+		}
 	}
 	
 	@Override

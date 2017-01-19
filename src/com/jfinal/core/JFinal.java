@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2011-2016, James Zhan 詹波 (jfinal@126.com).
+ * Copyright (c) 2011-2017, James Zhan 詹波 (jfinal@126.com).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,8 @@ import com.jfinal.handler.HandlerFactory;
 import com.jfinal.kit.LogKit;
 import com.jfinal.kit.PathKit;
 import com.jfinal.plugin.IPlugin;
-import com.jfinal.render.RenderFactory;
+import com.jfinal.render.RenderManager;
+import com.jfinal.server.JettyServerForIDEA;
 import com.jfinal.server.IServer;
 import com.jfinal.server.ServerFactory;
 import com.jfinal.token.ITokenCache;
@@ -59,7 +60,7 @@ public final class JFinal {
 		
 		initPathUtil();
 		
-		Config.configJFinal(jfinalConfig);	// start plugin and init log factory in this method
+		Config.configJFinal(jfinalConfig);	// start plugin, init log factory and init engine in this method
 		constants = Config.getConstants();
 		
 		initActionMapping();
@@ -73,8 +74,9 @@ public final class JFinal {
 	
 	private void initTokenManager() {
 		ITokenCache tokenCache = constants.getTokenCache();
-		if (tokenCache != null)
+		if (tokenCache != null) {
 			TokenManager.init(tokenCache);
+		}
 	}
 	
 	private void initHandler() {
@@ -92,7 +94,7 @@ public final class JFinal {
 	}
 	
 	private void initRender() {
-		RenderFactory.me().init(constants, servletContext);
+		RenderManager.me().init(Config.getEngine(), constants, servletContext);
 	}
 	
 	private void initActionMapping() {
@@ -149,8 +151,23 @@ public final class JFinal {
 		server.start();
 	}
 	
+	/**
+	 * 用于在 Eclipse 中，通过创建 main 方法的方式启动项目，支持执加载
+	 */
 	public static void start(String webAppDir, int port, String context, int scanIntervalSeconds) {
 		server = ServerFactory.getServer(webAppDir, port, context, scanIntervalSeconds);
+		server.start();
+	}
+	
+	/**
+	 * 用于在 IDEA 中，通过创建 main 方法的方式启动项目，不支持热加载
+	 * 本方法存在的意义在于此方法启动的速度比 maven 下的 jetty 插件要快得多
+	 * 
+	 * 注意：不支持热加载。建议通过 Ctrl + F5 快捷键，来快速重新启动项目，速度并不会比 eclipse 下的热加载慢多少
+	 *     实际操作中是先通过按 Alt + 5 打开 debug 窗口，才能按 Ctrl + F5 重启项目
+	 */
+	public static void start(String webAppDir, int port, String context) {
+		server = new JettyServerForIDEA(webAppDir, port, context);
 		server.start();
 	}
 	
@@ -159,22 +176,35 @@ public final class JFinal {
 	}
 	
 	/**
-	 * Run JFinal Server with Debug Configurations or Run Configurations in Eclipse JavaEE
-	 * args example: WebRoot 80 / 5
+	 * Run JFinal Server with Debug Configurations or Run Configurations in Eclipse or IDEA
+	 * Example for Eclipse:	src/main/webapp 80 / 5
+	 * Example for IDEA:	src/main/webapp 80 /
 	 */
 	public static void main(String[] args) {
 		if (args == null || args.length == 0) {
 			server = ServerFactory.getServer();
 			server.start();
+			return ;
 		}
-		else {
+		
+		// for Eclipse
+		if (args.length == 4) {
 			String webAppDir = args[0];
 			int port = Integer.parseInt(args[1]);
 			String context = args[2];
 			int scanIntervalSeconds = Integer.parseInt(args[3]);
 			server = ServerFactory.getServer(webAppDir, port, context, scanIntervalSeconds);
 			server.start();
+			return ;
 		}
+		
+		// for IDEA
+		if (args.length == 3) {
+			start(args[0], Integer.parseInt(args[1]), args[2]);
+			return ;
+		}
+		
+		throw new RuntimeException("Boot parameter error. The right parameter like this: src/main/webapp 80 / 5");
 	}
 }
 

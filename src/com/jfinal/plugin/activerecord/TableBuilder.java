@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2011-2016, James Zhan 詹波 (jfinal@126.com).
+ * Copyright (c) 2011-2017, James Zhan 詹波 (jfinal@126.com).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,10 +32,6 @@ class TableBuilder {
 	private JavaType javaType = new JavaType();
 	
 	void build(List<Table> tableList, Config config) {
-		if (tableList.size() == 0) {
-			return ;
-		}
-		
 		Table temp = null;
 		Connection conn = null;
 		try {

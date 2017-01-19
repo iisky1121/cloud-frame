@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2011-2016, James Zhan 詹波 (jfinal@126.com).
+ * Copyright (c) 2011-2017, James Zhan 詹波 (jfinal@126.com).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@ package com.jfinal.config;
 
 import java.util.HashMap;
 import java.util.Map;
+import com.jfinal.captcha.CaptchaManager;
+import com.jfinal.captcha.ICaptchaCache;
 import com.jfinal.core.ActionReporter;
 import com.jfinal.core.Const;
 import com.jfinal.i18n.I18n;
@@ -26,10 +28,8 @@ import com.jfinal.json.JsonManager;
 import com.jfinal.kit.StrKit;
 import com.jfinal.log.ILogFactory;
 import com.jfinal.log.LogManager;
-import com.jfinal.render.IErrorRenderFactory;
-import com.jfinal.render.IMainRenderFactory;
-import com.jfinal.render.IXmlRenderFactory;
-import com.jfinal.render.RenderFactory;
+import com.jfinal.render.IRenderFactory;
+import com.jfinal.render.RenderManager;
 import com.jfinal.render.ViewType;
 import com.jfinal.token.ITokenCache;
 
@@ -46,25 +46,11 @@ final public class Constants {
 	private String encoding = Const.DEFAULT_ENCODING;
 	private String urlParaSeparator = Const.DEFAULT_URL_PARA_SEPARATOR;
 	private ViewType viewType = Const.DEFAULT_VIEW_TYPE;
-	private String jspViewExtension = Const.DEFAULT_JSP_EXTENSION;
-	private String freeMarkerViewExtension = Const.DEFAULT_FREE_MARKER_EXTENSION;
-	private String velocityViewExtension = Const.DEFAULT_VELOCITY_EXTENSION;
+	private String viewExtension = Const.DEFAULT_VIEW_EXTENSION;
 	private int maxPostSize = Const.DEFAULT_MAX_POST_SIZE;
 	private int freeMarkerTemplateUpdateDelay = Const.DEFAULT_FREEMARKER_TEMPLATE_UPDATE_DELAY;	// just for not devMode
 	
 	private ITokenCache tokenCache = null;
-	
-	/**
-	 * Set ITokenCache implementation otherwise JFinal will use the HttpSesion to hold the token.
-	 * @param tokenCache the token cache
-	 */
-	public void setTokenCache(ITokenCache tokenCache) {
-		this.tokenCache = tokenCache;
-	}
-	
-	public ITokenCache getTokenCache() {
-		return tokenCache;
-	}
 	
 	/**
 	 * Set development mode.
@@ -72,6 +58,52 @@ final public class Constants {
 	 */
 	public void setDevMode(boolean devMode) {
 		this.devMode = devMode;
+	}
+	
+	public boolean getDevMode() {
+		return devMode;
+	}
+	
+	/**
+	 * Set the renderFactory
+	 */
+	public void setRenderFactory(IRenderFactory renderFactory) {
+		if (renderFactory == null) {
+			throw new IllegalArgumentException("renderFactory can not be null.");
+		}
+		RenderManager.me().setRenderFactory(renderFactory);
+	}
+	
+	/**
+	 * 设置 Json 转换工厂实现类，目前支持：JFinalJsonFactory(默认)、JacksonFactory、FastJsonFactory
+	 * 分别支持 JFinalJson、Jackson、FastJson
+	 */
+	public void setJsonFactory(IJsonFactory jsonFactory) {
+		if (jsonFactory == null) {
+			throw new IllegalArgumentException("jsonFactory can not be null.");
+		}
+		JsonManager.me().setDefaultJsonFactory(jsonFactory);
+	}
+	
+	/**
+	 * 设置json转换时日期格式，常用格式有："yyyy-MM-dd HH:mm:ss"、 "yyyy-MM-dd"
+	 */
+	public void setJsonDatePattern(String datePattern) {
+		if (StrKit.isBlank(datePattern)) {
+			throw new IllegalArgumentException("datePattern can not be blank.");
+		}
+		JsonManager.me().setDefaultDatePattern(datePattern);
+	}
+	
+	public void setCaptchaCache(ICaptchaCache captchaCache) {
+		CaptchaManager.me().setCaptchaCache(captchaCache);
+	}
+	
+	public void setLogFactory(ILogFactory logFactory) {
+		if (logFactory == null) {
+			throw new IllegalArgumentException("logFactory can not be null.");
+		}
+		LogManager.me().setDefaultLogFactory(logFactory);
 	}
 	
 	/**
@@ -86,8 +118,16 @@ final public class Constants {
 		return encoding;
 	}
 	
-	public boolean getDevMode() {
-		return devMode;
+	/**
+	 * Set ITokenCache implementation otherwise JFinal will use the HttpSesion to hold the token.
+	 * @param tokenCache the token cache
+	 */
+	public void setTokenCache(ITokenCache tokenCache) {
+		this.tokenCache = tokenCache;
+	}
+	
+	public ITokenCache getTokenCache() {
+		return tokenCache;
 	}
 	
 	public String getUrlParaSeparator() {
@@ -99,7 +139,7 @@ final public class Constants {
 	}
 	
 	/**
-	 * Set view type. The default value is ViewType.FREE_MARKER
+	 * Set view type. The default value is ViewType.JFINAL_TEMPLATE
 	 * Controller.render(String view) will use the view type to render the view.
 	 * @param viewType the view type 
 	 */
@@ -107,9 +147,7 @@ final public class Constants {
 		if (viewType == null) {
 			throw new IllegalArgumentException("viewType can not be null");
 		}
-		if (viewType != ViewType.OTHER) {	// setMainRenderFactory will set ViewType.OTHER
-			this.viewType = viewType;
-		}
+		this.viewType = viewType;
 	}
 	
 	/**
@@ -123,40 +161,19 @@ final public class Constants {
 		this.urlParaSeparator = urlParaSeparator;
 	}
 	
-	public String getJspViewExtension() {
-		return jspViewExtension;
+	public String getViewExtension() {
+		return viewExtension;
 	}
 	
 	/**
-	 * Set Jsp view extension. The default value is ".jsp"
-	 * @param jspViewExtension the Jsp view extension
+	 * Set view extension for the IRenderFactory.getDefaultRender(...)
+	 * The default value is ".html"
+	 * 
+	 * Example: ".html" or ".ftl"
+	 * @param viewExtension the extension of the view, it must start with dot char "."
 	 */
-	public void setJspViewExtension(String jspViewExtension) {
-		this.jspViewExtension = jspViewExtension.startsWith(".") ? jspViewExtension : "." + jspViewExtension;
-	}
-	
-	public String getFreeMarkerViewExtension() {
-		return freeMarkerViewExtension;
-	}
-	
-	/**
-	 * Set FreeMarker view extension. The default value is ".html" not ".ftl"
-	 * @param freeMarkerViewExtension the FreeMarker view extension
-	 */
-	public void setFreeMarkerViewExtension(String freeMarkerViewExtension) {
-		this.freeMarkerViewExtension = freeMarkerViewExtension.startsWith(".") ? freeMarkerViewExtension : "." + freeMarkerViewExtension;
-	}
-	
-	public String getVelocityViewExtension() {
-		return velocityViewExtension;
-	}
-	
-	/**
-	 * Set Velocity view extension. The default value is ".vm"
-	 * @param velocityViewExtension the Velocity view extension
-	 */
-	public void setVelocityViewExtension(String velocityViewExtension) {
-		this.velocityViewExtension = velocityViewExtension.startsWith(".") ? velocityViewExtension : "." + velocityViewExtension;
+	public void setViewExtension(String viewExtension) {
+		this.viewExtension = viewExtension.startsWith(".") ? viewExtension : "." + viewExtension;
 	}
 	
 	/**
@@ -275,6 +292,13 @@ final public class Constants {
 	}
 	
 	/**
+	 * 设置 devMode 之下的 action report 是否在 invocation 之后，默认值为 true
+	 */
+	public void setReportAfterInvocation(boolean reportAfterInvocation) {
+		ActionReporter.setReportAfterInvocation(reportAfterInvocation);
+	}
+	
+	/**
 	 * FreeMarker template update delay for not devMode.
 	 */
 	public void setFreeMarkerTemplateUpdateDelay(int delayInSeconds) {
@@ -286,73 +310,6 @@ final public class Constants {
 	
 	public int getFreeMarkerTemplateUpdateDelay() {
 		return freeMarkerTemplateUpdateDelay;
-	}
-	
-	/**
-	 * Set the base path for all views
-	 */
-	public void setBaseViewPath(String baseViewPath) {
-		Routes.setBaseViewPath(baseViewPath);
-	}
-	
-	/**
-	 * Set the mainRenderFactory then your can use your custom render in controller as render(String).
-	 */
-	public void setMainRenderFactory(IMainRenderFactory mainRenderFactory) {
-		if (mainRenderFactory == null) {
-			throw new IllegalArgumentException("mainRenderFactory can not be null.");
-		}
-		this.viewType = ViewType.OTHER;
-		RenderFactory.me().setMainRenderFactory(mainRenderFactory);
-	}
-	
-	public void setLogFactory(ILogFactory logFactory) {
-		if (logFactory == null) {
-			throw new IllegalArgumentException("logFactory can not be null.");
-		}
-		LogManager.me().setDefaultLogFactory(logFactory);
-	}
-	
-	public void setErrorRenderFactory(IErrorRenderFactory errorRenderFactory) {
-		if (errorRenderFactory == null) {
-			throw new IllegalArgumentException("errorRenderFactory can not be null.");
-		}
-		RenderFactory.me().setErrorRenderFactory(errorRenderFactory);
-	}
-	
-	public void setXmlRenderFactory(IXmlRenderFactory xmlRenderFactory) {
-		if (xmlRenderFactory == null) {
-			throw new IllegalArgumentException("xmlRenderFactory can not be null.");
-		}
-		RenderFactory.me().setXmlRenderFactory(xmlRenderFactory);
-	}
-	
-	/**
-	 * 设置 Json 转换工厂实现类，目前支持：JFinalJsonFactory(默认)、JacksonFactory、FastJsonFactory
-	 * 分别支持 JFinalJson、Jackson、FastJson
-	 */
-	public void setJsonFactory(IJsonFactory jsonFactory) {
-		if (jsonFactory == null) {
-			throw new IllegalArgumentException("jsonFactory can not be null.");
-		}
-		JsonManager.me().setDefaultJsonFactory(jsonFactory);
-	}
-	
-	/**
-	 * 设置json转换时日期格式，常用格式有："yyyy-MM-dd HH:mm:ss"、 "yyyy-MM-dd"
-	 */
-	public void setJsonDatePattern(String datePattern) {
-		if (StrKit.isBlank(datePattern)) {
-			throw new IllegalArgumentException("datePattern can not be blank.");
-		}
-		JsonManager.me().setDefaultDatePattern(datePattern);
-	}
-	
-	/**
-	 * 设置 devMode 之下的 action report 是否在 invocation 之后，默认值为 true
-	 */
-	public void setReportAfterInvocation(boolean reportAfterInvocation) {
-		ActionReporter.setReportAfterInvocation(reportAfterInvocation);
 	}
 }
 

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2011-2016, James Zhan 詹波 (jfinal@126.com).
+ * Copyright (c) 2011-2017, James Zhan 詹波 (jfinal@126.com).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,6 @@
 
 package com.jfinal.plugin.activerecord;
 
-import static com.jfinal.plugin.activerecord.DbKit.NULL_PARA_ARRAY;
-
 import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -29,8 +27,8 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
+import java.util.Map.Entry;
 
 import com.jfinal.base.UserSession;
 import com.jfinal.ext.kit.ThreadPool;
@@ -39,6 +37,7 @@ import com.jfinal.ext.plugin.tablebind.TableBind;
 import com.jfinal.ext.sql.Cnd;
 import com.jfinal.kit.StrKit;
 import com.jfinal.plugin.activerecord.cache.ICache;
+import static com.jfinal.plugin.activerecord.DbKit.NULL_PARA_ARRAY;
 
 /**
  * Model.
@@ -49,11 +48,17 @@ import com.jfinal.plugin.activerecord.cache.ICache;
  */
 @SuppressWarnings({"rawtypes", "unchecked"})
 public abstract class Model<M extends Model> implements Serializable {
-	
-	public final static String DEFAULT_ALIAS = "#"; 
-	private static String tableName = null;
-	
+	public final static String DEFAULT_ALIAS = "#";
 	private static final long serialVersionUID = -990334519496260591L;
+	
+	public static final int FILTER_BY_SAVE = 0;
+	public static final int FILTER_BY_UPDATE = 1;
+	
+	public M dao() {
+		attrs = DaoContainerFactory.daoMap;
+		modifyFlag = DaoContainerFactory.daoSet;
+		return (M)this;
+	}
 	
 	/**
 	 * Attributes of this model
@@ -100,7 +105,7 @@ public abstract class Model<M extends Model> implements Serializable {
 		return (M)this;
 	}
 	
-	private Config getConfig() {
+	protected Config getConfig() {
 		if (configName != null)
 			return DbKit.getConfig(configName);
 		return DbKit.getConfig(getUsefulClass());
@@ -396,7 +401,9 @@ public abstract class Model<M extends Model> implements Serializable {
 	/**
 	 * Save model.
 	 */
-	public final boolean save() {
+	public boolean save() {
+		filter(FILTER_BY_SAVE);
+		
 		Config config = getConfig();
 		Table table = getTable();
 		
@@ -461,7 +468,7 @@ public abstract class Model<M extends Model> implements Serializable {
 	/**
 	 * Delete model.
 	 */
-	public final boolean delete() {
+	public boolean delete() {
 		Table table = getTable();
 		String[] pKeys = table.getPrimaryKey();
 		Object[] ids = new Object[pKeys.length];
@@ -478,7 +485,7 @@ public abstract class Model<M extends Model> implements Serializable {
 	 * @param idValue the id value of the model
 	 * @return true if delete succeed otherwise false
 	 */
-	public final boolean deleteById(Object idValue) {
+	public boolean deleteById(Object idValue) {
 		if (idValue == null)
 			throw new IllegalArgumentException("idValue can not be null");
 		return deleteById(getTable(), idValue);
@@ -489,7 +496,7 @@ public abstract class Model<M extends Model> implements Serializable {
 	 * @param idValues the composite id values of the model
 	 * @return true if delete succeed otherwise false
 	 */
-	public final boolean deleteById(Object... idValues) {
+	public boolean deleteById(Object... idValues) {
 		Table table = getTable();
 		if (idValues == null || idValues.length != table.getPrimaryKey().length)
 			throw new IllegalArgumentException("Primary key nubmer must equals id value number and can not be null");
@@ -503,8 +510,7 @@ public abstract class Model<M extends Model> implements Serializable {
 		try {
 			conn = config.getConnection();
 			String sql = config.dialect.forModelDeleteById(table);
-			//return Db.update(config, conn, sql, idValues) >= 1;
-			return delete(sql, idValues);
+			return Db.update(config, conn, sql, idValues) >= 1;
 		} catch (Exception e) {
 			throw new ActiveRecordException(e);
 		} finally {
@@ -515,9 +521,12 @@ public abstract class Model<M extends Model> implements Serializable {
 	/**
 	 * Update model.
 	 */
-	public final boolean update() {
-		if (getModifyFlag().isEmpty())
+	public boolean update() {
+		filter(FILTER_BY_UPDATE);
+		
+		if (getModifyFlag().isEmpty()) {
 			return false;
+		}
 		
 		Table table = getTable();
 		String[] pKeys = table.getPrimaryKey();
@@ -805,7 +814,7 @@ public abstract class Model<M extends Model> implements Serializable {
 	
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append(super.toString()).append(" {");
+		sb.append("{");
 		boolean first = true;
 		for (Entry<String, Object> e : attrs.entrySet()) {
 			if (first)
@@ -947,6 +956,50 @@ public abstract class Model<M extends Model> implements Serializable {
 		return c.getName().indexOf("EnhancerByCGLIB") == -1 ? c : c.getSuperclass();	// com.demo.blog.Blog$$EnhancerByCGLIB$$69a17158
 	}
 	
+	/**
+	 * filter () 方法将被 save()、update() 调用，可用于过滤类似于 XSS 攻击脚本
+	 * @param filterBy 0 表示当前正被 save() 调用, 1 表示当前正被 update() 调用
+	 */
+	protected void filter(int filterBy) {
+		
+	}
+	
+	/**
+	 * 可以在模板中利用自身的 属性/字段 参与动态生成 sql，例如：
+	 * select * from user where nickName = #(nickName)
+	 */
+	public String getSql(String key) {
+		return getSql(key, this.attrs);
+	}
+	
+	public String getSql(String key, Model model) {
+		return getSql(key, model.attrs);
+	}
+	
+	public String getSql(String key, Map data) {
+		return getConfig().getSqlKit().getSql(key, data);
+	}
+	
+	public SqlPara getSqlPara(String key) {
+		return getSqlPara(key, this.attrs);
+	}
+	
+	public SqlPara getSqlPara(String key, Model model) {
+		return getSqlPara(key, model.attrs);
+	}
+	
+	public SqlPara getSqlPara(String key, Map data) {
+		return getConfig().getSqlKit().getSqlPara(key, data);
+	}
+	
+	public List<M> find(SqlPara sqlPara) {
+		return find(sqlPara.getSql(), sqlPara.getPara());
+	}
+	
+	public M findFirst(SqlPara sqlPara) {
+		return findFirst(sqlPara.getSql(), sqlPara.getPara());
+	}
+	
 	/** diy mothed **/
 	private TableBind getTableBind(){
 		return this.getClass().getAnnotation(TableBind.class);
@@ -960,10 +1013,7 @@ public abstract class Model<M extends Model> implements Serializable {
 		if (tableBind != null) {
 			return tableBind.tableName();
 		}
-		else if(tableName==null){
-			tableName = getTable().getName();
-		}
-		return tableName;
+		return getTableName();
 	}
 	
 	/**

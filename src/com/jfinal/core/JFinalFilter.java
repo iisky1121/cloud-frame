@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2011-2016, James Zhan 詹波 (jfinal@126.com).
+ * Copyright (c) 2011-2017, James Zhan 詹波 (jfinal@126.com).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ import com.jfinal.log.Log;
 /**
  * JFinal framework filter
  */
-public final class JFinalFilter implements Filter {
+public class JFinalFilter implements Filter {
 	
 	private Handler handler;
 	private String encoding;
@@ -46,8 +46,9 @@ public final class JFinalFilter implements Filter {
 	public void init(FilterConfig filterConfig) throws ServletException {
 		createJFinalConfig(filterConfig.getInitParameter("configClass"));
 		
-		if (jfinal.init(jfinalConfig, filterConfig.getServletContext()) == false)
+		if (jfinal.init(jfinalConfig, filterConfig.getServletContext()) == false) {
 			throw new RuntimeException("JFinal init error!");
+		}
 		
 		handler = jfinal.getHandler();
 		constants = Config.getConstants();
@@ -64,8 +65,9 @@ public final class JFinalFilter implements Filter {
 		request.setCharacterEncoding(encoding);
 		
 		String target = request.getRequestURI();
-		if (contextPathLength != 0)
+		if (contextPathLength != 0) {
 			target = target.substring(contextPathLength);
+		}
 		
 		boolean[] isHandled = {false};
 		try {
@@ -78,8 +80,9 @@ public final class JFinalFilter implements Filter {
 			}
 		}
 		
-		if (isHandled[0] == false)
+		if (isHandled[0] == false) {
 			chain.doFilter(request, response);
+		}
 	}
 	
 	public void destroy() {
@@ -88,8 +91,9 @@ public final class JFinalFilter implements Filter {
 	}
 	
 	private void createJFinalConfig(String configClass) {
-		if (configClass == null)
+		if (configClass == null) {
 			throw new RuntimeException("Please set configClass parameter of JFinalFilter in web.xml");
+		}
 		
 		Object temp = null;
 		try {
@@ -98,10 +102,11 @@ public final class JFinalFilter implements Filter {
 			throw new RuntimeException("Can not create instance of class: " + configClass, e);
 		}
 		
-		if (temp instanceof JFinalConfig)
+		if (temp instanceof JFinalConfig) {
 			jfinalConfig = (JFinalConfig)temp;
-		else
+		} else {
 			throw new RuntimeException("Can not create instance of class: " + configClass + ". Please check the config in web.xml");
+		}
 	}
 	
 	static void initLog() {

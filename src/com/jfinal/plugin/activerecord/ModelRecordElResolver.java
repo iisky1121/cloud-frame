@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2011-2016, James Zhan 詹波 (jfinal@126.com).
+ * Copyright (c) 2011-2017, James Zhan 詹波 (jfinal@126.com).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,14 @@
 package com.jfinal.plugin.activerecord;
 
 import java.beans.FeatureDescriptor;
+import java.lang.reflect.Method;
 import java.util.Iterator;
 import javax.el.ELContext;
 import javax.el.ELResolver;
 import javax.servlet.ServletContext;
 import javax.servlet.jsp.JspApplicationContext;
 import javax.servlet.jsp.JspFactory;
+import com.jfinal.kit.StrKit;
 
 /**
  * ModelRecordElResolver
@@ -31,6 +33,7 @@ import javax.servlet.jsp.JspFactory;
 public class ModelRecordElResolver extends ELResolver {
 	
 	static JspApplicationContext jspApplicationContext = null;
+	private static final Object[] NULL_ARGUMENT = new Object[0];
 	
 	private static boolean resolveBeanAsModel = false;
 	
@@ -76,24 +79,42 @@ public class ModelRecordElResolver extends ELResolver {
 	}
 	
 	public Object getValue(ELContext context, Object base, Object property) {
-		if (isWorking == false) {
+		if (isWorking == false || property == null) {
 			return null;
 		}
-		if (resolveBeanAsModel == false && base instanceof IBean) {
-			return null;
+		// if (resolveBeanAsModel == false && base instanceof IBean) {
+		//	return null;
+		// }
+		if (base instanceof IBean) {
+			Method getter = findGetter(base, property.toString());
+			if (getter != null) {
+				context.setPropertyResolved(true);
+				try {
+					return getter.invoke(base, NULL_ARGUMENT);
+				} catch (Exception e) {
+					throw new RuntimeException(e);
+				}
+			}
 		}
 		
 		if (base instanceof Model) {
 			context.setPropertyResolved(true);
-			if (property == null)
-				return null;
 			return ((Model)base).get(property.toString());
 		}
 		else if (base instanceof Record) {
 			context.setPropertyResolved(true);
-			if (property == null)
-				return null;
 			return ((Record)base).get(property.toString());
+		}
+		return null;
+	}
+	
+	private Method findGetter(Object base, String property) {
+		String getter = "get" + StrKit.firstCharToUpperCase(property);
+		Method[] methods = base.getClass().getMethods();
+		for (Method m : methods) {
+			if (m.getName().equals(getter) && m.getParameterTypes().length == 0) {
+				return m;
+			}
 		}
 		return null;
 	}
@@ -111,7 +132,7 @@ public class ModelRecordElResolver extends ELResolver {
 	}
 	
 	public void setValue(ELContext context, Object base, Object property, Object value) {
-		if (isWorking == false) {
+		if (isWorking == false || property == null) {
 			return ;
 		}
 		if (resolveBeanAsModel == false && base instanceof IBean) {
@@ -120,8 +141,6 @@ public class ModelRecordElResolver extends ELResolver {
 		
 		if (base instanceof Model) {
 			context.setPropertyResolved(true);
-			if (property == null)
-				return ;
 			try {
 				((Model)base).set(property.toString(), value);
 			} catch (Exception e) {
@@ -130,8 +149,6 @@ public class ModelRecordElResolver extends ELResolver {
 		}
 		else if (base instanceof Record) {
 			context.setPropertyResolved(true);
-			if (property == null)
-				return ;
 			((Record)base).set(property.toString(), value);
 		}
 	}

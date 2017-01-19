@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2011-2016, James Zhan 詹波 (jfinal@126.com).
+ * Copyright (c) 2011-2017, James Zhan 詹波 (jfinal@126.com).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,13 @@
 
 package com.jfinal.core;
 
+import java.io.IOException;
+import java.io.Writer;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Enumeration;
 import javax.servlet.http.HttpServletRequest;
 import com.jfinal.aop.Interceptor;
-import com.jfinal.render.JsonRender;
-import com.jfinal.render.Render;
 
 /**
  * ActionReporter
@@ -30,6 +30,8 @@ import com.jfinal.render.Render;
 public class ActionReporter {
 	
 	private static boolean reportAfterInvocation = true;
+	private static int maxOutputLengthOfParaValue = 512;
+	private static Writer writer = new SystemOutWriter();
 	
 	private static final ThreadLocal<SimpleDateFormat> sdf = new ThreadLocal<SimpleDateFormat>() {
 		protected SimpleDateFormat initialValue() {
@@ -39,6 +41,20 @@ public class ActionReporter {
 	
 	public static void setReportAfterInvocation(boolean reportAfterInvocation) {
 		ActionReporter.reportAfterInvocation = reportAfterInvocation;
+	}
+	
+	public static void setMaxOutputLengthOfParaValue(int maxOutputLengthOfParaValue) {
+		if (maxOutputLengthOfParaValue < 16) {
+			throw new IllegalArgumentException("maxOutputLengthOfParaValue must more than 16");
+		}
+		ActionReporter.maxOutputLengthOfParaValue = maxOutputLengthOfParaValue;
+	}
+	
+	public static void setWriter(Writer writer) {
+		if (writer == null) {
+			throw new IllegalArgumentException("writer can not be null");
+		}
+		ActionReporter.writer = writer;
 	}
 	
 	public static boolean isReportAfterInvocation(HttpServletRequest request) {
@@ -57,8 +73,9 @@ public class ActionReporter {
 	/**
 	 * Report the action
 	 */
-	public static final void report(Controller controller, Action action) {
+	public static final void report(String target, Controller controller, Action action) {
 		StringBuilder sb = new StringBuilder("\nJFinal action report -------- ").append(sdf.get().format(new Date())).append(" ------------------------------\n");
+		sb.append("Url         : ").append(controller.getRequest().getMethod()).append(" ").append(target).append("\n");
 		Class<? extends Controller> cc = action.getControllerClass();
 		sb.append("Controller  : ").append(cc.getName()).append(".(").append(cc.getSimpleName()).append(".java:1)");
 		sb.append("\nMethod      : ").append(action.getMethodName()).append("\n");
@@ -90,7 +107,12 @@ public class ActionReporter {
 				String name = e.nextElement();
 				String[] values = request.getParameterValues(name);
 				if (values.length == 1) {
-					sb.append(name).append("=").append(values[0]);
+					sb.append(name).append("=");
+					if (values[0] != null && values[0].length() > maxOutputLengthOfParaValue) {
+						sb.append(values[0].substring(0, maxOutputLengthOfParaValue)).append("...");
+					} else {
+						sb.append(values[0]);
+					}
 				}
 				else {
 					sb.append(name).append("[]={");
@@ -105,15 +127,23 @@ public class ActionReporter {
 			}
 			sb.append("\n");
 		}
-		Render render = controller.getRender();
-		if(render instanceof JsonRender){
-			sb.append("Render      : " + ((JsonRender)render).getJsonText());
-		}
-		else{
-			sb.append("Render      : " + render.getView());
-		}
-		sb.append("\n");
 		sb.append("--------------------------------------------------------------------------------\n");
-		System.out.print(sb.toString());
+		
+		try {
+			writer.write(sb.toString());
+		} catch (IOException ex) {
+			throw new RuntimeException(ex);
+		}
+	}
+	
+	private static class SystemOutWriter extends Writer {
+		public void write(String str) throws IOException {
+			System.out.print(str);
+		}
+		public void write(char[] cbuf, int off, int len) throws IOException {}
+		public void flush() throws IOException {}
+		public void close() throws IOException {}
 	}
 }
+
+

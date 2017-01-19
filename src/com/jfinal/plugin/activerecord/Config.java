@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2011-2016, James Zhan 詹波 (jfinal@126.com).
+ * Copyright (c) 2011-2017, James Zhan 詹波 (jfinal@126.com).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import com.jfinal.plugin.activerecord.cache.EhCache;
 import com.jfinal.plugin.activerecord.cache.ICache;
 import com.jfinal.plugin.activerecord.dialect.Dialect;
 import com.jfinal.plugin.activerecord.dialect.MysqlDialect;
+import com.jfinal.plugin.activerecord.sql.SqlKit;
 
 public class Config {
 	private final ThreadLocal<Connection> threadLocal = new ThreadLocal<Connection>();
@@ -41,6 +42,13 @@ public class Config {
 	IContainerFactory containerFactory;
 	ICache cache;
 	
+	SqlKit sqlKit;
+	
+	// For ActiveRecordPlugin only, dataSource can be null
+	Config(String name, DataSource dataSource, int transactionLevel) {
+		init(name, dataSource, new MysqlDialect(), false, false, transactionLevel, IContainerFactory.defaultContainerFactory, new EhCache());
+	}
+	
 	/**
 	 * Constructor with full parameters
 	 * @param name the name of the config
@@ -53,25 +61,37 @@ public class Config {
 	 * @param cache the cache
 	 */
 	public Config(String name, DataSource dataSource, Dialect dialect, boolean showSql, boolean devMode, int transactionLevel, IContainerFactory containerFactory, ICache cache) {
-		if (StrKit.isBlank(name))
-			throw new IllegalArgumentException("Config name can not be blank");
-		if (dataSource == null)
+		if (dataSource == null) {
 			throw new IllegalArgumentException("DataSource can not be null");
-		if (dialect == null)
+		}
+		init(name, dataSource, dialect, showSql, devMode, transactionLevel, containerFactory, cache);
+	}
+	
+	private void init(String name, DataSource dataSource, Dialect dialect, boolean showSql, boolean devMode, int transactionLevel, IContainerFactory containerFactory, ICache cache) {
+		if (StrKit.isBlank(name)) {
+			throw new IllegalArgumentException("Config name can not be blank");
+		}
+		if (dialect == null) {
 			throw new IllegalArgumentException("Dialect can not be null");
-		if (containerFactory == null)
+		}
+		if (containerFactory == null) {
 			throw new IllegalArgumentException("ContainerFactory can not be null");
-		if (cache == null)
+		}
+		if (cache == null) {
 			throw new IllegalArgumentException("Cache can not be null");
+		}
 		
 		this.name = name.trim();
 		this.dataSource = dataSource;
 		this.dialect = dialect;
 		this.showSql = showSql;
 		this.devMode = devMode;
-		this.transactionLevel = transactionLevel;
+		// this.transactionLevel = transactionLevel;
+		this.setTransactionLevel(transactionLevel);
 		this.containerFactory = containerFactory;
 		this.cache = cache;
+		
+		this.sqlKit = new SqlKit(this.name, this.devMode);
 	}
 	
 	/**
@@ -92,6 +112,19 @@ public class Config {
 		
 	}
 	
+	void setDevMode(boolean devMode) {
+		this.devMode = devMode;
+		this.sqlKit.setDevMode(devMode);
+	}
+	
+	void setTransactionLevel(int transactionLevel) {
+		int t = transactionLevel;
+		if (t != 0 && t != 1  && t != 2  && t != 4  && t != 8) {
+			throw new IllegalArgumentException("The transactionLevel only be 0, 1, 2, 4, 8");
+		}
+		this.transactionLevel = transactionLevel;
+	}
+	
 	/**
 	 * Create broken config for DbKit.brokenConfig = Config.createBrokenConfig();
 	 */
@@ -108,6 +141,10 @@ public class Config {
 	
 	public String getName() {
 		return name;
+	}
+	
+	public SqlKit getSqlKit() {
+		return sqlKit;
 	}
 	
 	public Dialect getDialect() {

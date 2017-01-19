@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2011-2016, James Zhan 詹波 (jfinal@126.com).
+ * Copyright (c) 2011-2017, James Zhan 詹波 (jfinal@126.com).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,12 @@ import java.io.File;
 import java.util.Properties;
 import com.jfinal.core.Const;
 import com.jfinal.kit.Prop;
+import com.jfinal.template.Engine;
 
 /**
  * JFinalConfig.
  * <p>
- * Config order: configConstant(), configRoute(), configPlugin(), configInterceptor(), configHandler()
+ * Config order: configConstant(), configRoute(), configEngine(), configPlugin(), configInterceptor(), configHandler()
  */
 public abstract class JFinalConfig {
 	
@@ -37,6 +38,11 @@ public abstract class JFinalConfig {
 	 * Config route
 	 */
 	public abstract void configRoute(Routes me);
+	
+	/**
+	 * Config engine
+	 */
+	public abstract void configEngine(Engine me);
 	
 	/**
 	 * Config plugin

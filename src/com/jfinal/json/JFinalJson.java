@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2011-2016, James Zhan 詹波 (jfinal@126.com).
+ * Copyright (c) 2011-2017, James Zhan 詹波 (jfinal@126.com).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,13 @@
 
 package com.jfinal.json;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -66,7 +70,7 @@ public class JFinalJson extends Json {
 	}
 	
 	public JFinalJson setTimestampPattern(String timestampPattern) {
-		if (timestampPattern == null || "".equals(timestampPattern.trim())) {
+		if (StrKit.isBlank(timestampPattern)) {
 			throw new IllegalArgumentException("timestampPattern can not be blank.");
 		}
 		this.timestampPattern = timestampPattern;
@@ -74,7 +78,7 @@ public class JFinalJson extends Json {
 	}
 	
 	public Json setDatePattern(String datePattern) {
-		if (datePattern == null || "".equals(datePattern.trim())) {
+		if (StrKit.isBlank(datePattern)) {
 			throw new IllegalArgumentException("datePattern can not be blank.");
 		}
 		this.datePattern = datePattern;
@@ -120,13 +124,9 @@ public class JFinalJson extends Json {
 		return sb.toString();
 	}
 	
-	protected String listToJson(List list, int depth) {
-		if(list == null)
-			return "null";
-		
+	protected String iteratorToJson(Iterator iter, int depth) {
         boolean first = true;
         StringBuilder sb = new StringBuilder();
-		Iterator iter = list.iterator();
         
         sb.append('[');
 		while(iter.hasNext()){
@@ -248,12 +248,12 @@ public class JFinalJson extends Json {
 			}
 		}
 		
-		if(value instanceof Map) {
-			return mapToJson((Map)value, depth);
+		if(value instanceof Collection) {
+			return iteratorToJson(((Collection)value).iterator(), depth);
 		}
 		
-		if(value instanceof List) {
-			return listToJson((List)value, depth);
+		if(value instanceof Map) {
+			return mapToJson((Map)value, depth);
 		}
 		
 		String result = otherToJson(value, depth);
@@ -278,12 +278,20 @@ public class JFinalJson extends Json {
 			Map map = ((Record)value).getColumns();
 			return mapToJson(map, depth);
 		}
-		if (value instanceof Object[]) {
-			Object[] arr = (Object[])value;
-			List list = new ArrayList(arr.length);
-			for (int i=0; i<arr.length; i++)
-				list.add(arr[i]);
-			return listToJson(list, depth);
+		if (value.getClass().isArray()) {
+			int len = Array.getLength(value);
+			List<Object> list = new ArrayList<Object>(len);
+			for (int i=0; i<len; i++) {
+				list.add(Array.get(value, i));
+			}
+			return iteratorToJson(list.iterator(), depth);
+		}
+		if (value instanceof Iterator) {
+			return iteratorToJson((Iterator)value, depth);
+		}
+		if (value instanceof Enumeration) {
+			ArrayList<?> list = Collections.list((Enumeration<?>)value);
+			return iteratorToJson(list.iterator(), depth);
 		}
 		if (value instanceof Enum) {
 			return "\"" + ((Enum)value).toString() + "\"";

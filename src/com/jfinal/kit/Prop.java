@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2011-2016, James Zhan 詹波 (jfinal@126.com).
+ * Copyright (c) 2011-2017, James Zhan 詹波 (jfinal@126.com).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,8 +56,9 @@ public class Prop {
 		InputStream inputStream = null;
 		try {
 			inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream(fileName);		// properties.load(Prop.class.getResourceAsStream(fileName));
-			if (inputStream == null)
+			if (inputStream == null) {
 				throw new IllegalArgumentException("Properties file not found in classpath: " + fileName);
+			}
 			properties = new Properties();
 			properties.load(new InputStreamReader(inputStream, encoding));
 		} catch (IOException e) {
@@ -87,10 +88,12 @@ public class Prop {
 	 * @param encoding the encoding
 	 */
 	public Prop(File file, String encoding) {
-		if (file == null)
+		if (file == null) {
 			throw new IllegalArgumentException("File can not be null.");
-		if (file.isFile() == false)
+		}
+		if (file.isFile() == false) {
 			throw new IllegalArgumentException("File not found : " + file.getName());
+		}
 		
 		InputStream inputStream = null;
 		try {
@@ -119,8 +122,9 @@ public class Prop {
 	
 	public Integer getInt(String key, Integer defaultValue) {
 		String value = properties.getProperty(key);
-		if (value != null)
+		if (value != null) {
 			return Integer.parseInt(value.trim());
+		}
 		return defaultValue;
 	}
 	
@@ -130,8 +134,9 @@ public class Prop {
 	
 	public Long getLong(String key, Long defaultValue) {
 		String value = properties.getProperty(key);
-		if (value != null)
+		if (value != null) {
 			return Long.parseLong(value.trim());
+		}
 		return defaultValue;
 	}
 	
@@ -143,10 +148,11 @@ public class Prop {
 		String value = properties.getProperty(key);
 		if (value != null) {
 			value = value.toLowerCase().trim();
-			if ("true".equals(value))
+			if ("true".equals(value)) {
 				return true;
-			else if ("false".equals(value))
+			} else if ("false".equals(value)) {
 				return false;
+			}
 			throw new RuntimeException("The value can not parse to Boolean : " + value);
 		}
 		return defaultValue;

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2011-2016, James Zhan 詹波 (jfinal@126.com).
+ * Copyright (c) 2011-2017, James Zhan 詹波 (jfinal@126.com).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,18 +39,40 @@ import static com.jfinal.plugin.activerecord.DbKit.NULL_PARA_ARRAY;
 public class DbPro {
 	
 	private final Config config;
+	
+	static DbPro MAIN = null;
 	private static final Map<String, DbPro> map = new HashMap<String, DbPro>();
 	
+	/**
+	 * for DbKit.addConfig(configName)
+	 */
+	static void init(String configName) {
+		MAIN = new DbPro(configName);
+		map.put(configName, MAIN);
+	}
+	
+    /**
+     * for DbKit.removeConfig(configName)
+     */
+    static void removeDbProWithConfig(String configName) {
+    	if (MAIN != null && MAIN.config.getName().equals(configName)) {
+    		MAIN = null;
+    	}
+    	map.remove(configName);
+    }
+	
 	public DbPro() {
-		if (DbKit.config == null)
+		if (DbKit.config == null) {
 			throw new RuntimeException("The main config is null, initialize ActiveRecordPlugin first");
+		}
 		this.config = DbKit.config;
 	}
 	
 	public DbPro(String configName) {
 		this.config = DbKit.getConfig(configName);
-		if (this.config == null)
+		if (this.config == null) {
 			throw new IllegalArgumentException("Config not found by configName: " + configName);
+		}
 	}
 	
 	public static DbPro use(String configName) {
@@ -63,7 +85,7 @@ public class DbPro {
 	}
 	
 	public static DbPro use() {
-		return use(DbKit.config.name);
+		return MAIN;
 	}
 	
 	<T> List<T> query(Config config, Connection conn, String sql, Object... paras) throws SQLException {
@@ -141,7 +163,7 @@ public class DbPro {
 	 * @param <T> the type of the column that in your sql's select statement
 	 * @param sql an SQL statement that may contain one or more '?' IN parameter placeholders
 	 * @param paras the parameters of sql
-	 * @return List<T>
+	 * @return <T> T
 	 */
 	public <T> T queryColumn(String sql, Object... paras) {
 		List<T> result = query(sql, paras);
@@ -244,6 +266,14 @@ public class DbPro {
 	
 	public Boolean queryBoolean(String sql) {
 		return (Boolean)queryColumn(sql, NULL_PARA_ARRAY);
+	}
+	
+	public Short queryShort(String sql, Object... paras) {
+		return (Short)queryColumn(sql, paras);
+	}
+	
+	public Short queryShort(String sql) {
+		return (Short)queryColumn(sql, NULL_PARA_ARRAY);
 	}
 	
 	public Number queryNumber(String sql, Object... paras) {
@@ -1167,11 +1197,36 @@ public class DbPro {
     	return batchUpdate(tableName, config.dialect.getDefaultPrimaryKey(),recordList, batchSize);
     }
     
-    /**
-     * for DbKit.removeConfig(configName)
-     */
-    static void removeDbProWithConfig(String configName) {
-    	map.remove(configName);
+    public String getSql(String key, Record record) {
+    	return getSql(key, record.getColumns());
+    }
+    
+    public String getSql(String key, Model model) {
+    	return getSql(key, model.getAttrs());
+    }
+    
+    public String getSql(String key, Map data) {
+    	return config.getSqlKit().getSql(key, data);
+    }
+    
+    public SqlPara getSqlPara(String key, Record record) {
+    	return getSqlPara(key, record.getColumns());
+    }
+    
+    public SqlPara getSqlPara(String key, Model model) {
+    	return getSqlPara(key, model.getAttrs());
+    }
+    
+    public SqlPara getSqlPara(String key, Map data) {
+    	return config.getSqlKit().getSqlPara(key, data);
+    }
+    
+    public List<Record> find(SqlPara sqlPara) {
+    	return find(sqlPara.getSql(), sqlPara.getPara());
+    }
+    
+    public Record findFirst(SqlPara sqlPara) {
+    	return findFirst(sqlPara.getSql(), sqlPara.getPara());
     }
 }
 

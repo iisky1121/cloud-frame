@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2011-2016, James Zhan 詹波 (jfinal@126.com).
+ * Copyright (c) 2011-2017, James Zhan 詹波 (jfinal@126.com).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,7 +74,7 @@ public class CacheInterceptor implements Interceptor {
 	}
 	
 	// TODO 考虑与 EvictInterceptor 一样强制使用  @CacheName
-	private String buildCacheName(Invocation inv, Controller controller) {
+	protected String buildCacheName(Invocation inv, Controller controller) {
 		CacheName cacheName = inv.getMethod().getAnnotation(CacheName.class);
 		if (cacheName != null)
 			return cacheName.value();
@@ -82,7 +82,7 @@ public class CacheInterceptor implements Interceptor {
 		return (cacheName != null) ? cacheName.value() : inv.getActionKey();
 	}
 	
-	private String buildCacheKey(Invocation inv, Controller controller) {
+	protected String buildCacheKey(Invocation inv, Controller controller) {
 		StringBuilder sb = new StringBuilder(inv.getActionKey());
 		String urlPara = controller.getPara();
 		if (urlPara != null)
@@ -94,7 +94,14 @@ public class CacheInterceptor implements Interceptor {
 		return sb.toString();
 	}
 	
-	private void cacheAction(String cacheName, String cacheKey, Controller controller) {
+	/**
+	 * 通过继承 CacheInterceptor 并覆盖此方法支持更多类型的 Render
+	 */
+	protected RenderInfo createRenderInfo(Render render) {
+		return new RenderInfo(render);
+	}
+	
+	protected void cacheAction(String cacheName, String cacheKey, Controller controller) {
 		HttpServletRequest request = controller.getRequest();
 		Map<String, Object> cacheData = new HashMap<String, Object>();
 		for (Enumeration<String> names=request.getAttributeNames(); names.hasMoreElements();) {
@@ -104,12 +111,12 @@ public class CacheInterceptor implements Interceptor {
 		
 		Render render = controller.getRender();
 		if (render != null) {
-			cacheData.put(renderKey, new RenderInfo(render));		// cache RenderInfo
+			cacheData.put(renderKey, createRenderInfo(render));		// cache RenderInfo
 		}
 		CacheKit.put(cacheName, cacheKey, cacheData);
 	}
 	
-	private void useCacheDataAndRender(Map<String, Object> cacheData, Controller controller) {
+	protected void useCacheDataAndRender(Map<String, Object> cacheData, Controller controller) {
 		HttpServletRequest request = controller.getRequest();
 		Set<Entry<String, Object>> set = cacheData.entrySet();
 		for (Iterator<Entry<String, Object>> it=set.iterator(); it.hasNext();) {

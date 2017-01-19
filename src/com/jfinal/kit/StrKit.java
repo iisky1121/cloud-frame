@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2011-2016, James Zhan 詹波 (jfinal@126.com).
+ * Copyright (c) 2011-2017, James Zhan 詹波 (jfinal@126.com).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -98,34 +98,57 @@ public class StrKit {
 	}
 	
 	/**
-	 * 字符串为 null 或者为  "" 时返回 true
+	 * 字符串为 null 或者内部字符全部为 ' ' '\t' '\n' '\r' 这四类字符时返回 true
 	 */
 	public static boolean isBlank(String str) {
-		return str == null || "".equals(str.trim());
+		if (str == null) {
+			return true;
+		}
+		int len = str.length();
+		if (len == 0) {
+			return true;
+		}
+		for (int i = 0; i < len; i++) {
+			switch (str.charAt(i)) {
+			case ' ':
+			case '\t':
+			case '\n':
+			case '\r':
+			// case '\b':
+			// case '\f':
+				break;
+			default:
+				return false;
+			}
+		}
+		return true;
 	}
 	
-	/**
-	 * 字符串不为 null 而且不为  "" 时返回 true
-	 */
 	public static boolean notBlank(String str) {
-		return str != null && !"".equals(str.trim());
+		return !isBlank(str);
 	}
 	
 	public static boolean notBlank(String... strings) {
-		if (strings == null)
+		if (strings == null) {
 			return false;
-		for (String str : strings)
-			if (str == null || "".equals(str.trim()))
+		}
+		for (String str : strings) {
+			if (isBlank(str)) {
 				return false;
+			}
+		}
 		return true;
 	}
 	
 	public static boolean notNull(Object... paras) {
-		if (paras == null)
+		if (paras == null) {
 			return false;
-		for (Object obj : paras)
-			if (obj == null)
+		}
+		for (Object obj : paras) {
+			if (obj == null) {
 				return false;
+			}
+		}
 		return true;
 	}
 	
@@ -135,8 +158,9 @@ public class StrKit {
 	 * @return
 	 */
 	public static String toCamelCase(String stringWithUnderline) {
-		if (stringWithUnderline.indexOf('_') == -1)
+		if (stringWithUnderline.indexOf('_') == -1) {
 			return stringWithUnderline;
+		}
 		
 		stringWithUnderline = stringWithUnderline.toLowerCase();
 		char[] fromArray = stringWithUnderline.toCharArray();
@@ -146,8 +170,9 @@ public class StrKit {
 			if (fromArray[i] == '_') {
 				// 当前字符为下划线时，将指针后移一位，将紧随下划线后面一个字符转成大写并存放
 				i++;
-				if (i < fromArray.length)
+				if (i < fromArray.length) {
 					toArray[j++] = Character.toUpperCase(fromArray[i]);
+				}
 			}
 			else {
 				toArray[j++] = fromArray[i];
@@ -181,19 +206,31 @@ public class StrKit {
 	
 	public static String join(String[] stringArray) {
 		StringBuilder sb = new StringBuilder();
-		for (String s : stringArray)
+		for (String s : stringArray) {
 			sb.append(s);
+		}
 		return sb.toString();
 	}
 	
 	public static String join(String[] stringArray, String separator) {
 		StringBuilder sb = new StringBuilder();
 		for (int i=0; i<stringArray.length; i++) {
-			if (i>0)
+			if (i > 0) {
 				sb.append(separator);
+			}
 			sb.append(stringArray[i]);
 		}
 		return sb.toString();
+	}
+	
+	public static boolean slowEquals(String a, String b) {
+		byte[] aBytes = (a != null ? a.getBytes() : null);
+		byte[] bBytes = (b != null ? b.getBytes() : null);
+		return HashKit.slowEquals(aBytes, bBytes);
+	}
+	
+	public static String getRandomUUID() {
+		return java.util.UUID.randomUUID().toString().replace("-", "");
 	}
 	
 	/**

@@ -41,6 +41,7 @@ public class AutoTableBindPlugin extends ActiveRecordPlugin {
     private List<Class<? extends Model>> excludeClasses = Lists.newArrayList();
     private List<String> includeJars = Lists.newArrayList();
     private boolean autoScan = true;
+    private String configName = null;
     private boolean includeAllJarsInLib = false;
     private List<String> scanPackages = Lists.newArrayList();
     private INameStyle nameStyle;
@@ -70,6 +71,7 @@ public class AutoTableBindPlugin extends ActiveRecordPlugin {
 
     public AutoTableBindPlugin(String configName, IDataSourceProvider dataSourceProvider, INameStyle nameStyle) {
         super(configName, dataSourceProvider);
+        this.configName = configName;
         this.nameStyle = nameStyle;
     }
 
@@ -80,6 +82,7 @@ public class AutoTableBindPlugin extends ActiveRecordPlugin {
 
     public AutoTableBindPlugin(String configName, IDataSourceProvider dataSourceProvider, int transactionLevel, INameStyle nameStyle) {
         super(configName, dataSourceProvider, transactionLevel);
+        this.configName = configName;
         this.nameStyle = nameStyle;
     }
 
@@ -106,6 +109,7 @@ public class AutoTableBindPlugin extends ActiveRecordPlugin {
 
     public AutoTableBindPlugin(String configName, DataSource dataSource, INameStyle nameStyle) {
         super(configName, dataSource);
+        this.configName = configName;
         this.nameStyle = nameStyle;
     }
 
@@ -116,6 +120,7 @@ public class AutoTableBindPlugin extends ActiveRecordPlugin {
 
     public AutoTableBindPlugin(String configName, DataSource dataSource, int transactionLevel, INameStyle nameStyle) {
         super(configName, dataSource, transactionLevel);
+        this.configName = configName;
         this.nameStyle = nameStyle;
     }
 
@@ -164,7 +169,15 @@ public class AutoTableBindPlugin extends ActiveRecordPlugin {
         return this;
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
+    public String getConfigName() {
+		return configName;
+	}
+
+	public void setConfigName(String configName) {
+		this.configName = configName;
+	}
+
+	@SuppressWarnings({"unchecked", "rawtypes"})
     @Override
     public boolean start() {
         List<Class<? extends Model>> modelClasses = ClassSearcher.of(Model.class).libDir(libDir).classpath(classpath)

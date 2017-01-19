@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2011-2016, James Zhan 詹波 (jfinal@126.com).
+ * Copyright (c) 2011-2017, James Zhan 詹波 (jfinal@126.com).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,9 +21,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
-
 import javax.sql.DataSource;
-
 import com.jfinal.kit.LogKit;
 import com.jfinal.kit.StrKit;
 import com.jfinal.plugin.IPlugin;
@@ -39,21 +37,14 @@ public class C3p0Plugin implements IPlugin, IDataSourceProvider {
 	private String user;
 	private String password;
 	private String driverClass = "com.mysql.jdbc.Driver";
-	private int maxPoolSize = 10;
-	private int minPoolSize = 5;
-	private int initialPoolSize = 5;
+	private int maxPoolSize = 100;
+	private int minPoolSize = 10;
+	private int initialPoolSize = 10;
 	private int maxIdleTime = 20;
 	private int acquireIncrement = 2;
 	
 	private ComboPooledDataSource dataSource;
 	private boolean isStarted = false;
-	
-	public C3p0Plugin set(int initialSize, int minIdle, int maxActive) {
-		this.initialPoolSize = initialSize;
-		this.minPoolSize = minIdle;
-		this.maxPoolSize = maxActive;
-		return this;
-	}
 	
 	public C3p0Plugin setDriverClass(String driverClass) {
 		if (StrKit.isBlank(driverClass))

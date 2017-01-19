@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2011-2016, James Zhan 詹波 (jfinal@126.com).
+ * Copyright (c) 2011-2017, James Zhan 詹波 (jfinal@126.com).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,16 +33,18 @@ public class UrlSkipHandler extends Handler {
 	private Pattern skipedUrlPattern;
 	
 	public UrlSkipHandler(String skipedUrlRegx, boolean isCaseSensitive) {
-		if (StrKit.isBlank(skipedUrlRegx))
+		if (StrKit.isBlank(skipedUrlRegx)) {
 			throw new IllegalArgumentException("The para excludedUrlRegx can not be blank.");
+		}
 		skipedUrlPattern = isCaseSensitive ? Pattern.compile(skipedUrlRegx) : Pattern.compile(skipedUrlRegx, Pattern.CASE_INSENSITIVE);
 	}
 	
 	public void handle(String target, HttpServletRequest request, HttpServletResponse response, boolean[] isHandled) {
-		if (skipedUrlPattern.matcher(target).matches())
+		if (skipedUrlPattern.matcher(target).matches()) {
 			return ;
-		else
+		} else {
 			next.handle(target, request, response, isHandled);
+		}
 	}
 }
 

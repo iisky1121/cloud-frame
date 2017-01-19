@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2011-2016, James Zhan 詹波 (jfinal@126.com).
+ * Copyright (c) 2011-2017, James Zhan 詹波 (jfinal@126.com).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,11 +22,11 @@ import java.text.SimpleDateFormat;
 /**
  * Convert String to other type object.
  */
-public final class TypeConverter {
+final class TypeConverter {
 	
 	private static final String timeStampPattern = "yyyy-MM-dd HH:mm:ss";
 	private static final String datePattern = "yyyy-MM-dd";
-	private static final int timeStampLen = timeStampPattern.length();
+	private static final int dateLen = datePattern.length();
 	
 	/**
 	 * test for all types of mysql
@@ -66,7 +66,7 @@ public final class TypeConverter {
 		// java.util.Date 类型专为传统 java bean 带有该类型的 setter 方法转换做准备，万不可去掉
 		// 经测试 JDBC 不会返回 java.util.Data 类型。java.sql.Date, java.sql.Time,java.sql.Timestamp 全部直接继承自 java.util.Data, 所以 getDate可以返回这三类数据
 		if (type == java.util.Date.class) {
-			if (s.length() >= timeStampLen) {	// if (x < timeStampLen) 改用 datePattern 转换，更智能
+			if (s.length() > dateLen) {	// if (x < timeStampLen) 改用 datePattern 转换，更智能
 				// Timestamp format must be yyyy-mm-dd hh:mm:ss[.fffffffff]
 				// return new java.util.Date(java.sql.Timestamp.valueOf(s).getTime());	// error under jdk 64bit(maybe)
 				return new SimpleDateFormat(timeStampPattern).parse(s);
@@ -79,7 +79,7 @@ public final class TypeConverter {
 		
 		// mysql type: date, year
 		if (type == java.sql.Date.class) {
-			if (s.length() >= timeStampLen) {	// if (x < timeStampLen) 改用 datePattern 转换，更智能
+			if (s.length() > dateLen) {	// if (x < timeStampLen) 改用 datePattern 转换，更智能
 				// return new java.sql.Date(java.sql.Timestamp.valueOf(s).getTime());	// error under jdk 64bit(maybe)
 				return new java.sql.Date(new SimpleDateFormat(timeStampPattern).parse(s).getTime());
 			}
@@ -96,7 +96,7 @@ public final class TypeConverter {
 		
 		// mysql type: timestamp, datetime
 		if (type == java.sql.Timestamp.class) {
-			if (s.length() >= timeStampLen) {
+			if (s.length() > dateLen) {
 				return java.sql.Timestamp.valueOf(s);
 			}
 			else {

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2011-2016, James Zhan 詹波 (jfinal@126.com).
+ * Copyright (c) 2011-2017, James Zhan 詹波 (jfinal@126.com).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -120,8 +120,9 @@ public class MetaBuilder {
 			throw new RuntimeException(e);
 		}
 		finally {
-			if (conn != null)
+			if (conn != null) {
 				try {conn.close();} catch (SQLException e) {throw new RuntimeException(e);}
+			}
 		}
 	}
 	
@@ -217,9 +218,13 @@ public class MetaBuilder {
 		String primaryKey = "";
 		int index = 0;
 		while (rs.next()) {
-			if (index++ > 0)
+			if (index++ > 0) {
 				primaryKey += ",";
+			}
 			primaryKey += rs.getString("COLUMN_NAME");
+		}
+		if (StrKit.isBlank(primaryKey)) {
+			throw new RuntimeException("primaryKey required by active record pattern");
 		}
 		tableMeta.primaryKey = primaryKey;
 		rs.close();

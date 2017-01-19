@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2011-2016, James Zhan 詹波 (jfinal@126.com).
+ * Copyright (c) 2011-2017, James Zhan 詹波 (jfinal@126.com).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,6 +42,7 @@ public class PathKit {
 		return new File(path).getAbsolutePath();
 	}
 	
+	// 注意：命令行返回的是命令行所在的当前路径
 	public static String getRootClassPath() {
 		if (rootClassPath == null) {
 			try {
@@ -70,20 +71,24 @@ public class PathKit {
 	}
 	
 	public static String getWebRootPath() {
-		if (webRootPath == null)
+		if (webRootPath == null) {
 			webRootPath = detectWebRootPath();
+		}
 		return webRootPath;
 	}
 	
 	public static void setWebRootPath(String webRootPath) {
-		if (webRootPath == null)
+		if (webRootPath == null) {
 			return ;
+		}
 		
-		if (webRootPath.endsWith(File.separator))
+		if (webRootPath.endsWith(File.separator)) {
 			webRootPath = webRootPath.substring(0, webRootPath.length() - 1);
+		}
 		PathKit.webRootPath = webRootPath;
 	}
 	
+	// 注意：命令行返回的是命令行所在路径的上层的上层路径
 	private static String detectWebRootPath() {
 		try {
 			String path = PathKit.class.getResource("/").toURI().getPath();

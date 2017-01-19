@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2011-2016, James Zhan 詹波 (jfinal@126.com).
+ * Copyright (c) 2011-2017, James Zhan 詹波 (jfinal@126.com).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,10 +40,12 @@ public class I18nInterceptor implements Interceptor {
 	}
 	
 	public I18nInterceptor(String localeParaName, String resName) {
-		if (StrKit.isBlank(localeParaName))
+		if (StrKit.isBlank(localeParaName)) {
 			throw new IllegalArgumentException("localeParaName can not be blank.");
-		if (StrKit.isBlank(resName))
+		}
+		if (StrKit.isBlank(resName)) {
 			throw new IllegalArgumentException("resName can not be blank.");
+		}
 		
 		this.localeParaName = localeParaName;
 		this.resName = resName;
@@ -51,6 +53,10 @@ public class I18nInterceptor implements Interceptor {
 	
 	public I18nInterceptor(String localeParaName, String resName, boolean isSwitchView) {
 		this(localeParaName, resName);
+		this.isSwitchView = isSwitchView;
+	}
+	
+	public I18nInterceptor(boolean isSwitchView) {
 		this.isSwitchView = isSwitchView;
 	}
 	
@@ -95,6 +101,8 @@ public class I18nInterceptor implements Interceptor {
 				locale = I18n.defaultLocale;
 		}
 		
+		inv.invoke();
+		
 		if (isSwitchView) {
 			switchView(locale, c);
 		}
@@ -102,8 +110,6 @@ public class I18nInterceptor implements Interceptor {
 			Res res = I18n.use(getBaseName(), locale);
 			c.setAttr(getResName(), res);
 		}
-		
-		inv.invoke();
 	}
 	
 	/**
@@ -116,10 +122,11 @@ public class I18nInterceptor implements Interceptor {
 		if (render != null) {
 			String view = render.getView();
 			if (view != null) {
-				if (view.startsWith("/"))
+				if (view.startsWith("/")) {
 					view = "/" + locale + view;
-				else
+				} else {
 					view = locale + "/" + view;
+				}
 				
 				render.setView(view);
 			}

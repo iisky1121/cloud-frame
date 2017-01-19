@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2011-2016, James Zhan 詹波 (jfinal@126.com).
+ * Copyright (c) 2011-2017, James Zhan 詹波 (jfinal@126.com).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,8 +60,9 @@ public class PropKit {
 		if (result == null) {
 			result = new Prop(fileName, encoding);
 			map.put(fileName, result);
-			if (PropKit.prop == null)
+			if (PropKit.prop == null) {
 				PropKit.prop = result;
+			}
 		}
 		return result;
 	}
@@ -89,16 +90,18 @@ public class PropKit {
 		if (result == null) {
 			result = new Prop(file, encoding);
 			map.put(file.getName(), result);
-			if (PropKit.prop == null)
+			if (PropKit.prop == null) {
 				PropKit.prop = result;
+			}
 		}
 		return result;
 	}
 	
 	public static Prop useless(String fileName) {
 		Prop previous = map.remove(fileName);
-		if (PropKit.prop == previous)
+		if (PropKit.prop == previous) {
 			PropKit.prop = null;
+		}
 		return previous;
 	}
 	
@@ -108,8 +111,9 @@ public class PropKit {
 	}
 	
 	public static Prop getProp() {
-		if (prop == null)
+		if (prop == null) {
 			throw new IllegalStateException("Load propties file by invoking PropKit.use(String fileName) method first.");
+		}
 		return prop;
 	}
 	

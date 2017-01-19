@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2011-2016, James Zhan 詹波 (jfinal@126.com).
+ * Copyright (c) 2011-2017, James Zhan 詹波 (jfinal@126.com).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ import com.jfinal.kit.StrKit;
 import com.jfinal.render.ContentType;
 import com.jfinal.render.JsonRender;
 import com.jfinal.render.Render;
-import com.jfinal.render.RenderFactory;
+import com.jfinal.render.RenderManager;
 import com.jfinal.upload.MultipartRequest;
 import com.jfinal.upload.UploadFile;
 
@@ -223,9 +223,16 @@ public abstract class Controller {
 		return (Integer)request.getAttribute(name);
 	}
 	
+	/**
+	 * Returns the value of the specified request header as a String.
+	 */
+	public String getHeader(String name) {
+		return request.getHeader(name);
+	}
+	
 	private Integer toInt(String value, Integer defaultValue) {
 		try {
-			if (value == null || "".equals(value.trim()))
+			if (StrKit.isBlank(value))
 				return defaultValue;
 			value = value.trim();
 			if (value.startsWith("N") || value.startsWith("n"))
@@ -233,7 +240,7 @@ public abstract class Controller {
 			return Integer.parseInt(value);
 		}
 		catch (Exception e) {
-			throw new ActionException(404, renderFactory.getErrorRender(404),  "Can not parse the parameter \"" + value + "\" to Integer value.");
+			throw new ActionException(404, renderManager.getRenderFactory().getErrorRender(404),  "Can not parse the parameter \"" + value + "\" to Integer value.");
 		}
 	}
 	
@@ -257,7 +264,7 @@ public abstract class Controller {
 	
 	private Long toLong(String value, Long defaultValue) {
 		try {
-			if (value == null || "".equals(value.trim()))
+			if (StrKit.isBlank(value))
 				return defaultValue;
 			value = value.trim();
 			if (value.startsWith("N") || value.startsWith("n"))
@@ -265,7 +272,7 @@ public abstract class Controller {
 			return Long.parseLong(value);
 		}
 		catch (Exception e) {
-			throw new ActionException(404, renderFactory.getErrorRender(404),  "Can not parse the parameter \"" + value + "\" to Long value.");
+			throw new ActionException(404, renderManager.getRenderFactory().getErrorRender(404),  "Can not parse the parameter \"" + value + "\" to Long value.");
 		}
 	}
 	
@@ -288,14 +295,14 @@ public abstract class Controller {
 	}
 	
 	private Boolean toBoolean(String value, Boolean defaultValue) {
-		if (value == null || "".equals(value.trim()))
+		if (StrKit.isBlank(value))
 			return defaultValue;
 		value = value.trim().toLowerCase();
 		if ("1".equals(value) || "true".equals(value))
 			return Boolean.TRUE;
 		else if ("0".equals(value) || "false".equals(value))
 			return Boolean.FALSE;
-		throw new ActionException(404, renderFactory.getErrorRender(404), "Can not parse the parameter \"" + value + "\" to Boolean value.");
+		throw new ActionException(404, renderManager.getRenderFactory().getErrorRender(404), "Can not parse the parameter \"" + value + "\" to Boolean value.");
 	}
 	
 	/**
@@ -339,11 +346,11 @@ public abstract class Controller {
 	
 	private Date toDate(String value, Date defaultValue) {
 		try {
-			if (value == null || "".equals(value.trim()))
+			if (StrKit.isBlank(value))
 				return defaultValue;
 			return new java.text.SimpleDateFormat("yyyy-MM-dd").parse(value.trim());
 		} catch (Exception e) {
-			throw new ActionException(404, renderFactory.getErrorRender(404),  "Can not parse the parameter \"" + value + "\" to Date value.");
+			throw new ActionException(404, renderManager.getRenderFactory().getErrorRender(404),  "Can not parse the parameter \"" + value + "\" to Date value.");
 		}
 	}
 	
@@ -943,7 +950,7 @@ public abstract class Controller {
 	
 	// ----------------
 	// render below ---
-	private static final RenderFactory renderFactory = RenderFactory.me();
+	private static final RenderManager renderManager = RenderManager.me();
 	
 	/**
 	 * Hold Render object when invoke renderXxx(...)
@@ -965,28 +972,44 @@ public abstract class Controller {
 	 * Render with view use default type Render configured in JFinalConfig
 	 */
 	public void render(String view) {
-		render = renderFactory.getRender(view);
+		render = renderManager.getRenderFactory().getRender(view);
+	}
+	
+	/**
+	 * Render template to String content, it is useful for:
+	 * 1: Generate HTML fragment for AJAX request
+	 * 2: Generate email, short message and so on
+	 */
+	public String renderToString(String template, Map data) {
+		return renderManager.getEngine().getTemplate(template).renderToString(data);
+	}
+	
+	/**
+	 * Render with JFinal template
+	 */
+	public void renderTemplate(String template) {
+		render = renderManager.getRenderFactory().getTemplateRender(template);
 	}
 	
 	/**
 	 * Render with jsp view
 	 */
 	public void renderJsp(String view) {
-		render = renderFactory.getJspRender(view);
+		render = renderManager.getRenderFactory().getJspRender(view);
 	}
 	
 	/**
 	 * Render with freemarker view
 	 */
 	public void renderFreeMarker(String view) {
-		render = renderFactory.getFreeMarkerRender(view);
+		render = renderManager.getRenderFactory().getFreeMarkerRender(view);
 	}
 	
 	/**
 	 * Render with velocity view
 	 */
 	public void renderVelocity(String view) {
-		render = renderFactory.getVelocityRender(view);
+		render = renderManager.getRenderFactory().getVelocityRender(view);
 	}
 	
 	/**
@@ -997,14 +1020,14 @@ public abstract class Controller {
 	 * renderJson("users", users);<br>
 	 */
 	public void renderJson(String key, Object value) {
-		render = renderFactory.getJsonRender(key, value);
+		render = renderManager.getRenderFactory().getJsonRender(key, value);
 	}
 	
 	/**
 	 * Render with json
 	 */
 	public void renderJson() {
-		render = renderFactory.getJsonRender();
+		render = renderManager.getRenderFactory().getJsonRender();
 	}
 	
 	/**
@@ -1013,7 +1036,7 @@ public abstract class Controller {
 	 * Example: renderJson(new String[]{"blogList", "user"});
 	 */
 	public void renderJson(String[] attrs) {
-		render = renderFactory.getJsonRender(attrs);
+		render = renderManager.getRenderFactory().getJsonRender(attrs);
 	}
 	
 	/**
@@ -1022,7 +1045,7 @@ public abstract class Controller {
 	 * Example: renderJson("{\"message\":\"Please input password!\"}");
 	 */
 	public void renderJson(String jsonText) {
-		render = renderFactory.getJsonRender(jsonText);
+		render = renderManager.getRenderFactory().getJsonRender(jsonText);
 	}
 	
 	/**
@@ -1031,14 +1054,14 @@ public abstract class Controller {
 	 * Example: renderJson(new User().set("name", "JFinal").set("age", 18));
 	 */
 	public void renderJson(Object object) {
-		render = object instanceof JsonRender ? (JsonRender)object : renderFactory.getJsonRender(object);
+		render = object instanceof JsonRender ? (JsonRender)object : renderManager.getRenderFactory().getJsonRender(object);
 	}
 	
 	/**
 	 * Render with text. The contentType is: "text/plain".
 	 */
 	public void renderText(String text) {
-		render = renderFactory.getTextRender(text);
+		render = renderManager.getRenderFactory().getTextRender(text);
 	}
 	
 	/**
@@ -1047,7 +1070,7 @@ public abstract class Controller {
 	 * Example: renderText("&lt;user id='5888'&gt;James&lt;/user&gt;", "application/xml");
 	 */
 	public void renderText(String text, String contentType) {
-		render = renderFactory.getTextRender(text, contentType);
+		render = renderManager.getRenderFactory().getTextRender(text, contentType);
 	}
 	
 	/**
@@ -1056,49 +1079,49 @@ public abstract class Controller {
 	 * Example: renderText("&lt;html&gt;Hello James&lt;/html&gt;", ContentType.HTML);
 	 */
 	public void renderText(String text, ContentType contentType) {
-		render = renderFactory.getTextRender(text, contentType);
+		render = renderManager.getRenderFactory().getTextRender(text, contentType);
 	}
 	
 	/**
 	 * Forward to an action
 	 */
 	public void forwardAction(String actionUrl) {
-		render = new ActionRender(actionUrl);
+		render = new ForwardActionRender(actionUrl);
 	}
 	
 	/**
 	 * Render with file
 	 */
 	public void renderFile(String fileName) {
-		render = renderFactory.getFileRender(fileName);
+		render = renderManager.getRenderFactory().getFileRender(fileName);
 	}
 	
 	/**
 	 * Render with file
 	 */
 	public void renderFile(File file) {
-		render = renderFactory.getFileRender(file);
+		render = renderManager.getRenderFactory().getFileRender(file);
 	}
 	
 	/**
 	 * Redirect to url
 	 */
 	public void redirect(String url) {
-		render = renderFactory.getRedirectRender(url);
+		render = renderManager.getRenderFactory().getRedirectRender(url);
 	}
 	
 	/**
 	 * Redirect to url
 	 */
 	public void redirect(String url, boolean withQueryString) {
-		render = renderFactory.getRedirectRender(url, withQueryString);
+		render = renderManager.getRenderFactory().getRedirectRender(url, withQueryString);
 	}
 	
 	/**
 	 * Render with view and status use default type Render configured in JFinalConfig
 	 */
 	public void render(String view, int status) {
-		render = renderFactory.getRender(view);
+		render = renderManager.getRenderFactory().getRender(view);
 		response.setStatus(status);
 	}
 	
@@ -1106,21 +1129,21 @@ public abstract class Controller {
 	 * Render with url and 301 status
 	 */
 	public void redirect301(String url) {
-		render = renderFactory.getRedirect301Render(url);
+		render = renderManager.getRenderFactory().getRedirect301Render(url);
 	}
 	
 	/**
 	 * Render with url and 301 status
 	 */
 	public void redirect301(String url, boolean withQueryString) {
-		render = renderFactory.getRedirect301Render(url, withQueryString);
+		render = renderManager.getRenderFactory().getRedirect301Render(url, withQueryString);
 	}
 	
 	/**
 	 * Render with view and errorCode status
 	 */
 	public void renderError(int errorCode, String view) {
-		throw new ActionException(errorCode, renderFactory.getErrorRender(errorCode, view));
+		throw new ActionException(errorCode, renderManager.getRenderFactory().getErrorRender(errorCode, view));
 	}
 	
 	/**
@@ -1134,49 +1157,75 @@ public abstract class Controller {
 	 * Render with view and errorCode status configured in JFinalConfig
 	 */
 	public void renderError(int errorCode) {
-		throw new ActionException(errorCode, renderFactory.getErrorRender(errorCode));
+		throw new ActionException(errorCode, renderManager.getRenderFactory().getErrorRender(errorCode));
 	}
 	
 	/**
 	 * Render nothing, no response to browser
 	 */
 	public void renderNull() {
-		render = renderFactory.getNullRender();
+		render = renderManager.getRenderFactory().getNullRender();
 	}
 	
 	/**
 	 * Render with javascript text. The contentType is: "text/javascript".
 	 */
 	public void renderJavascript(String javascriptText) {
-		render = renderFactory.getJavascriptRender(javascriptText);
+		render = renderManager.getRenderFactory().getJavascriptRender(javascriptText);
 	}
 	
 	/**
 	 * Render with html text. The contentType is: "text/html".
 	 */
 	public void renderHtml(String htmlText) {
-		render = renderFactory.getHtmlRender(htmlText);
+		render = renderManager.getRenderFactory().getHtmlRender(htmlText);
 	}
 	
 	/**
 	 * Render with xml view using freemarker.
 	 */
 	public void renderXml(String view) {
-		render = renderFactory.getXmlRender(view);
+		render = renderManager.getRenderFactory().getXmlRender(view);
 	}
 	
 	public void renderCaptcha() {
-		render = renderFactory.getCaptchaRender();
+		render = renderManager.getRenderFactory().getCaptchaRender();
+	}
+	
+	/**
+	 * 渲染二维码
+	 * @param content 二维码中所包含的数据内容
+	 * @param width 二维码宽度，单位为像素
+	 * @param height 二维码高度，单位为像素
+	 */
+	public void renderQrCode(String content, int width, int height) {
+		render = renderManager.getRenderFactory().getQrCodeRender(content, width, height);
+	}
+	
+	/**
+	 * 渲染二维码，并指定纠错级别
+	 * @param content 二维码中所包含的数据内容
+	 * @param width 二维码宽度，单位为像素
+	 * @param height 二维码高度，单位为像素
+	 * @param errorCorrectionLevel 纠错级别，可设置的值从高到低分别为：'H'、'Q'、'M'、'L'，具体的纠错能力如下：
+	 *  H = ~30% 
+	 *  Q = ~25%
+	 *  M = ~15%
+	 *  L = ~7%
+	 */
+	public void renderQrCode(String content, int width, int height, char errorCorrectionLevel) {
+		render = renderManager.getRenderFactory().getQrCodeRender(content, width, height, errorCorrectionLevel);
 	}
 	
 	public boolean validateCaptcha(String paraName) {
-		return com.jfinal.render.CaptchaRender.validate(this, getPara(paraName));
+		return com.jfinal.captcha.CaptchaRender.validate(this, getPara(paraName));
 	}
 	
 	public void checkUrlPara(int minLength, int maxLength) {
 		getPara(0);
-		if (urlParaArray.length < minLength || urlParaArray.length > maxLength)
+		if (urlParaArray.length < minLength || urlParaArray.length > maxLength) {
 			renderError(404);
+		}
 	}
 	
 	public void checkUrlPara(int length) {

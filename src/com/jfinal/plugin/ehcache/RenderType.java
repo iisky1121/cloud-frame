@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2011-2016, James Zhan 詹波 (jfinal@126.com).
+ * Copyright (c) 2011-2017, James Zhan 詹波 (jfinal@126.com).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ package com.jfinal.plugin.ehcache;
  * RenderType
  */
 public class RenderType {
+	public static final int TEMPLATE_RENDER = 0;
 	public static final int FREE_MARKER_RENDER = 1;
 	public static final int JSP_RENDER = 2;
 	public static final int VELOCITY_RENDER = 3;

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2011-2016, James Zhan 詹波 (jfinal@126.com).
+ * Copyright (c) 2011-2017, James Zhan 詹波 (jfinal@126.com).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,8 +28,10 @@ final public class Plugins {
 	private final List<IPlugin> pluginList = new ArrayList<IPlugin>();
 	
 	public Plugins add(IPlugin plugin) {
-		if (plugin != null)
-			this.pluginList.add(plugin);
+		if (plugin == null) {
+			throw new IllegalArgumentException("plugin can not be null");
+		}
+		pluginList.add(plugin);
 		return this;
 	}
 	

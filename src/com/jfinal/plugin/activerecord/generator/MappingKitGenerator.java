@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2011-2016, James Zhan 詹波 (jfinal@126.com).
+ * Copyright (c) 2011-2017, James Zhan 詹波 (jfinal@126.com).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,18 +62,21 @@ public class MappingKitGenerator {
 	}
 	
 	public void setMappingKitOutputDir(String mappingKitOutputDir) {
-		if (StrKit.notBlank(mappingKitOutputDir))
+		if (StrKit.notBlank(mappingKitOutputDir)) {
 			this.mappingKitOutputDir = mappingKitOutputDir;
+		}
 	}
 	
 	public void setMappingKitPackageName(String mappingKitPackageName) {
-		if (StrKit.notBlank(mappingKitPackageName))
+		if (StrKit.notBlank(mappingKitPackageName)) {
 			this.mappingKitPackageName = mappingKitPackageName;
+		}
 	}
 	
 	public void setMappingKitClassName(String mappingKitClassName) {
-		if (StrKit.notBlank(mappingKitClassName))
+		if (StrKit.notBlank(mappingKitClassName)) {
 			this.mappingKitClassName = StrKit.firstCharToUpperCase(mappingKitClassName);
+		}
 	}
 	
 	public void setGenerateMappingKit(boolean generateMappingKit) {
@@ -83,13 +86,14 @@ public class MappingKitGenerator {
 	public void generate(List<TableMeta> tableMetas) {
 		if(generateMappingKit){
 			System.out.println("Generate MappingKit file ...");
+			System.out.println("MappingKit Output Dir: " + mappingKitOutputDir);
 			StringBuilder ret = new StringBuilder();
 			genPackage(ret);
 			genImport(ret);
 			genClassDefine(ret);
 			genMappingMethod(tableMetas, ret);
 			ret.append(String.format("}%n%n"));
-			wirtToFile(ret);
+			writeToFile(ret);
 		}
 	}
 	
@@ -109,8 +113,9 @@ public class MappingKitGenerator {
 		ret.append(String.format(mappingMethodDefineTemplate));
 		for (TableMeta tableMeta : tableMetas) {
 			boolean isCompositPrimaryKey = tableMeta.primaryKey.contains(",");
-			if (isCompositPrimaryKey)
+			if (isCompositPrimaryKey) {
 				ret.append(String.format(compositeKeyTemplate, tableMeta.primaryKey));
+			}
 			String add = String.format(mappingMethodContentTemplate, tableMeta.name, tableMeta.primaryKey, tableMeta.modelName);
 			ret.append(add);
 		}
@@ -120,12 +125,13 @@ public class MappingKitGenerator {
 	/**
 	 * _MappingKit.java 覆盖写入
 	 */
-	protected void wirtToFile(StringBuilder ret) {
+	protected void writeToFile(StringBuilder ret) {
 		FileWriter fw = null;
 		try {
 			File dir = new File(mappingKitOutputDir);
-			if (!dir.exists())
+			if (!dir.exists()) {
 				dir.mkdirs();
+			}
 			
 			String target = mappingKitOutputDir + File.separator + mappingKitClassName + ".java";
 			fw = new FileWriter(target);
@@ -135,8 +141,9 @@ public class MappingKitGenerator {
 			throw new RuntimeException(e);
 		}
 		finally {
-			if (fw != null)
+			if (fw != null) {
 				try {fw.close();} catch (IOException e) {LogKit.error(e.getMessage(), e);}
+			}
 		}
 	}
 }

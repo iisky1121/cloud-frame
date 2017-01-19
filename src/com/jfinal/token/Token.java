@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2011-2016, James Zhan 詹波 (jfinal@126.com).
+ * Copyright (c) 2011-2017, James Zhan 詹波 (jfinal@126.com).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,17 +28,19 @@ public class Token implements Serializable {
 	private String id;
 	private long expirationTime;
 	
-	Token(String id, long expirationTime) {
-		if (id == null)
+	public Token(String id, long expirationTime) {
+		if (id == null) {
 			throw new IllegalArgumentException("id can not be null");
+		}
 		
 		this.expirationTime = expirationTime;
 		this.id = id;
 	}
 	
-	Token(String id) {
-		if (id == null)
+	public Token(String id) {
+		if (id == null) {
 			throw new IllegalArgumentException("id can not be null");
+		}
 		
 		this.id = id;
 	}
@@ -62,8 +64,9 @@ public class Token implements Serializable {
 	}
 	
 	public boolean equals(Object object) {
-		if (object instanceof Token)
+		if (object instanceof Token) {
 			return ((Token)object).id.equals(this.id);
+		}
 		return false;
 	}
 }

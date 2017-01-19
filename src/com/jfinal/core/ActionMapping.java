@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2011-2016, James Zhan 詹波 (jfinal@126.com).
+ * Copyright (c) 2011-2017, James Zhan 詹波 (jfinal@126.com).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,12 +24,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import com.jfinal.aop.Interceptor;
 import com.jfinal.aop.InterceptorManager;
 import com.jfinal.config.Interceptors;
 import com.jfinal.config.Routes;
+import com.jfinal.config.Routes.Route;
 
 /**
  * ActionMapping
@@ -57,13 +57,21 @@ final class ActionMapping {
 		return excludedMethodName;
 	}
 	
+	private List<Routes> getRoutesList() {
+		List<Routes> routesList = Routes.getRoutesList();
+		List<Routes> ret = new ArrayList<Routes>(routesList.size() + 1);
+		ret.add(routes);
+		ret.addAll(routesList);
+		return ret;
+	}
+	
 	void buildActionMapping() {
 		mapping.clear();
 		Set<String> excludedMethodName = buildExcludedMethodName();
 		InterceptorManager interMan = InterceptorManager.me();
-		
-		for (Entry<String, Class<? extends Controller>> entry : routes.getEntrySet()) {
-			Class<? extends Controller> controllerClass = entry.getValue();
+		for (Routes routes : getRoutesList()) {
+		for (Route route : routes.getRouteItemList()) {
+			Class<? extends Controller> controllerClass = route.getControllerClass();
 			Interceptor[] controllerInters = interMan.createControllerInterceptor(controllerClass);
 			
 			boolean sonOfController = (controllerClass.getSuperclass() == Controller.class);
@@ -75,8 +83,8 @@ final class ActionMapping {
 				if (sonOfController && !Modifier.isPublic(method.getModifiers()))
 					continue ;
 				
-				Interceptor[] actionInters = interMan.buildControllerActionInterceptor(controllerInters, controllerClass, method);
-				String controllerKey = entry.getKey();
+				Interceptor[] actionInters = interMan.buildControllerActionInterceptor(routes.getInterceptors(), controllerInters, controllerClass, method);
+				String controllerKey = route.getControllerKey();
 				
 				ActionKey ak = method.getAnnotation(ActionKey.class);
 				String actionKey;
@@ -95,16 +103,20 @@ final class ActionMapping {
 					actionKey = controllerKey.equals(SLASH) ? SLASH + methodName : controllerKey + SLASH + methodName;
 				}
 				
-				Action action = new Action(controllerKey, actionKey, controllerClass, method, methodName, actionInters, routes.getViewPath(controllerKey));
-				if (mapping.put(actionKey, action) != null)
+				Action action = new Action(controllerKey, actionKey, controllerClass, method, methodName, actionInters, route.getFinalViewPath(routes.getBaseViewPath()));
+				if (mapping.put(actionKey, action) != null) {
 					throw new RuntimeException(buildMsg(actionKey, controllerClass, method));
+				}
 			}
 		}
+		}
+		routes.clear();
 		
 		// support url = controllerKey + urlParas with "/" of controllerKey
 		Action action = mapping.get("/");
-		if (action != null)
+		if (action != null) {
 			mapping.put("", action);
+		}
 	}
 	
 	private static final String buildMsg(String actionKey, Class<? extends Controller> controllerClass, Method method) {

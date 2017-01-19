@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2011-2016, James Zhan 詹波 (jfinal@126.com).
+ * Copyright (c) 2011-2017, James Zhan 詹波 (jfinal@126.com).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,9 +23,9 @@ import com.jfinal.render.ViewType;
  */
 public interface Const {
 	
-	String JFINAL_VERSION = "2.2";
+	String JFINAL_VERSION = "3.0";
 	
-	ViewType DEFAULT_VIEW_TYPE = ViewType.FREE_MARKER;
+	ViewType DEFAULT_VIEW_TYPE = ViewType.JFINAL_TEMPLATE;
 	
 	String DEFAULT_BASE_UPLOAD_PATH = "upload";
 	
@@ -37,11 +37,7 @@ public interface Const {
 	
 	String DEFAULT_URL_PARA_SEPARATOR = "-";
 	
-	String DEFAULT_JSP_EXTENSION = ".jsp";
-	
-	String DEFAULT_FREE_MARKER_EXTENSION = ".html";			// The original is ".ftl", Recommend ".html"
-	
-	String DEFAULT_VELOCITY_EXTENSION = ".vm";
+	String DEFAULT_VIEW_EXTENSION = ".html";
 	
 	int DEFAULT_MAX_POST_SIZE = 1024 * 1024 * 10;  			// Default max post size of multipart request: 10 Meg
 	

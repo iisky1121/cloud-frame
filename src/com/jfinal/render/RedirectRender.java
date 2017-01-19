@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2011-2016, James Zhan 詹波 (jfinal@126.com).
+ * Copyright (c) 2011-2017, James Zhan 詹波 (jfinal@126.com).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,7 +45,9 @@ public class RedirectRender extends Render {
 	
 	public String buildFinalUrl() {
 		String result;
-		if (contextPath != null && url.indexOf("://") == -1) {
+		// 如果一个url为/login/connect?goto=http://www.jfinal.com，则有错误
+		// ^((https|http|ftp|rtsp|mms)?://)$   ==> indexOf 取值为 (3, 5)
+		if (contextPath != null && (url.indexOf("://") == -1 || url.indexOf("://") > 5)) {
 			result = contextPath + url;
 		} else {
 			result = url;
