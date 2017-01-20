@@ -16,6 +16,8 @@
 
 package com.jfinal.plugin.activerecord;
 
+import static com.jfinal.plugin.activerecord.DbKit.NULL_PARA_ARRAY;
+
 import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -27,17 +29,14 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import com.jfinal.base.UserSession;
-import com.jfinal.ext.kit.ThreadPool;
-import com.jfinal.ext.plugin.modelBind.ModelCallbackBuilder;
 import com.jfinal.ext.plugin.tablebind.TableBind;
 import com.jfinal.ext.sql.Cnd;
 import com.jfinal.kit.StrKit;
 import com.jfinal.plugin.activerecord.cache.ICache;
-import static com.jfinal.plugin.activerecord.DbKit.NULL_PARA_ARRAY;
 
 /**
  * Model.
@@ -431,8 +430,8 @@ public abstract class Model<M extends Model> implements Serializable {
 			getModifyFlag().clear();
 			//return result >= 1;
 			if(result >= 1){
-				//保存回调
-				callback(ModelCallbackBuilder.EventType.save);
+				//after save
+				afterSave();
 				return true;
 			}
 			return false;
@@ -554,9 +553,8 @@ public abstract class Model<M extends Model> implements Serializable {
 			int result = Db.update(config, conn, sql.toString(), paras.toArray());
 			if (result >= 1) {
 				getModifyFlag().clear();
-				
-				//更新回调
-				callback(ModelCallbackBuilder.EventType.update);
+				//after update
+				afterUpdate();
 				return true;
 			}
 			return false;
@@ -1227,17 +1225,18 @@ public abstract class Model<M extends Model> implements Serializable {
 		}
 	}
 	
-	private void callback(final ModelCallbackBuilder.EventType eventType){
-		final Model<M> model = this;
-		ThreadPool.create(new Runnable(){
-			@Override
-			public void run() {
-				try {
-					ModelCallbackBuilder.call(model, eventType);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
+	
+	/**
+	 * afterSave () 保存成功回调
+	 */
+	protected void afterSave() {
+		
+	}
+	
+	/**
+	 * afterUpdate () 修改成功回调
+	 */
+	protected void afterUpdate() {
+		
 	}
 }
