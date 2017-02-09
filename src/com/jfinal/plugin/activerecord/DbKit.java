@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2011-2016, James Zhan 詹波 (jfinal@126.com).
+ * Copyright (c) 2011-2017, James Zhan 詹波 (jfinal@126.com).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * DbKit
@@ -55,25 +56,41 @@ public final class DbKit {
 	 * @param config the Config contains DataSource, Dialect and so on
 	 */
 	public static void addConfig(Config config) {
-		if (config == null)
+		if (config == null) {
 			throw new IllegalArgumentException("Config can not be null");
-		if (configNameToConfig.containsKey(config.getName()))
+		}
+		if (configNameToConfig.containsKey(config.getName())) {
 			throw new IllegalArgumentException("Config already exists: " + config.getName());
+		}
 		
 		configNameToConfig.put(config.getName(), config);
 		
 		/** 
 		 * Replace the main config if current config name is MAIN_CONFIG_NAME
 		 */
-		if (MAIN_CONFIG_NAME.equals(config.getName()))
+		if (MAIN_CONFIG_NAME.equals(config.getName())) {
 			DbKit.config = config;
+			DbPro.init(DbKit.config.getName());
+		}
 		
 		/**
 		 * The configName may not be MAIN_CONFIG_NAME,
 		 * the main config have to set the first comming Config if it is null
 		 */
-		if (DbKit.config == null)
+		if (DbKit.config == null) {
 			DbKit.config = config;
+			DbPro.init(DbKit.config.getName());
+		}
+	}
+	
+	public static Config removeConfig(String configName) {
+		if (DbKit.config != null && DbKit.config.getName().equals(configName)) {
+			// throw new RuntimeException("Can not remove the main config.");
+			DbKit.config = null;
+		}
+		
+		DbPro.removeDbProWithConfig(configName);
+		return configNameToConfig.remove(configName);
 	}
 	
 	static void addModelToConfigMapping(Class<? extends Model> modelClass, Config config) {
@@ -101,12 +118,8 @@ public final class DbKit {
 		if (st != null) {try {st.close();} catch (SQLException e) {throw new ActiveRecordException(e);}}
 	}
 	
-	public static Config removeConfig(String configName) {
-		if (DbKit.config != null && DbKit.config.getName().equals(configName))
-			throw new RuntimeException("Can not remove the main config.");
-		
-		DbPro.removeDbProWithConfig(configName);
-		return configNameToConfig.remove(configName);
+	public static Set<Map.Entry<String, Config>> getConfigSet() {
+		return configNameToConfig.entrySet();
 	}
 	
 	@SuppressWarnings("unchecked")
