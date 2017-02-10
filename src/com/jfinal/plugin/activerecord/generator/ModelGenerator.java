@@ -38,7 +38,7 @@ public class ModelGenerator {
 		"@SuppressWarnings(\"serial\")%n" +
 		"public class %s extends %s<%s> {%n";
 	protected String daoTemplate =
-			"\tpublic static final %s me = new %s();%n";//改成me 统一命名
+			"\tpublic static final %s dao = new %s();%n";//改成dao 统一命名
 	
 	protected String modelPackageName;
 	protected String baseModelPackageName;

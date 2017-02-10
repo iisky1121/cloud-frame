@@ -111,6 +111,12 @@ public class MetaBuilder {
 			List<TableMeta> ret = new ArrayList<TableMeta>();
 			buildTableNames(ret);
 			for (TableMeta tableMeta : ret) {
+				if (excludedTableTypes.contains(tableMeta.type.toLowerCase())){
+					continue;
+				}
+				if (excludedTables.contains(tableMeta.name)) {
+					continue ;
+				}
 				buildPrimaryKey(tableMeta);
 				buildColumnMetas(tableMeta);
 			}
@@ -187,7 +193,7 @@ public class MetaBuilder {
 		while (rs.next()) {
 			String tableName = rs.getString("TABLE_NAME");
 			String tableType = rs.getString("TABLE_TYPE");
-			if (excludedTableTypes.contains(tableType)){
+			if (excludedTableTypes.contains(tableType.toLowerCase())){
 				System.out.println("Skip tableType :" + tableType + ", table :" + tableName);
 				continue ;
 			}
