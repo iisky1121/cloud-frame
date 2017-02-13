@@ -11,10 +11,14 @@ import com.jfinal.kit.StrKit;
 import com.jfinal.plugin.activerecord.IBean;
 import com.jfinal.plugin.activerecord.Model;
 import com.jfinal.plugin.activerecord.Record;
+import com.jfinal.plugin.redis.Cache;
 import com.jfinal.plugin.redis.Redis;
+import com.jfinal.plugin.redis.serializer.FstSerializer;
+
+import redis.clients.jedis.Pipeline;
 
 @SuppressWarnings("rawtypes")
-public class RedisDb {
+public class RedisDb extends Cache {
 	private Object object;
 
 	public static RedisDb create(Object Object){
@@ -269,5 +273,37 @@ public class RedisDb {
 				}
 			}
 		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static <T extends IBean> void setPipelinedList(Class<T> beanClass, String idKey, List list){
+		Pipeline pipeline = Redis.use().getJedis().pipelined();
+		Map<String, Object> map;
+		Object beanId;
+		for(Object object : list){
+			if(object != null){
+				if(object instanceof Model){
+					Model model = (Model)object;
+					map = (Map<String, Object>) JSONObject.toJSON((IBean)object);
+					beanId = model.get(idKey);
+				}
+				else if(object instanceof Record){
+					Record record = (Record)object;
+					map = RecordKit.toMap(record);
+					beanId = record.get(idKey);
+				}
+				else if(object instanceof Map){
+					map = (Map<String, Object>)object;
+					beanId = map.get(idKey);
+				}
+				else{
+					continue;
+				}
+				
+				pipeline.set(FstSerializer.me.valueToBytes(getKey(beanClass, beanId.toString())), FstSerializer.me.valueToBytes(map));
+			}
+		}
+		
+		pipeline.sync();
 	}
 }

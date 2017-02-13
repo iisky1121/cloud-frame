@@ -45,10 +45,10 @@ public abstract class CommonController extends Controller{
 	@Before(NotAction.class)
 	public void renderResult(Object object) {
 		if(object == null){
-			renderJson(false);
+			renderJson(ReturnResult.create(false).render());
 		}
 		else if(object instanceof Boolean){
-			renderJson((Boolean)object);
+			renderJson(ReturnResult.create((Boolean)object).render());
 		}
 		else if(object instanceof ReturnResult){
 			renderJson(((ReturnResult)object).render());
