@@ -6,8 +6,6 @@ import java.util.Set;
 
 public class BaseConfig {
 	public final static String loginUserSessionAttr = "login_sys_user";
-	public final static String userAllowUrlAttr = "user_allow_urls";
-	public final static String userMenuAttr = "user_menus";
 	public final static String success_code = "200";
 	public final static String success_msg = "操作成功";
 	public final static String failure_code = "400";
