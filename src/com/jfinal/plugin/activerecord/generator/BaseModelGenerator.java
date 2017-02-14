@@ -125,7 +125,7 @@ public class BaseModelGenerator {
 	}
 	
 	protected void genCloumsEnumDefine(TableMeta tableMeta, StringBuilder ret) {
-		ret.append(String.format("\tpublic enum c {%n"));
+		ret.append(String.format("\tpublic static enum c {%n"));
 		for(ColumnMeta meta : tableMeta.columnMetas){
 			ret.append(String.format("\t\t%s,%n", meta.name));
 		}
