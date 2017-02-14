@@ -79,8 +79,7 @@ public class Cnd {
 		Cnd cnd = new Cnd();
 		if (modelAndAlias == null) {
 			return cnd;
-		}
-		else if (modelAndAlias.length % 2 != 0 ) {
+		} else if (modelAndAlias.length % 2 != 0 ) {
 			throw new IllegalArgumentException("modelAndalias参数需为：成对的(Model-alias)列表");
 		}
 		
@@ -96,8 +95,7 @@ public class Cnd {
 			
 			if(object instanceof Model && alias instanceof String){
 				cnd.initForModel((Model)object, (String)alias);
-			}
-			else{
+			} else{
 				throw new IllegalArgumentException(String.format("%s 参数需为Model.Class、String类型,参数位置：%s", object, i+1));
 			}
 		}
@@ -119,8 +117,9 @@ public class Cnd {
 		Cnd cnd = new Cnd();
 		if (modelClassAndAlias == null) {
 			return cnd;
-		}
-		else if (modelClassAndAlias.length % 2 != 0 ) {
+		} else if (paras == null) {
+			throw new IllegalArgumentException("paras参数不能为空");
+		} else if (modelClassAndAlias.length % 2 != 0 ) {
 			throw new IllegalArgumentException("modelClassAndAlias参数需为：成对的(Model.Class-alias)、(TableName-alias)列表");
 		}
 		
@@ -138,12 +137,10 @@ public class Cnd {
 				//初始化model
 				if(Model.class.isAssignableFrom((Class<?>) object)){
 					cnd.initForModelClass(paras, (Class<? extends Model>) object, (String) alias);
-				}
-				else if(IBean.class.isAssignableFrom((Class<?>) object)){
+				} else if(IBean.class.isAssignableFrom((Class<?>) object)){
 					cnd.initForBeanClass(paras, (Class<?>) object, (String) alias);
 				}
-			}
-			else{
+			} else{
 				throw new IllegalArgumentException(String.format("%s 参数需为Model.Class、IBean.class类型,参数位置：%s", object, i+1));
 			}
 		}
@@ -211,8 +208,7 @@ public class Cnd {
     					fuzzyQuerys.put(column, queryStr);
     				}
     			}
-    		}
-    		else{
+    		} else{
     			for(String column: fuzzyQueryColumns){
     				fuzzyQuerys.put(column, queryStr);
     			}
@@ -239,8 +235,7 @@ public class Cnd {
 					if(orderByColumns.contains(column)){
 						orderBys.put(column, "");
 					}
-				}
-				else if(strs.length == 2){
+				} else if(strs.length == 2){
 					column = getAliasKey(strs[0]);
 					if(orderByColumns.contains(column) && reg.contains(strs[1].toLowerCase())){
 						orderBys.put(column, strs[1].toLowerCase());
@@ -294,8 +289,7 @@ public class Cnd {
 				value = entry.getValue().getValue()==null?querys.get(entry.getKey()).getValue():entry.getValue().getValue();
 				CndBuild.buildSQL(sb, entry.getValue().getType(), entry.getValue().getKey(), value, paramArrayList);
 				querys.remove(entry.getKey());
-			}
-			else{
+			} else {
 				CndBuild.buildSQL(sb, entry.getValue(), paramArrayList);
 			}
 		}
@@ -313,8 +307,7 @@ public class Cnd {
 		//设置where关键字，解决1=1效率的问题
 		if(hasWhere && !StrKit.isBlank(sb.toString())){
 			sql.append(sb.toString().replaceFirst("and", "where"));
-		}
-		else{
+		} else {
 			sql.append(sb.toString());
 		}
 		paramList.addAll(paramArrayList);
