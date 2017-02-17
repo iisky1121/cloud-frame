@@ -21,8 +21,12 @@ import java.io.Writer;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Enumeration;
+
 import javax.servlet.http.HttpServletRequest;
+
 import com.jfinal.aop.Interceptor;
+import com.jfinal.render.JsonRender;
+import com.jfinal.render.Render;
 
 /**
  * ActionReporter
@@ -127,6 +131,14 @@ public class ActionReporter {
 			}
 			sb.append("\n");
 		}
+		Render render = controller.getRender();
+		if(render instanceof JsonRender){
+			sb.append("Render      : " + ((JsonRender)render).getJsonText());
+		}
+		else{
+			sb.append("Render      : " + render.getView());
+		}
+		sb.append("\n");
 		sb.append("--------------------------------------------------------------------------------\n");
 		
 		try {
