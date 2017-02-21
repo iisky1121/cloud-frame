@@ -1,7 +1,5 @@
 package com.jfinal.base;
 
-import com.jfinal.aop.Before;
-import com.jfinal.ext.interceptor.NotAction;
 import com.jfinal.kit.StrKit;
 import com.jfinal.plugin.activerecord.Model;
 /**
@@ -55,7 +53,6 @@ public abstract class BaseController<M extends Model<M>> extends BaseQueryContro
 		renderJson(save(data));
 	}
 	
-	@Before(NotAction.class)
 	public ReturnResult save(M data){
 		ReturnResult result = checkSaveOrUpdate(data);
 		if(!result.isSucceed()){
@@ -78,7 +75,6 @@ public abstract class BaseController<M extends Model<M>> extends BaseQueryContro
 		renderJson(update(data));
 	}
 	
-	@Before(NotAction.class)
 	public ReturnResult update(M data){
 		ReturnResult result = checkSaveOrUpdate(data);
 		if(!result.isSucceed()){

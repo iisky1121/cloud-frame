@@ -5,8 +5,6 @@ import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 
-import com.jfinal.aop.Before;
-import com.jfinal.ext.interceptor.NotAction;
 import com.jfinal.ext.sql.Cnd;
 import com.jfinal.kit.StrKit;
 import com.jfinal.plugin.activerecord.IBean;
@@ -51,7 +49,6 @@ public abstract class BaseQueryController<M extends Model<M>> extends CommonCont
 		return (Class<M>) params[0];
 	}
 	
-	@Before(NotAction.class)
 	public M getModel() {
 		String alias = getAlias();
 		if(alias == null){
@@ -60,7 +57,6 @@ public abstract class BaseQueryController<M extends Model<M>> extends CommonCont
 		return getModel(getClazz(), alias, true);
 	}
 	
-	@Before(NotAction.class)
 	public M getBean() {
 		String alias = getAlias();
 		if(alias == null){
@@ -73,17 +69,14 @@ public abstract class BaseQueryController<M extends Model<M>> extends CommonCont
 	 * 
 	 * @return M
 	 */
-	@Before(NotAction.class)
 	public Cnd getQuery(Object ...modelClassAndAlias) {
 		return getQuery(getParaMap(), modelClassAndAlias);
 	}
-	@Before(NotAction.class)
 	public Cnd getQuery(Map<String, String[]> params) {
 		String alias = getAlias();
 		alias = (alias == null? "" : alias);
 		return getQuery(params, getClazz(), alias);
 	}
-	@Before(NotAction.class)
 	public Cnd getQuery(Map<String, String[]> params, Object ...modelClassAndAlias) {
 		return Cnd.queryToCnd(params, modelClassAndAlias);
 	}
@@ -93,7 +86,6 @@ public abstract class BaseQueryController<M extends Model<M>> extends CommonCont
 	 * 
 	 * @return String
 	 */
-	@Before(NotAction.class)
 	public String getTableName() {
 		return getM().getTableName();
 	}
@@ -103,7 +95,6 @@ public abstract class BaseQueryController<M extends Model<M>> extends CommonCont
 	 * 
 	 * @return String
 	 */
-	@Before(NotAction.class)
 	public String getAlias() {
 		return getM().getAlias();
 	}
@@ -114,11 +105,9 @@ public abstract class BaseQueryController<M extends Model<M>> extends CommonCont
 	public void getByPage() {
 		renderSucc(getPage());
 	}
-	@Before(NotAction.class)
 	public Page<M> getPage() {
 		return getPage(getParaMap());
 	}
-	@Before(NotAction.class)
 	public Page<M> getPage(Map<String, String[]> params) {
 		Cnd cnd = getQuery(params).where().build();
 		
@@ -138,11 +127,9 @@ public abstract class BaseQueryController<M extends Model<M>> extends CommonCont
 	public void getAll() {
 		renderSucc(getList());
 	}
-	@Before(NotAction.class)
 	public List<M> getList() {
 		return getList(getParaMap());
 	}
-	@Before(NotAction.class)
 	public List<M> getList(Map<String, String[]> params) {
 		Cnd cnd =getQuery(params).where().build();
 		List<M> list = getM().find(String.format(Cnd.SELECT_FROM, getTableName()).concat(getAlias()==null?"":" "+getAlias()).concat(cnd.getSql()), cnd.getParas());

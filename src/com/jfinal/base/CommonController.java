@@ -11,7 +11,6 @@ public abstract class CommonController extends Controller{
 	 * 
 	 * @return T
 	 */
-	@Before(NotAction.class)
 	public void setLoginUser(Object obj){
 		setSessionAttr(BaseConfig.loginUserSessionAttr, obj);
 		UserSession.set(obj);
@@ -33,7 +32,6 @@ public abstract class CommonController extends Controller{
 	 * 
 	 * @return T
 	 */
-	@Before(NotAction.class)
 	public <T> T loginUser(){
 		return getSessionAttr(BaseConfig.loginUserSessionAttr);
 	}
@@ -42,7 +40,6 @@ public abstract class CommonController extends Controller{
 	 * 智能判断各种返回结果,默认为失败
 	 * 
 	 */
-	@Before(NotAction.class)
 	public void renderResult(Object object) {
 		if(object == null){
 			renderJson(ReturnResult.create(false).render());
@@ -65,7 +62,6 @@ public abstract class CommonController extends Controller{
 	 * 返回成功或者失败json数据
 	 * 
 	 */
-	@Before(NotAction.class)
 	@Deprecated
 	public void renderJson(boolean b) {
 		renderResult(b);
@@ -75,7 +71,6 @@ public abstract class CommonController extends Controller{
 	 * 返回失败json数据
 	 * 
 	 */
-	@Before(NotAction.class)
 	public void renderError(String errorStr){
 		renderResult(ReturnResult.failure(errorStr));
 	}
@@ -84,7 +79,6 @@ public abstract class CommonController extends Controller{
 	 * 返回成功json数据
 	 * 
 	 */
-	@Before(NotAction.class)
 	public void renderSucc(String succStr){
 		renderResult(ReturnResult.success(succStr));
 	}
@@ -93,7 +87,6 @@ public abstract class CommonController extends Controller{
 	 * 返回成功json数据
 	 * 
 	 */
-	@Before(NotAction.class)
 	public void renderSucc(Object object){
 		renderResult(ReturnResult.success(object));
 	}
@@ -102,7 +95,6 @@ public abstract class CommonController extends Controller{
 	 * 检查必填属性
 	 * 
 	 */
-	@Before(NotAction.class)
 	public ReturnResult checkNotNull(String... attrs){
 		return ValidateKit.checkNotNull(this, attrs);
 	}
