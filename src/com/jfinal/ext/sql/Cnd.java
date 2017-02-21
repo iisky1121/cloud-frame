@@ -285,8 +285,8 @@ public class Cnd {
 		Object value;
 		//默认值优先
 		for(Entry<String, Param> entry : defaults.entrySet()){
-			if(querys.containsKey(entry.getKey())){
-				value = entry.getValue().getValue()==null?querys.get(entry.getKey()).getValue():entry.getValue().getValue();
+			if(querys.containsKey(entry.getKey()) && entry.getValue().getValue()==null){
+				value = querys.get(entry.getKey()).getValue();
 				CndBuild.buildSQL(sb, entry.getValue().getType(), entry.getValue().getKey(), value, paramArrayList);
 				querys.remove(entry.getKey());
 			} else {
