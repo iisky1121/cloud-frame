@@ -66,6 +66,7 @@ public abstract class CommonController extends Controller{
 	 * 
 	 */
 	@Before(NotAction.class)
+	@Deprecated
 	public void renderJson(boolean b) {
 		renderResult(b);
 	}

@@ -23,7 +23,7 @@ public abstract class BaseController<M extends Model<M>> extends BaseQueryContro
 			renderResult(BaseConfig.dataNotExist());
 			return;
 		}
-		renderJson(data.delete());
+		renderResult(data.delete());
 	}
 
 	/**
@@ -38,7 +38,7 @@ public abstract class BaseController<M extends Model<M>> extends BaseQueryContro
 		}
 		
 		String ids[] = getPara("ids").split(",");
-		renderJson(getM().deletes(ids));
+		renderResult(getM().deletes(ids));
 	}	
 
 	/**
