@@ -70,11 +70,12 @@ public class ActionHandler extends Handler {
 			controller.init(request, response, urlPara[0]);
 			
 			if (devMode) {
+				long startTime = System.currentTimeMillis();
 				if (ActionReporter.isReportAfterInvocation(request)) {
 					new Invocation(action, controller).invoke();
-					ActionReporter.report(target, controller, action);
+					ActionReporter.report(target, controller, action, startTime);
 				} else {
-					ActionReporter.report(target, controller, action);
+					ActionReporter.report(target, controller, action,startTime);
 					new Invocation(action, controller).invoke();
 				}
 			}

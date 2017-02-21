@@ -77,8 +77,10 @@ public class ActionReporter {
 	/**
 	 * Report the action
 	 */
-	public static final void report(String target, Controller controller, Action action) {
-		StringBuilder sb = new StringBuilder("\nJFinal action report -------- ").append(sdf.get().format(new Date())).append(" ------------------------------\n");
+	public static final void report(String target, Controller controller, Action action, long startTime) {
+		StringBuilder sb = new StringBuilder("\nJFinal action report -------- ")
+				.append(sdf.get().format(new Date()))
+				.append(String.format(" -------- (consume time：%sms) -------------\n", System.currentTimeMillis()-startTime));
 		sb.append("Url         : ").append(controller.getRequest().getMethod()).append(" ").append(target).append("\n");
 		Class<? extends Controller> cc = action.getControllerClass();
 		sb.append("Controller  : ").append(cc.getName()).append(".(").append(cc.getSimpleName()).append(".java:1)");
