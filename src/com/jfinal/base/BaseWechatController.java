@@ -34,6 +34,7 @@ import com.apis.wechat.msg.out.OutMsg;
 import com.apis.wechat.msg.out.OutTextMsg;
 import com.jfinal.core.Controller;
 import com.jfinal.kit.HttpKit;
+import com.jfinal.kit.LogKit;
 import com.jfinal.kit.PropKit;
 import com.jfinal.kit.StrKit;
 import com.jfinal.log.Log;
@@ -161,7 +162,11 @@ public abstract class BaseWechatController extends Controller {
 	protected String getInMsgXml() {
 		if (inMsgXml == null) {
 			inMsgXml = HttpKit.readData(getRequest());
+			LogKit.info("inMsgXml:"+inMsgXml);
 			
+			if(inMsgXml == null){
+				return null;
+			}
 			// 是否需要解密消息
 			if (cfg.isMessageEncrypt()) {
 				inMsgXml = Wechat.common(cfg).decrypt(inMsgXml, getPara("timestamp"), getPara("nonce"), getPara("msg_signature"));
