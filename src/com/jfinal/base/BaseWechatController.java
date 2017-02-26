@@ -68,9 +68,13 @@ public abstract class BaseWechatController extends Controller {
 		}
 
 		// 开发模式输出微信服务发送过来的 xml 消息
+		String inMsgXml = getInMsgXml();
 		if (PropKit.getBoolean("devMode", false)) {
-			System.out.println("接收消息:\n" + getInMsgXml());
+			System.out.println("接收消息:\n" + inMsgXml);
 		} else {
+			if(StrKit.isBlank(inMsgXml)){
+				return;
+			}
 			// 签名检测
 			if (!checkSignature()) {
 				this.renderText("签名验证失败，请确定是微信服务器在发送消息过来");
