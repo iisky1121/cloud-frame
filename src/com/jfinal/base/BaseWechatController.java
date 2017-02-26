@@ -53,6 +53,10 @@ public abstract class BaseWechatController extends Controller {
 		this.cfg = cfg;
 	}
 	
+	protected Wechat.Cfg getCfg() {
+		return cfg;
+	}
+
 	/**
 	 * weixin 公众号服务器调用唯一入口，即在开发者中心输入的 URL 必须要指向此 action
 	 */
@@ -164,7 +168,7 @@ public abstract class BaseWechatController extends Controller {
 			inMsgXml = HttpKit.readData(getRequest());
 			LogKit.info("inMsgXml:"+inMsgXml);
 			
-			if(inMsgXml == null){
+			if(StrKit.isBlank(inMsgXml)){
 				return null;
 			}
 			// 是否需要解密消息
