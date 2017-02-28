@@ -184,7 +184,7 @@ public abstract class BaseWechatController extends Controller {
 	}
 	
 	protected InMsg getInMsg() {
-		if (inMsg == null)
+		if (inMsg != null)
 			inMsg = InMsgParser.parse(getInMsgXml()); 
 		return inMsg;
 	}
