@@ -16,10 +16,14 @@
 
 package com.jfinal.core;
 
+import java.util.Map;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import com.jfinal.config.Constants;
+
 import com.jfinal.aop.Invocation;
+import com.jfinal.config.Constants;
+import com.jfinal.ext.kit.CloneKit;
 import com.jfinal.handler.Handler;
 import com.jfinal.log.Log;
 import com.jfinal.render.Render;
@@ -47,10 +51,12 @@ public class ActionHandler extends Handler {
 	 * 2: new Invocation(...).invoke()
 	 * 3: render(...)
 	 */
+	@SuppressWarnings("unchecked")
 	public final void handle(String target, HttpServletRequest request, HttpServletResponse response, boolean[] isHandled) {
 		if (target.indexOf('.') != -1) {
 			return ;
 		}
+		Map<String,String[]> firstMap = (Map<String, String[]>) CloneKit.deep(request.getParameterMap());
 		
 		isHandled[0] = true;
 		String[] urlPara = {null};
@@ -73,9 +79,9 @@ public class ActionHandler extends Handler {
 				long startTime = System.currentTimeMillis();
 				if (ActionReporter.isReportAfterInvocation(request)) {
 					new Invocation(action, controller).invoke();
-					ActionReporter.report(target, controller, action, startTime);
+					ActionReporter.report(target, controller, action, firstMap, startTime);
 				} else {
-					ActionReporter.report(target, controller, action,startTime);
+					ActionReporter.report(target, controller, action, firstMap, startTime);
 					new Invocation(action, controller).invoke();
 				}
 			}

@@ -21,10 +21,14 @@ import java.io.Writer;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.servlet.http.HttpServletRequest;
 
 import com.jfinal.aop.Interceptor;
+import com.jfinal.kit.JsonKit;
+import com.jfinal.kit.StrKit;
 import com.jfinal.render.JsonRender;
 import com.jfinal.render.Render;
 
@@ -77,26 +81,26 @@ public class ActionReporter {
 	/**
 	 * Report the action
 	 */
-	public static final void report(String target, Controller controller, Action action, long startTime) {
+	public static final void report(String target, Controller controller, Action action, Map<String,String[]> firstMap, long startTime) {
 		StringBuilder sb = new StringBuilder("\nJFinal action report -------- ")
 				.append(sdf.get().format(new Date()))
 				.append(String.format(" -------- (consume time：%sms) -------------\n", System.currentTimeMillis()-startTime));
-		sb.append("Url         : ").append(controller.getRequest().getMethod()).append(" ").append(target).append("\n");
+		sb.append("Url           : ").append(controller.getRequest().getMethod()).append(" ").append(target).append("\n");
 		Class<? extends Controller> cc = action.getControllerClass();
-		sb.append("Controller  : ").append(cc.getName()).append(".(").append(cc.getSimpleName()).append(".java:1)");
-		sb.append("\nMethod      : ").append(action.getMethodName()).append("\n");
+		sb.append("Controller    : ").append(cc.getName()).append(".(").append(cc.getSimpleName()).append(".java:1)");
+		sb.append("\nMethod        : ").append(action.getMethodName()).append("\n");
 		
 		String urlParas = controller.getPara();
 		if (urlParas != null) {
-			sb.append("UrlPara     : ").append(urlParas).append("\n");
+			sb.append("UrlPara       : ").append(urlParas).append("\n");
 		}
 		
 		Interceptor[] inters = action.getInterceptors();
 		if (inters.length > 0) {
-			sb.append("Interceptor : ");
+			sb.append("Interceptor   : ");
 			for (int i=0; i<inters.length; i++) {
 				if (i > 0)
-					sb.append("\n              ");
+					sb.append("\n                ");
 				Interceptor inter = inters[i];
 				Class<? extends Interceptor> ic = inter.getClass();
 				sb.append(ic.getName()).append(".(").append(ic.getSimpleName()).append(".java:1)");
@@ -104,49 +108,64 @@ public class ActionReporter {
 			sb.append("\n");
 		}
 		
-		// print all parameters
-		HttpServletRequest request = controller.getRequest();
-		Enumeration<String> e = request.getParameterNames();
-		if (e.hasMoreElements()) {
-			sb.append("Parameter   : ");
-			while (e.hasMoreElements()) {
-				String name = e.nextElement();
-				String[] values = request.getParameterValues(name);
-				if (values.length == 1) {
-					sb.append(name).append("=");
-					if (values[0] != null && values[0].length() > maxOutputLengthOfParaValue) {
-						sb.append(values[0].substring(0, maxOutputLengthOfParaValue)).append("...");
-					} else {
-						sb.append(values[0]);
-					}
-				}
-				else {
-					sb.append(name).append("[]={");
-					for (int i=0; i<values.length; i++) {
-						if (i > 0)
-							sb.append(",");
-						sb.append(values[i]);
-					}
-					sb.append("}");
-				}
-				sb.append("  ");
+		// print api parameters
+		if(firstMap != null && !firstMap.isEmpty()){
+			sb.append("Parameter     : ");
+			for(Entry<String, String[]> entry : firstMap.entrySet()){
+				nameAndValuesReport(sb, entry.getKey(), entry.getValue());
 			}
 			sb.append("\n");
 		}
+		
+		// print all parameters
+		HttpServletRequest request = controller.getRequest();
+		Enumeration<String> e = request.getParameterNames();
+		if (e.hasMoreElements() && !JsonKit.toJson(firstMap).equals(JsonKit.toJson(request.getParameterMap()))) {
+			sb.append("All Parameter : ");
+			while (e.hasMoreElements()) {
+				String name = e.nextElement();
+				nameAndValuesReport(sb, name, request.getParameterValues(name));
+			}
+			sb.append("\n");
+		}
+		
 		Render render = controller.getRender();
 		if(render instanceof JsonRender){
-			sb.append("Render      : " + ((JsonRender)render).getJsonText());
+			sb.append("Render        : " + ((JsonRender)render).getJsonText());
 		}
 		else{
-			sb.append("Render      : " + render.getView());
+			sb.append("Render        : " + render.getView());
 		}
 		sb.append("\n");
-		sb.append("--------------------------------------------------------------------------------\n");
+		sb.append("---------------------------------------------------------------------------------------------\n");
 		
 		try {
 			writer.write(sb.toString());
 		} catch (IOException ex) {
 			throw new RuntimeException(ex);
+		}
+	}
+	
+	private static void nameAndValuesReport(StringBuilder sb, String name, String[] values){
+		if(!StrKit.isBlank(name)){
+			if (values.length == 1) {
+				sb.append(name).append("=");
+				if (values[0] != null && values[0].length() > maxOutputLengthOfParaValue) {
+					sb.append(values[0].substring(0, maxOutputLengthOfParaValue)).append("...");
+				} else {
+					sb.append(values[0]);
+				}
+			}
+			else {
+				sb.append(name).append("[]={");
+				for (int i=0; i<values.length; i++) {
+					if (i > 0)
+						sb.append(",");
+					sb.append(values[i]);
+				}
+				sb.append("}");
+			}
+			sb.append("  ");
 		}
 	}
 	
