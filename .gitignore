@@ -1,3 +1,15 @@
 *.class
-target/*
+WebRoot/WEB-INF/classes/*
+/*.log
+/.classpath
 /target/
+/_logs/
+cloud-frame.iml
+WebRoot/upload/
+*.tmp
+/.idea/
+/res/config.txt
+/.externalToolBuilders/
+/.settings/
+/.project
+/bin/
