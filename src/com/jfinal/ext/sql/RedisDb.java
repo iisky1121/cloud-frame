@@ -1,309 +1,333 @@
 package com.jfinal.ext.sql;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import com.alibaba.fastjson.JSONObject;
-import com.jfinal.ext.kit.RecordKit;
 import com.jfinal.kit.StrKit;
 import com.jfinal.plugin.activerecord.IBean;
-import com.jfinal.plugin.activerecord.Model;
-import com.jfinal.plugin.activerecord.Record;
 import com.jfinal.plugin.redis.Cache;
 import com.jfinal.plugin.redis.Redis;
 import com.jfinal.plugin.redis.serializer.FstSerializer;
-
 import redis.clients.jedis.Pipeline;
 
+import java.util.*;
+import java.util.Map.Entry;
+
 @SuppressWarnings("rawtypes")
-public class RedisDb extends Cache {
+public class RedisDb {
+	private Cache cache;
+	private Pipeline pipeline;
 	private Object object;
 
-	public static RedisDb create(Object Object){
+	public static RedisDb use(){
 		RedisDb db = new RedisDb();
-		db.object = Object;
+		db.cache = Redis.use();
 		return db;
 	}
-	
-	/**
-	 * 保存
-	 * @param bean
-	 * @param beanId
-	 */
-	public static void save(IBean bean, Object beanId){
-		setRedisBean(beanId, bean);
-	}
-	
-	/**
-	 * 更新
-	 * @param bean
-	 * @param beanId
-	 */
-	public static void update(IBean bean, Object beanId){
-		setRedisBean(beanId, bean);
-	}
-	
-	/**
-	 * 查找
-	 * @param bean
-	 * @param beanId
-	 */
-	public static <T extends IBean> RedisDb find(Class<T> beanClass, Object beanId){
+	public static RedisDb use(String cacheName){
 		RedisDb db = new RedisDb();
-		if(beanId != null){
-			db.object = getRedisMap(beanClass, beanId.toString());
-		}
+		db.cache = Redis.use(cacheName);
 		return db;
 	}
-	
-	/**
-	 * 删除
-	 * @param beanClass
-	 * @param beanId
-	 */
-	public static <T extends IBean> void delete(Class<T> beanClass, Object... beanId){
-		if(beanId == null || beanClass == null){
-			return;
-		}
-		List<String> keys = new ArrayList<String>();
-		for(Object bId : beanId){
-			keys.add(getKey(beanClass, bId.toString()));
-		}
-		Redis.use().del(keys.toArray());
+
+	public RedisDb setObject(Object object){
+		this.object = object;
+		return this;
 	}
-	
+
 	/**
-	 * 查询拼接
-	 * @param key
-	 * @param beanClass
+	 * 透传RedisCache
 	 * @return
 	 */
-	public <T extends IBean> RedisDb select(String key, Class<T> beanClass){
-		return select(key, beanClass, null);
+	public Cache cache(){
+		return this.cache;
 	}
-	public <T extends IBean> RedisDb select(String key, Class<T> beanClass, String[] beanAttrs){
-		if(object == null || StrKit.isBlank(key) || beanClass == null){
-			return this;
-		}
-		if(object instanceof List){
-			selectList(beanClass, key, beanAttrs, (List)object);
-		}
-		else{
-			selectObject(beanClass, key, beanAttrs, object);
+
+	/**
+	 * 透传RedisPipeline
+	 * @return
+	 */
+	Pipeline pipeline(){
+		return this.pipeline;
+	}
+
+	/**
+	 * 智能查询&拼接
+	 * @param idKey
+	 * @param alias
+	 * @param filterAttrs
+	 * @return
+	 */
+	public RedisDb select(String idKey, String alias, String[] filterAttrs){
+		if(isMap()){
+			selectMap(idKey, alias, filterAttrs);
+		} else if(isList()){
+			selectList(idKey, alias, filterAttrs);
 		}
 		return this;
 	}
-	
-	private <T extends IBean> void selectList(Class<T> beanClass, String key, String[] beanAttrs, List list){
-		if(list == null || StrKit.isBlank(key) || beanClass == null){
-			return;
-		}
-		for(Object o : list){
-			selectObject(beanClass, key, beanAttrs, o);
-		}
+	public <M extends IBean> RedisDb select(String idKey, Class<M> beanClass, String[] filterAttrs){
+		return select(idKey, getAlias(beanClass), filterAttrs);
 	}
-	
-	@SuppressWarnings("unchecked")
-	private <T extends IBean> void selectObject(Class<T> beanClass, String key, String[] beanAttrs, Object o){
-		if(o == null || StrKit.isBlank(key) || beanClass == null){
-			return;
-		}
-		Object beanId;
-		if(o instanceof Model){
-			Model model = (Model)o;
-			beanId = model.get(key);
-			
-			if(beanId != null){
-				Map<String, Object> redisMap = getRedisMap(beanClass, beanId.toString());
-				if(redisMap == null){
-					return;
-				}
-				//遍历设置 对应bean的值
-				if(beanAttrs != null){
-					for(String attr : beanAttrs){
-						model.put(getKey(beanClass, attr), redisMap.get(attr));
-					}
-				}
-				else{
-					for(Entry<String, Object> entry : redisMap.entrySet()){
-						model.put(getKey(beanClass, entry.getKey()), entry.getValue());
-					}
-				}
-			}
-		}
-		else if(o instanceof Record){
-			Record record = (Record)o;
-			beanId = record.get(key);
-			
-			if(beanId != null){
-				Map<String, Object> redisMap = getRedisMap(beanClass, beanId.toString());
-				if(redisMap == null){
-					return;
-				}
-				//遍历设置 对应bean的值
-				if(beanAttrs != null){
-					for(String attr : beanAttrs){
-						record.set(getKey(beanClass, attr), redisMap.get(attr));
-					}
-				}
-				else{
-					for(Entry<String, Object> entry : redisMap.entrySet()){
-						record.set(getKey(beanClass, entry.getKey()), entry.getValue());
-					}
-				}
-			}
-		}
-		else if(o instanceof Map){
-			Map<String, Object> map = (Map<String, Object>)o;
-			beanId = map.get(key);
-			
-			if(beanId != null){
-				Map<String, Object> redisMap = getRedisMap(beanClass, beanId.toString());
-				if(redisMap == null){
-					return;
-				}
-				//遍历设置 对应bean的值
-				if(beanAttrs != null){
-					for(String attr : beanAttrs){
-						map.put(getKey(beanClass, attr), redisMap.get(attr));
-					}
-				}
-				else{
-					for(Entry<String, Object> entry : redisMap.entrySet()){
-						map.put(getKey(beanClass, entry.getKey()), entry.getValue());
-					}
-				}
-			}
-		}
+	public <M extends IBean> RedisDb select(String idKey, Class<M> beanClass){
+		return select(idKey, getAlias(beanClass));
 	}
-	
-	private static <T extends IBean> String getKey(Class<T> beanClass, String key){
-		return StrKit.firstCharToLowerCase(beanClass.getSimpleName()).concat("."+key);
+	public RedisDb select(String idKey, String alias){
+		return select(idKey, alias, null);
 	}
-	
+
 	/**
-	 * 获取redis对应beanId集合
-	 * @param beanId
-	 * @param beanClass
+	 * 查询&拼接 Map
+	 * @param alias
+	 * @param idKey
+	 * @param filterAttrs
 	 * @return
 	 */
-	public static <T extends IBean> T getRedisBean(Class<T> beanClass, Object beanId){
-		JSONObject redisJson = getRedisJson(beanClass, beanId);
-		if(redisJson == null){
-			return null;
+	public RedisDb selectMap(String idKey, String alias, String[] filterAttrs){
+		if(isMap()){
+			Map map = (Map)this.object;
+			if(map != null && map.get(idKey) != null){
+				Map<String,Object> redisMap = getRedisDbMap(alias, map.get(idKey), filterAttrs);
+				conditionMap(map, redisMap, alias);
+			}
 		}
-		return JSONObject.toJavaObject(redisJson, beanClass);
+		return this;
 	}
-	
-	public static <T extends IBean> JSONObject getRedisJson(Class<T> beanClass, Object beanId){
-		Map<String, Object> redisMap = getRedisMap(beanClass, beanId);
-		if(redisMap == null){
-			return null;
+
+	/**
+	 * 查询&拼接 List
+	 * @param alias
+	 * @param idKey
+	 * @param filterAttrs
+	 * @return
+	 */
+	public RedisDb selectList(String idKey, String alias, String[] filterAttrs){
+		if(isList()){
+			Collection<Map> list = (Collection)this.object;
+			for(Map map : list){
+				if(map != null && map.get(idKey) != null){
+					Map<String,Object> redisMap = getRedisDbMap(alias, map.get(idKey), filterAttrs);
+					conditionMap(map, redisMap, alias);
+				}
+			}
 		}
-		return (JSONObject) JSONObject.toJSON(redisMap);
+		return this;
 	}
-	
-	@SuppressWarnings("unchecked")
-	public static <T extends IBean> Map<String, Object> getRedisMap(Class<T> beanClass, Object beanId){
-		if(beanClass == null || beanId == null){
+
+	/**
+	 * 获取redis Map数据并拼装
+	 * @param idValue
+	 * @param alias
+	 * @param filterAttrs
+	 * @return
+	 */
+	public Map<String,Object> getRedisDbMap(String alias, Object idValue, String[] filterAttrs){
+		if(idValue == null || StrKit.isBlank(alias)){
 			return null;
 		}
-		Object data = Redis.use().get(getKey(beanClass, beanId.toString()));
+		//从redis获取数据
+		Map<String,Object> map = getRedisMap(getKey(alias, idValue));
+		//过滤属性
+		if(map != null && map.size() > 0 && filterAttrs != null && filterAttrs.length > 0){
+			List<String> fAttrs = Arrays.asList(filterAttrs);
+			for(Entry<String,Object> entry : map.entrySet()){
+				if(!fAttrs.contains(entry.getKey())){
+					map.remove(entry.getKey());
+				}
+			}
+		}
+		return map;
+	}
+	public Map<String,Object> getRedisDbMap(String alias, Object idValue){
+		return getRedisDbMap(alias, idValue, null);
+	}
+
+	/**
+	 * 获取redis List数据并拼装
+	 * @param alias
+	 * @param idValues
+	 * @param filterAttrs
+	 * @return
+	 */
+	public List<Map<String,Object>> getRedisDbList(String alias, List<Object> idValues, String[] filterAttrs){
+		if(idValues == null || idValues.size()==0 || StrKit.isBlank(alias)){
+			return null;
+		}
+		List<Map<String,Object>> list = new ArrayList<>();
+		Map<String,Object> map;
+		for(Object idValue : idValues){
+			map = getRedisDbMap(alias, idValue, filterAttrs);
+			if(map != null){
+				list.add(map);
+			}
+		}
+		return list;
+	}
+	public List<Map<String,Object>> getRedisDbList(String alias, List<Object> idValues){
+		return getRedisDbList(alias, idValues, null);
+	}
+
+	/**
+	 * 获取redis数据转换成map
+	 * @param cacheKey
+	 * @return
+	 */
+	private Map<String,Object> getRedisMap(String cacheKey){
+		Object data = this.cache().get(cacheKey);
 		if(data == null || "nil".equals(data.toString())){
 			return null;
 		}
 		return (Map<String, Object>) data;
 	}
-	
+
 	/**
-	 * 设置redis对应beanId集合
-	 * @param beanClass
-	 * @param beanId
-	 * @param map
+	 * 两个map数据拼接
+	 * @param object
+	 * @param redisMap
+	 * @param alias
 	 */
-	@SuppressWarnings("unchecked")
-	public static <T extends IBean> void setRedisBean(Object beanId, T bean){
-		if(beanId == null || bean == null){
+	private static void conditionMap(Map object, Map<String,Object> redisMap, String alias){
+		if(object == null || redisMap == null || StrKit.isBlank(alias)){
 			return;
 		}
-		Map<String, Object> map = (Map<String, Object>) JSONObject.toJSON(bean);
-		setRedisMap(bean.getClass(), beanId, map);
-	}
-		
-	public static <T extends IBean> void setRedisRecord(Class<T> beanClass, Object beanId, Record record){
-		if(beanClass == null || beanId == null || record == null){
-			return;
+		for(Entry<String,Object> entry : redisMap.entrySet()){
+			object.put(getKey(alias, entry.getKey()), entry.getValue());
 		}
-		setRedisMap(beanClass, beanId, RecordKit.toMap(record));
 	}
-	
-	public static <T extends IBean> void setRedisMap(Class<T> beanClass, Object beanId, Map<String, Object> map){
-		if(beanClass == null || beanId == null || map == null){
-			return;
-		}
-		Redis.use().set(getKey(beanClass, beanId.toString()), map);
-	}
-	
+
 	/**
-	 * 设置redis对应beanId列表集合
-	 * @param beanClass
-	 * @param beanId
-	 * @param map
+	 * 别名规则
+	 * @param alias
+	 * @param idValue
+	 * @return
 	 */
-	@SuppressWarnings({ "unchecked" })
-	public static <T extends IBean> void setRedisList(Class<T> beanClass, String idKey, List list){
-		if(beanClass == null || StrKit.isBlank(idKey) || list == null){
-			return;
+	private static String getKey(String alias, Object idValue){
+		return String.format("%s.%s", alias, idValue);
+	}
+
+	/**
+	 * bean别名
+	 * @param beanClass
+	 * @return
+	 */
+	private static String getAlias(Class<?> beanClass){
+		return StrKit.firstCharToLowerCase(beanClass.getSimpleName());
+	}
+
+	/**
+	 * 设置 redis Map
+	 * @param alias
+	 * @param map
+	 * @param idKey
+	 * @return
+	 */
+	public RedisDb setMap(String alias, Map<String,Object> map, String idKey){
+		if(StrKit.isBlank(alias) || map == null || StrKit.isBlank(idKey) || map.get(idKey) == null){
+			return this;
 		}
-		for(Object object : list){
-			if(object != null){
-				if(object instanceof Model){
-					Model model = (Model)object;
-					setRedisBean(model.get(idKey), (IBean)object);
-				}
-				else if(object instanceof Record){
-					Record record = (Record)object;
-					setRedisRecord(beanClass, record.get(idKey), record);
-				}
-				else if(object instanceof Map){
-					Map<String, Object> map = (Map<String, Object>)object;
-					setRedisMap(beanClass, map.get(idKey), map);
-				}
+		String key = getKey(alias, map.get(idKey));
+		if(isOpenPipeline()){
+			this.pipeline().set(serializer(key), serializer(map));
+		} else{
+			this.cache().set(key, map);
+		}
+		return this;
+	}
+	public <M extends IBean> RedisDb setMap(Class<M> beanClass, Map<String,Object> map, String idKey){
+		return setMap(getAlias(beanClass), map, idKey);
+	}
+
+	/**
+	 * 设置 redis List
+	 * @param alias
+	 * @param list
+	 * @param idKey
+	 * @return
+	 */
+	public RedisDb setList(String alias, Collection<Map<String,Object>> list, String idKey){
+		if(StrKit.isBlank(alias) || list == null || StrKit.isBlank(idKey) || list.size()==0){
+			return this;
+		}
+		for(Map<String,Object> map : list){
+			setMap(alias, map, idKey);
+		}
+		return this;
+	}
+	public <M extends IBean> RedisDb setList(Class<M> beanClass, Collection<Map<String,Object>> list, String idKey){
+		return setList(getAlias(beanClass), list, idKey);
+	}
+
+	/**
+	 * 删除redis缓存
+	 * @param alias
+	 * @param idValues
+	 * @return
+	 */
+	public RedisDb remove(String alias, Object... idValues){
+		if(StrKit.isBlank(alias) || idValues==null || idValues.length == 0){
+			return this;
+		}
+		for(Object idValue : idValues){
+			String key = getKey(alias, idValue);
+			if(isOpenPipeline()){
+				this.pipeline.del(key);
+			} else {
+				this.cache().del(key);
 			}
 		}
+		return this;
 	}
-	
-	@SuppressWarnings("unchecked")
-	public static <T extends IBean> void setPipelinedList(Class<T> beanClass, String idKey, List list){
-		Pipeline pipeline = Redis.use().getJedis().pipelined();
-		Map<String, Object> map;
-		Object beanId;
-		for(Object object : list){
-			if(object != null){
-				if(object instanceof Model){
-					Model model = (Model)object;
-					map = (Map<String, Object>) JSONObject.toJSON((IBean)object);
-					beanId = model.get(idKey);
-				}
-				else if(object instanceof Record){
-					Record record = (Record)object;
-					map = RecordKit.toMap(record);
-					beanId = record.get(idKey);
-				}
-				else if(object instanceof Map){
-					map = (Map<String, Object>)object;
-					beanId = map.get(idKey);
-				}
-				else{
-					continue;
-				}
-				
-				pipeline.set(FstSerializer.me.valueToBytes(getKey(beanClass, beanId.toString())), FstSerializer.me.valueToBytes(map));
-			}
+	public <M extends IBean> RedisDb remove(Class<M> beanClass, Object... idValues){
+		return remove(getAlias(beanClass), idValues);
+	}
+
+	/**
+	 * 是否开启管道
+	 * @return
+	 */
+	public boolean isOpenPipeline(){
+		return pipeline() != null;
+	}
+
+	/**
+	 * 是否map
+	 * @return
+	 */
+	public boolean isMap(){
+		return this.object != null && this.object instanceof Map;
+	}
+
+	/**
+	 * 是否List
+	 * @return
+	 */
+	public boolean isList(){
+		return this.object != null && this.object instanceof Collection;
+	}
+
+	/**
+	 * 开启管道
+	 * @return
+	 */
+	public RedisDb openPipeline(){
+		if(!isOpenPipeline()){
+			this.pipeline = this.cache().getJedis().pipelined();
 		}
-		
-		pipeline.sync();
+		return this;
+	}
+
+	/**
+	 * 同步写入管道数据
+	 */
+	public void writeSync(){
+		if(isOpenPipeline()){
+			pipeline().sync();
+		}
+	}
+
+	/**
+	 * 序列化
+	 * @param object
+	 * @return
+	 */
+	public static byte[] serializer(Object object){
+		return FstSerializer.me.valueToBytes(object);
 	}
 }

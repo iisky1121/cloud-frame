@@ -1,9 +1,7 @@
 package com.jfinal.ext.kit;
 
-import java.util.Date;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import com.google.common.collect.Maps;
 import com.jfinal.kit.StrKit;
@@ -86,6 +84,14 @@ public class ModelKit {
         }
         return map;
     }
+
+    public static <M extends Model<M>> Collection<Map<String,Object>> collectionModelToMap(Collection<M> list){
+		Collection<Map<String,Object>> collection = new ArrayList<>();
+		for(M m : list){
+			collection.add(toMap(m));
+		}
+		return collection;
+	}
     
     @SuppressWarnings({ "rawtypes", "unchecked" })
 	public static void copyNotNull(Model source, Model target){
@@ -101,29 +107,26 @@ public class ModelKit {
     
     @SuppressWarnings("rawtypes")
     public static void copyColumns(Model src, Model desc, String... columns){
-    	for(String column:columns)  {
-    		String[] res = column.split(",");
-    		if(res.length==1){
-    			desc.set(column,src.get(column));
-    		}else {
-    			desc.set(res[1],src.get(res[0]));
-    		}
-    	}
+		copyColumns(src, desc, false, columns);
     }
     
     @SuppressWarnings("rawtypes")
     public static void copyNotNullColumns(Model src, Model desc, String... columns){
-        for(String column:columns)  {
-            String[] res = column.split(",");
-            if(res.length==1){
-            	if(src.get(column) != null)
-            		desc.set(column,src.get(column));
-            }else {
-            	if(src.get(res[0]) != null)
-            		desc.set(res[1],src.get(res[0]));
-            }
-        }
+		copyColumns(src, desc, true, columns);
     }
+
+	public static void copyColumns(Model src, Model desc, boolean onlyNotNull, String... columns){
+		for(String column:columns)  {
+			String[] res = column.split(",");
+			if(res.length==1){
+				if(onlyNotNull && src.get(column) != null)
+					desc.set(column,src.get(column));
+			}else {
+				if(onlyNotNull && src.get(res[0]) != null)
+					desc.set(res[1],src.get(res[0]));
+			}
+		}
+	}
     
     @SuppressWarnings({ "rawtypes", "unchecked" })
 	public static <T> T newInstance(Class modelClass){
@@ -138,67 +141,44 @@ public class ModelKit {
     	}
 		return null;
 	}
-    
-    @SuppressWarnings("rawtypes")
+
+	@SuppressWarnings("rawtypes")
 	public static boolean notNullValueEquals(Model src, String[] columns, String[] values){
-    	if(!StrKit.notNull(src)){
-    		return false;
-    	}
-    	if(columns == null || values == null){
-    		return false;
-    	}
-    	
-    	for(int i =0; i < columns.length; i++){
-    		if(StrKit.isBlank(columns[i]) || values[i] == null){
-    			return false;
-    		}
-    		if(!StrKit.valueEquals(src.get(columns[i]), values[i])){
-    			return false;
-    		}
-    	}
-    	return true;
-    }
-    
-    @SuppressWarnings("rawtypes")
-	public static boolean notNullValueEquals(Model src, Model desc, String... columns){
-    	if(!StrKit.notNull(src, desc)){
-    		return false;
-    	}
-    	if(columns == null){
-    		return false;
-    	}
-    	for(String column : columns){
-    		if(StrKit.isBlank(column)){
-    			return false;
-    		}
-    		if(!StrKit.valueEquals(src.get(column), desc.get(column))){
-    			return false;
-    		}
-    	}
-    	return true;
-    }
-    
-    public static <M extends Model<M>> M setSave(M m){
-    	if(m != null && m.checkAttr("createTime") && m.get("createTime") == null){
-    		m.set("createTime", new Date());
-    	}
-    	
-    	/*if(m != null && m.checkAttr("createUser") && m.get("createUser") == null){
-    		Model user = loginUser();
-    		m.set("createUser", user==null?"":user.get("id"));
-    	}*/
-    	return m;
-    }
-    
-    public static <M extends Model<M>> M setUpdate(M m){
-    	if(m != null && m.checkAttr("lastUpdateTime") && m.get("lastUpdateTime") == null){
-			m.set("lastUpdateTime", new Date());
+		if(!StrKit.notNull(src)){
+			return false;
 		}
-		
-		/*if(m != null && m.checkAttr("lastUpdateUser") && m.get("lastUpdateUser") == null){
-			Model user = loginUser();
-			m.set("lastUpdateUser", user==null?"":user.get("id"));
-		}*/
-		return m;
-    }
+		if(columns == null || values == null){
+			return false;
+		}
+
+		for(int i =0; i < columns.length; i++){
+			if(StrKit.isBlank(columns[i]) || values[i] == null){
+				return false;
+			}
+			if(!StrKit.valueEquals(src.get(columns[i]), values[i])){
+				return false;
+			}
+		}
+		return true;
+	}
+
+	@SuppressWarnings("rawtypes")
+	public static boolean notNullValueEquals(Model src, Model desc, String... columns){
+		if(!StrKit.notNull(src, desc)){
+			return false;
+		}
+		if(columns == null){
+			return false;
+		}
+		for(String column : columns){
+			if(StrKit.isBlank(column)){
+				return false;
+			}
+			if(!StrKit.valueEquals(src.get(column), desc.get(column))){
+				return false;
+			}
+		}
+		return true;
+	}
+
 }
