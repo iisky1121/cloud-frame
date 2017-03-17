@@ -37,8 +37,10 @@ public class Generator {
 	protected ModelGenerator modelGenerator;
 	protected MappingKitGenerator mappingKitGenerator;
 	protected DataDictionaryGenerator dataDictionaryGenerator;
+	protected  BeanGenerator beanGenerator;
 	protected boolean generateDataDictionary = false;
 	protected boolean isBuildBaseModelColunms = false;
+	protected  boolean isBuildBean = false;
 	
 	/**
 	 * 构造 Generator，生成 BaseModel、Model、MappingKit 三类文件，其中 MappingKit 输出目录与包名与 Model相同
@@ -199,6 +201,13 @@ public class Generator {
 	public void setIsBuildBaseModelColunms(boolean isBuildBaseModelColunms) {
 		this.isBuildBaseModelColunms = isBuildBaseModelColunms;
 	}
+
+	/**
+	 * 设置bean对象，默认不生成
+	 */
+	public void setBeanGenerator(String beanPackageName, String beanOutputDir) {
+		this.beanGenerator = new BeanGenerator(beanPackageName, beanOutputDir);
+	}
 	
 	/**
 	 * 设置是否生成数据字典 Dictionary 文件，默认不生成
@@ -258,7 +267,11 @@ public class Generator {
 		if (modelGenerator != null) {
 			modelGenerator.generate(tableMetas);
 		}
-		
+
+		if(beanGenerator != null){
+			beanGenerator.generate(tableMetas);
+		}
+
 		if (mappingKitGenerator != null) {
 			mappingKitGenerator.generate(tableMetas);
 		}
