@@ -1011,7 +1011,7 @@ public abstract class Model<M extends Model> implements Serializable {
 		if (tableBind != null) {
 			return tableBind.tableName();
 		}
-		return getTableName();
+		return getTable().getName();
 	}
 	
 	/**
