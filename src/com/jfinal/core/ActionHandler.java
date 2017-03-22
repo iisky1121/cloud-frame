@@ -16,19 +16,18 @@
 
 package com.jfinal.core;
 
-import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import com.jfinal.aop.Invocation;
 import com.jfinal.config.Constants;
-import com.jfinal.ext.kit.CloneKit;
 import com.jfinal.handler.Handler;
 import com.jfinal.log.Log;
 import com.jfinal.render.Render;
 import com.jfinal.render.RenderException;
 import com.jfinal.render.RenderManager;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * ActionHandler
@@ -56,7 +55,7 @@ public class ActionHandler extends Handler {
 		if (target.indexOf('.') != -1) {
 			return ;
 		}
-		Map<String,String[]> firstMap = (Map<String, String[]>) CloneKit.deep(request.getParameterMap());
+		Map<String,String[]> firstMap = new HashMap<>(request.getParameterMap());
 		
 		isHandled[0] = true;
 		String[] urlPara = {null};

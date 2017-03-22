@@ -226,7 +226,7 @@ public class ExcelKit {
 
         	Map<String,Object> map = new HashMap<String, Object>();
         	for(Object object : list){
-        		map = MapBuilder.build(object);
+        		map = KVPFactory.toMap(object);
         		List<Object> row = new ArrayList<Object>();
         		for(String key : keys){
         			if(StrKit.isBlank(key)){

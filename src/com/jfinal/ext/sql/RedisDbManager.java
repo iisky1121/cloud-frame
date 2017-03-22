@@ -1,11 +1,7 @@
 package com.jfinal.ext.sql;
 
-import com.alibaba.fastjson.JSONObject;
-import com.jfinal.ext.kit.ModelKit;
-import com.jfinal.ext.kit.RecordKit;
+import com.jfinal.ext.kit.KVPFactory;
 import com.jfinal.kit.StrKit;
-import com.jfinal.plugin.activerecord.Model;
-import com.jfinal.plugin.activerecord.Record;
 import com.jfinal.plugin.redis.serializer.FstSerializer;
 
 import java.util.Collection;
@@ -36,23 +32,9 @@ public class RedisDbManager {
         if(object == null){
             return;
         }
-        if(Model.class.isAssignableFrom(object.getClass())){
-            Model<?> model = (Model<?>)object;
-            Map<String,Object> redisMap = redisDb.getRedisDbMap(alias, model.get(idKey), filterAttrs);
-            modelConditionMap(model, redisMap, alias);
-        } else if(object instanceof Record){
-            Record record = (Record)object;
-            Map<String,Object> redisMap = redisDb.getRedisDbMap(alias, record.get(idKey), filterAttrs);
-            recordConditionMap(record, redisMap, alias);
-        } else if(object instanceof JSONObject){
-            JSONObject json = (JSONObject)object;
-            Map<String,Object> redisMap = redisDb.getRedisDbMap(alias, json.get(idKey), filterAttrs);
-            jsonConditionMap(json, redisMap, alias);
-        } else if(object instanceof Map){
-            Map map = (Map)object;
-            Map<String,Object> redisMap = redisDb.getRedisDbMap(alias, map.get(idKey), filterAttrs);
-            mapConditionMap(map, redisMap, alias);
-        }
+        Object idValue = KVPFactory.get(object, idKey);
+        Map<String,Object> redisMap = redisDb.getRedisDbMap(alias, idValue, filterAttrs);
+        KVPFactory.conditionMap(object, redisMap, alias.concat("."));
     }
 
     static void addObject(RedisDb redisDb, Object object, String alias, String idKey){
@@ -69,20 +51,8 @@ public class RedisDbManager {
         if(object == null){
             return;
         }
-        Map map;
-        if(Model.class.isAssignableFrom(object.getClass())){
-            Model<?> model = (Model<?>)object;
-            map = ModelKit.toMap(model);
-            setRedisData(redisDb, alias, map, model.get(idKey));
-        } else if(object instanceof Record){
-            Record record = (Record)object;
-            map = RecordKit.toMap(record);
-            setRedisData(redisDb, alias, map, record.get(idKey));
-        } else if(object instanceof JSONObject){
-            JSONObject json = (JSONObject)object;
-            setRedisData(redisDb, alias, json, json.get(idKey));
-        } else if(object instanceof Map){
-            map = (Map)object;
+        Map<String,Object> map = KVPFactory.toMap(object);
+        if(map != null){
             setRedisData(redisDb, alias, map, map.get(idKey));
         }
     }
@@ -96,66 +66,6 @@ public class RedisDbManager {
             redisDb.pipeline().set(keyToBytes(key), valueToBytes(map));
         } else{
             redisDb.cache().set(key, valueToBytes(map));
-        }
-    }
-
-    /**
-     * Map拼接map
-     * @param object
-     * @param redisMap
-     * @param alias
-     */
-    static void mapConditionMap(Map object, Map<String,Object> redisMap, String alias){
-        if(object == null || redisMap == null || StrKit.isBlank(alias)){
-            return;
-        }
-        for(Map.Entry<String,Object> entry : redisMap.entrySet()){
-            object.put(getKey(alias, entry.getKey()), entry.getValue());
-        }
-    }
-
-    /**
-     * Model拼接map
-     * @param model
-     * @param redisMap
-     * @param alias
-     */
-    static void modelConditionMap(Model model, Map<String,Object> redisMap, String alias){
-        if(model == null || redisMap == null || StrKit.isBlank(alias)){
-            return;
-        }
-        for(Map.Entry<String,Object> entry : redisMap.entrySet()){
-            model.put(getKey(alias, entry.getKey()), entry.getValue());
-        }
-    }
-
-    /**
-     * Record拼接map
-     * @param record
-     * @param redisMap
-     * @param alias
-     */
-    static void recordConditionMap(Record record, Map<String,Object> redisMap, String alias){
-        if(record == null || redisMap == null || StrKit.isBlank(alias)){
-            return;
-        }
-        for(Map.Entry<String,Object> entry : redisMap.entrySet()){
-            record.set(getKey(alias, entry.getKey()), entry.getValue());
-        }
-    }
-
-    /**
-     * Json拼接map
-     * @param json
-     * @param redisMap
-     * @param alias
-     */
-    static void jsonConditionMap(JSONObject json, Map<String,Object> redisMap, String alias){
-        if(json == null || redisMap == null || StrKit.isBlank(alias)){
-            return;
-        }
-        for(Map.Entry<String,Object> entry : redisMap.entrySet()){
-            json.put(getKey(alias, entry.getKey()), entry.getValue());
         }
     }
 
