@@ -77,15 +77,16 @@ public class Cnd {
 	@SuppressWarnings({ "rawtypes"})
 	public static Cnd toCnd(Object ...modelAndAlias) {
 		Cnd cnd = new Cnd();
+		int len = modelAndAlias.length;
 		if (modelAndAlias == null) {
 			return cnd;
-		} else if (modelAndAlias.length % 2 != 0 ) {
+		} else if (len % 2 != 0 ) {
 			throw new IllegalArgumentException("modelAndalias参数需为：成对的(Model-alias)列表");
 		}
 		
 		Object object = null,alias = null;
 		
-		for (int i =0 ; i < modelAndAlias.length ; i+=2) {
+		for (int i =0; i < len ; i+=2) {
 			object = modelAndAlias[i];
 			alias = modelAndAlias[i + 1];
 			
@@ -115,17 +116,18 @@ public class Cnd {
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public static Cnd queryToCnd(Map<String, String[]> paras, Object ...modelClassAndAlias){
 		Cnd cnd = new Cnd();
+		int len = modelClassAndAlias.length;
 		if (modelClassAndAlias == null) {
 			return cnd;
 		} else if (paras == null) {
 			throw new IllegalArgumentException("paras参数不能为空");
-		} else if (modelClassAndAlias.length % 2 != 0 ) {
+		} else if (len % 2 != 0 ) {
 			throw new IllegalArgumentException("modelClassAndAlias参数需为：成对的(Model.Class-alias)、(TableName-alias)列表");
 		}
 		
 		Object object = null,alias = null;
 		
-		for (int i =0 ; i < modelClassAndAlias.length ; i+=2) {
+		for (int i =0 ; i < len ; i+=2) {
 			object = modelClassAndAlias[i];
 			alias = modelClassAndAlias[i + 1];
 			
@@ -325,17 +327,19 @@ public class Cnd {
     	if(model == null){
     		return;
     	}
-    	
+
+    	List<String> fuzzyQueryList = Arrays.asList(model.getFuzzyQuery());
+		List<String> orderByList = Arrays.asList(model.getOrderBy());
     	Set<Entry<String, Class<?>>> attrs = model.getColumns().entrySet();
     	for(Entry<String, Class<?>> entry : attrs){
     		String newKey = alias + entry.getKey();
     		columns.put(newKey, entry.getValue());
     		//初始化query column, 默认String
-    		if((model.getFuzzyQuery().length == 0 && entry.getValue().equals(String.class)) || Arrays.asList(model.getFuzzyQuery()).contains(entry.getKey())){
+    		if((fuzzyQueryList.size() == 0 && entry.getValue().equals(String.class)) || fuzzyQueryList.contains(entry.getKey())){
     			fuzzyQueryColumns.add(newKey);
     		}
     		//初始化order column,默认全部
-    		if(model.getOrderBy().length == 0 || Arrays.asList(model.getOrderBy()).contains(entry.getKey())){
+    		if(orderByList.size() == 0 || orderByList.contains(entry.getKey())){
     			orderByColumns.add(newKey);
     		}
     		//初始化query column
