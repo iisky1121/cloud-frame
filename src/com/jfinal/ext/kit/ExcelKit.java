@@ -8,35 +8,23 @@
 
 package com.jfinal.ext.kit;
 
+import com.jfinal.kit.StrKit;
+import jxl.Cell;
+import jxl.Sheet;
+import jxl.Workbook;
+import jxl.read.biff.BiffException;
+import jxl.write.*;
+import jxl.write.Number;
+import jxl.write.biff.RowsExceededException;
+
+import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletResponse;
-
-import com.jfinal.kit.StrKit;
-import com.jfinal.plugin.activerecord.Model;
-import com.jfinal.plugin.activerecord.Record;
-
-import jxl.Cell;
-import jxl.Sheet;
-import jxl.Workbook;
-import jxl.read.biff.BiffException;
-import jxl.write.Label;
-import jxl.write.Number;
-import jxl.write.WritableCell;
-import jxl.write.WritableSheet;
-import jxl.write.WritableWorkbook;
-import jxl.write.WriteException;
-import jxl.write.biff.RowsExceededException;
+import java.util.*;
 
 /**
  * @ClassName: ExcelKit
@@ -88,14 +76,17 @@ public class ExcelKit {
 		Sheet sheet = null;
 		Cell cell = null;
 
+		int sheetRows,sheelCols;
 		if(rwb != null){
 			sheet = rwb.getSheet(sheetNum);
 			// 行数(表头的目录不需要，从1开始)
-			for (int i = 0; i < sheet.getRows(); i++) {
+			sheetRows = sheet.getRows();
+			sheelCols = sheet.getColumns();
+			for (int i = 0; i < sheetRows; i++) {
 				// 创建一个数组 用来存储每一列的值
-				String[] str = new String[sheet.getColumns()];
+				String[] str = new String[sheelCols];
 				// 列数
-				for (int j = 0; j < sheet.getColumns(); j++) {
+				for (int j = 0; j < sheelCols; j++) {
 					// 获取第i行，第j列的值
 					cell = sheet.getCell(j, i);
 					str[j] = cell.getContents();
@@ -142,7 +133,7 @@ public class ExcelKit {
 				addSheetRow(sheet, list.get(0), 0);
 			}
 			if(i != 0){
-				addSheetRow(sheet, list.get(i), startIndex+sheetNum);
+				addSheetRow(sheet, list.get(i), startIndex+1);
 			}
 		}
 		
@@ -154,7 +145,7 @@ public class ExcelKit {
 	}
 	
 	private static void addSheetRow(WritableSheet sheet, Object[] datas, int i) throws RowsExceededException, WriteException{
-		for(int j=0;j<datas.length;j++){ 
+		for(int j=0,dataLength = datas.length;j<dataLength;j++){
 			sheet.addCell(toFmt(j, i, datas[j]));
 		}
 	}
@@ -235,18 +226,7 @@ public class ExcelKit {
 
         	Map<String,Object> map = new HashMap<String, Object>();
         	for(Object object : list){
-        		if(object instanceof Map){
-        			map = (Map<String, Object>) object;
-        		}
-        		else if(object instanceof Model){
-        			map = ModelKit.toMap((Model)object);
-        		}
-        		else if(object instanceof Record){
-        			map = RecordKit.toMap((Record)object);
-        		}
-        		else{
-        			throw new IllegalArgumentException(String.format("%s类型不支持，暂时只支持Map<String,Object>,Model和Record类型", object.getClass().getName()));
-        		}
+        		map = MapBuilder.build(object);
         		List<Object> row = new ArrayList<Object>();
         		for(String key : keys){
         			if(StrKit.isBlank(key)){
