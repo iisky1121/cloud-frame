@@ -1,19 +1,10 @@
 package com.jfinal.ext.sql;
 
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
-import com.jfinal.ext.kit.ModelKit;
 import com.jfinal.kit.StrKit;
-import com.jfinal.plugin.activerecord.IBean;
 import com.jfinal.plugin.activerecord.Model;
+
+import java.util.*;
+import java.util.Map.Entry;
 public class Cnd {
 	public final static String SELECT_ = "select * ";
 	public final static String SELECT_FROM = "select * from `%s`";
@@ -43,24 +34,48 @@ public class Cnd {
 	}
 	//是否拼接where
 	private boolean hasWhere = false;
-	//所有的查询字段
-	private Map<String, Class<?>> columns = new HashMap<String, Class<?>>();
+	//字段存储
+	private Map<String, Class<?>> columnMap = new HashMap<String, Class<?>>();
+	private Set<String> fuzzyQueryColumnSet = new HashSet<String>();
+	private Set<String> orderByColumnSet = new HashSet<String>();
+
 	//需要进行查询的字段
 	private Map<String, Param> querys = new HashMap<String, Param>();
 	//默认值设置
 	private Map<String, Param> defaults = new HashMap<String, Param>();
 	//全文搜索值设置
 	private Map<String, String> fuzzyQuerys = new HashMap<String, String>();
-	private Set<String> fuzzyQueryColumns = new HashSet<String>();
 	//排序值设置
-	private Map<String,String> orderBys = new HashMap<String, String>();
-	private Set<String> orderByColumns = new HashSet<String>();
+	enum OrderByType{
+		asc,desc;
+	}
+	private Map<String,OrderByType> orderBys = new HashMap<String, OrderByType>();
 	//分组值设置
 	private Set<String> groupBys = new HashSet<String>();
 	//用于接收SQL语句
     private StringBuilder sql = new StringBuilder();
     //用于接收参数数组
     private List<Object> paramList = new ArrayList<Object>();
+
+	Cnd addQuery(String key, Param value){
+    	querys.put(key, value);
+    	return this;
+	}
+
+	Cnd addColumn(String key, Class<?> classType){
+		columnMap.put(key, classType);
+		return this;
+	}
+
+	Cnd addFuzzyQueryColumn(String column){
+		fuzzyQueryColumnSet.add(column);
+		return this;
+	}
+
+	Cnd addOrderByColumn(String column){
+		orderByColumnSet.add(column);
+		return this;
+	}
     
     public static Cnd toCnd(){
     	Cnd cnd = new Cnd();
@@ -77,30 +92,7 @@ public class Cnd {
 	@SuppressWarnings({ "rawtypes"})
 	public static Cnd toCnd(Object ...modelAndAlias) {
 		Cnd cnd = new Cnd();
-		int len = modelAndAlias.length;
-		if (modelAndAlias == null) {
-			return cnd;
-		} else if (len % 2 != 0 ) {
-			throw new IllegalArgumentException("modelAndalias参数需为：成对的(Model-alias)列表");
-		}
-		
-		Object object = null,alias = null;
-		
-		for (int i =0; i < len ; i+=2) {
-			object = modelAndAlias[i];
-			alias = modelAndAlias[i + 1];
-			
-			if(object == null || alias == null){
-				throw new IllegalArgumentException("参数不允许存在值为空值或者空字符串");
-			}
-			
-			if(object instanceof Model && alias instanceof String){
-				cnd.initForModel((Model)object, (String)alias);
-			} else{
-				throw new IllegalArgumentException(String.format("%s 参数需为Model.Class、String类型,参数位置：%s", object, i+1));
-			}
-		}
-		
+		CndBuilder.init(cnd, modelAndAlias);
 		return cnd;
 	}
 	
@@ -115,37 +107,12 @@ public class Cnd {
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public static Cnd queryToCnd(Map<String, String[]> paras, Object ...modelClassAndAlias){
-		Cnd cnd = new Cnd();
-		int len = modelClassAndAlias.length;
-		if (modelClassAndAlias == null) {
-			return cnd;
-		} else if (paras == null) {
+		if (paras == null) {
 			throw new IllegalArgumentException("paras参数不能为空");
-		} else if (len % 2 != 0 ) {
-			throw new IllegalArgumentException("modelClassAndAlias参数需为：成对的(Model.Class-alias)、(TableName-alias)列表");
 		}
-		
-		Object object = null,alias = null;
-		
-		for (int i =0 ; i < len ; i+=2) {
-			object = modelClassAndAlias[i];
-			alias = modelClassAndAlias[i + 1];
-			
-			if(object == null || alias == null){
-				throw new IllegalArgumentException("参数不允许存在值为空值或者空字符串");
-			}
-		
-			if(object instanceof Class && alias instanceof String){
-				//初始化model
-				if(Model.class.isAssignableFrom((Class<?>) object)){
-					cnd.initForModelClass(paras, (Class<? extends Model>) object, (String) alias);
-				} else if(IBean.class.isAssignableFrom((Class<?>) object)){
-					cnd.initForBeanClass(paras, (Class<?>) object, (String) alias);
-				}
-			} else{
-				throw new IllegalArgumentException(String.format("%s 参数需为Model.Class、IBean.class类型,参数位置：%s", object, i+1));
-			}
-		}
+		Cnd cnd = new Cnd();
+		CndBuilder.init(cnd, paras, modelClassAndAlias);
+
 		if(paras.get("fuzzyQuery")!=null){
 			cnd.setFuzzyQuery(paras.get("fuzzyQuery")[0]);
 		}
@@ -206,12 +173,12 @@ public class Cnd {
     		if(columns != null  && columns.length > 0){
     			for(String column : columns){
     				column = getAliasKey(column);
-    				if(fuzzyQueryColumns.contains(column)){
+    				if(fuzzyQueryColumnSet.contains(column)){
     					fuzzyQuerys.put(column, queryStr);
     				}
     			}
     		} else{
-    			for(String column: fuzzyQueryColumns){
+    			for(String column: fuzzyQueryColumnSet){
     				fuzzyQuerys.put(column, queryStr);
     			}
     		}
@@ -220,31 +187,42 @@ public class Cnd {
     }
     
 	/**
-	 * 设置OrderBy属性
+	 * 设置OrderBy属性(会清空其他配置)
 	 */
 	private static List<String> reg = Arrays.asList(new String[]{"asc","desc"});
 	public Cnd setOrderBy(String... orderByStrs){
-		if(orderByStrs != null  && orderByStrs.length > 0){
-			orderBys.clear();
-			for(String orderByStr : orderByStrs){
-				if(StrKit.isBlank(orderByStr)){
-					continue;
+		if(orderByStrs == null  || orderByStrs.length == 0){
+			return this;
+		}
+		orderBys.clear();
+
+		String column,orderType;
+		for(String orderByStr : orderByStrs){
+			if(StrKit.isBlank(orderByStr)){
+				continue;
+			}
+
+			String[] strs = orderByStr.split("_");
+			if(strs.length == 1){
+				column = getAliasKey(strs[0]);
+
+				if(orderByColumnSet.contains(column)){
+					addOrderBy(column, null);
 				}
-				String[] strs = orderByStr.split("_");
-				String column;
-				if(strs.length == 1){
-					column = getAliasKey(strs[0]);
-					if(orderByColumns.contains(column)){
-						orderBys.put(column, "");
-					}
-				} else if(strs.length == 2){
-					column = getAliasKey(strs[0]);
-					if(orderByColumns.contains(column) && reg.contains(strs[1].toLowerCase())){
-						orderBys.put(column, strs[1].toLowerCase());
-					}
+			} else if(strs.length == 2){
+				column = getAliasKey(strs[0]);
+				orderType = strs[1].toLowerCase();
+
+				if(orderByColumnSet.contains(column) && reg.contains(orderType)){
+					addOrderBy(column, OrderByType.valueOf(orderType));
 				}
 			}
 		}
+		return this;
+	}
+
+	public Cnd addOrderBy(String column, OrderByType orderByType){
+		orderBys.put(column, orderByType);
 		return this;
 	}
 	
@@ -252,16 +230,17 @@ public class Cnd {
 	 * 设置GroupBy属性
 	 */
 	public Cnd setGroupBy(String... groupByStrs){
-		if(groupByStrs != null  && groupByStrs.length > 0){
-			groupBys.clear();
-			for(String groupByStr : groupByStrs){
-				if(StrKit.isBlank(groupByStr)){
-					continue;
-				}
-				groupBys.add(groupByStr);
-			}
+		if(groupByStrs == null  || groupByStrs.length == 0){
+			return this;
 		}
-    	return this;
+		groupBys.clear();
+		for(String groupByStr : groupByStrs){
+			if(StrKit.isBlank(groupByStr)){
+				continue;
+			}
+			groupBys.add(groupByStr);
+		}
+		return this;
     }
     
     /**
@@ -289,22 +268,22 @@ public class Cnd {
 		for(Entry<String, Param> entry : defaults.entrySet()){
 			if(querys.containsKey(entry.getKey()) && entry.getValue().getValue()==null){
 				value = querys.get(entry.getKey()).getValue();
-				CndBuild.buildSQL(sb, entry.getValue().getType(), entry.getValue().getKey(), value, paramArrayList);
+				CndBuilder.buildSQL(sb, entry.getValue().getType(), entry.getValue().getKey(), value, paramArrayList);
 				querys.remove(entry.getKey());
 			} else {
-				CndBuild.buildSQL(sb, entry.getValue(), paramArrayList);
+				CndBuilder.buildSQL(sb, entry.getValue(), paramArrayList);
 			}
 		}
 		//构建查询条件
 		for(Entry<String, Param> entry : querys.entrySet()){
-			CndBuild.buildSQL(sb, entry.getValue().getType(), entry.getValue().getKey(), entry.getValue().getValue(), paramArrayList);
+			CndBuilder.buildSQL(sb, entry.getValue().getType(), entry.getValue().getKey(), entry.getValue().getValue(), paramArrayList);
 		}
 		//构建全文搜索
-		CndBuild.bulidFuzzyQuery(fuzzyQuerys, sb, paramArrayList);
+		CndBuilder.bulidFuzzyQuery(fuzzyQuerys, sb, paramArrayList);
 		//构建分组
-		CndBuild.buildGroupBy(groupBys, sb);
+		CndBuilder.buildGroupBy(groupBys, sb);
 		//构建排序
-		CndBuild.buildOrderBy(orderBys, sb);
+		CndBuilder.buildOrderBy(orderBys, sb);
 		
 		//设置where关键字，解决1=1效率的问题
 		if(hasWhere && !StrKit.isBlank(sb.toString())){
@@ -315,101 +294,14 @@ public class Cnd {
 		paramList.addAll(paramArrayList);
     	return this;
     }
-    
-    /*#####################################################################################################################################*/
-    /**
-     * 初始化Model, for modelClass
-     */
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    private void initForModelClass(Map<String, String[]> paras, Class<? extends Model> modelClass, String alias){
-    	alias = (alias==null?StrKit.firstCharToLowerCase(modelClass.getSimpleName()):("".equals(alias.trim())?"":(alias+".")));
-    	Model model = ModelKit.newInstance(modelClass);
-    	if(model == null){
-    		return;
-    	}
 
-    	List<String> fuzzyQueryList = Arrays.asList(model.getFuzzyQuery());
-		List<String> orderByList = Arrays.asList(model.getOrderBy());
-    	Set<Entry<String, Class<?>>> attrs = model.getColumns().entrySet();
-    	for(Entry<String, Class<?>> entry : attrs){
-    		String newKey = alias + entry.getKey();
-    		columns.put(newKey, entry.getValue());
-    		//初始化query column, 默认String
-    		if((fuzzyQueryList.size() == 0 && entry.getValue().equals(String.class)) || fuzzyQueryList.contains(entry.getKey())){
-    			fuzzyQueryColumns.add(newKey);
-    		}
-    		//初始化order column,默认全部
-    		if(orderByList.size() == 0 || orderByList.contains(entry.getKey())){
-    			orderByColumns.add(newKey);
-    		}
-    		//初始化query column
-    		if(paras.containsKey(newKey) && !StrKit.isBlank(paras.get(newKey)[0])){
-    			querys.put(newKey, Param.create(newKey, paras.get(newKey)[0], entry.getValue()));
-    		}
-    	}
-    }
-    /**
-     * 初始化Model, for beanClass
-     */
-    private void initForBeanClass(Map<String, String[]> paras, Class<?> beanClass, String alias){
-    	if(beanClass == null){
-    		return;
-    	}
-    	alias = (alias==null?StrKit.firstCharToLowerCase(beanClass.getSimpleName()):("".equals(alias.trim())?"":(alias+".")));
-    	
-    	Field[] fields = beanClass.getDeclaredFields();
-    	for(Field field : fields){
-    		String newKey = alias + field.getName();
-    		columns.put(newKey, field.getType());
-    		//初始化query column, 默认String
-    		if(field.getType().equals(String.class)){
-    			fuzzyQueryColumns.add(newKey);
-    		}
-    		//初始化order column,默认全部
-    		orderByColumns.add(newKey);
-    		//初始化query column
-    		if(paras.containsKey(newKey) && !StrKit.isBlank(paras.get(newKey)[0])){
-    			querys.put(newKey, Param.create(newKey, paras.get(newKey)[0], field.getType()));
-    		}
-    	}
-    }
-    
-    /**
-     * 初始化Model, for model
-     */
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    private void initForModel(Model model, String alias){
-    	alias = (alias==null?StrKit.firstCharToLowerCase(model.getClass().getSimpleName()):("".equals(alias.trim())?"":(alias+".")));
-    	if(model == null){
-    		return;
-    	}
-    	
-    	Set<Entry<String, Class<?>>> attrs = model.getColumns().entrySet();
-    	for(Entry<String, Class<?>> entry : attrs){
-    		String newKey = alias + entry.getKey();
-    		columns.put(newKey, entry.getValue());
-    		//初始化query column, 默认String
-    		if((model.getFuzzyQuery().length == 0 && entry.getValue().equals(String.class)) || Arrays.asList(model.getFuzzyQuery()).contains(entry.getKey())){
-    			fuzzyQueryColumns.add(newKey);
-    		}
-    		//初始化order column,默认全部
-    		if((model.getOrderBy().length == 0) || Arrays.asList(model.getOrderBy()).contains(entry.getKey())){
-    			orderByColumns.add(newKey);
-    		}
-    		//初始化query column
-    		if(Arrays.asList(model._getAttrNames()).contains(entry.getKey()) && model.get(entry.getKey()) != null){
-    			querys.put(newKey, Param.create(newKey, model.get(entry.getKey()), entry.getValue()));
-    		}
-    	}
-    }
-	
 	/**
 	 * 根据属性名获取 获取带别名属性名
 	 */
 	private String getAliasKey(String attr){
 		String key = null;
 		
-		if(columns.containsKey(attr)){
+		if(columnMap.containsKey(attr)){
 			return attr;
 		}
 		if(attr.indexOf(".") != -1){
@@ -417,7 +309,7 @@ public class Cnd {
 		}
 		
 		int count = 0;
-		for(Entry<String, Class<?>> entry : columns.entrySet()){
+		for(Entry<String, Class<?>> entry : columnMap.entrySet()){
 			if(entry.getKey().endsWith("."+attr)){
 				key = entry.getKey();
 				count++;
