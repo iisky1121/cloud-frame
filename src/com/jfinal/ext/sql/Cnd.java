@@ -14,8 +14,9 @@ public class Cnd {
 	public final static String IS_NOT_EMPTY = "$isNotEmpty";
 	public final static String IS_NULL = "$isNull";
 	public final static String IS_NOT_NULL = "$isNotNull";
-	public final static String AND = " and ";
-	public final static String OR = " or ";
+	public final static  String BLANK_FNT = " %s ";
+	public final static String AND = "and";
+	public final static String OR1 = "or";
 	public enum Type {
 		equal,// 相等
 		not_equal,// 不相等
