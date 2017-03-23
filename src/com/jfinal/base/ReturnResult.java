@@ -172,6 +172,6 @@ public class ReturnResult {
     	if(!this.isSucceed()){
     		return this;
     	}
-    	return call.callback();
+    	return call.callback(this);
     }
 }

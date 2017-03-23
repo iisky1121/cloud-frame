@@ -13,5 +13,5 @@ package com.jfinal.aop;
  * ====================================================================
  */
 public interface ISuccCallback<T> {
-	T callback();
+	T callback(T object);
 }
