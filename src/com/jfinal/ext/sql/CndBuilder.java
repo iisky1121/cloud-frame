@@ -115,17 +115,18 @@ class CndBuilder {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	static void init(Cnd cnd, Map<String, String[]> paras, Object object, Object alias){
 		if(object == null || alias == null){
 			throw new IllegalArgumentException("参数不允许存在值为空值或者空字符串");
 		}
 
 		if(object instanceof Model && alias instanceof String) {
-			initForModel(cnd, (Model)object, (String)alias);
+			initForModel(cnd, (Model<?>)object, (String)alias);
 		} else if(paras != null && object instanceof Class && alias instanceof String) {
 			//初始化model
 			if(Model.class.isAssignableFrom((Class<?>) object)){
-				initForModelClass(cnd, paras, (Class<? extends Model>) object, (String) alias);
+				initForModelClass(cnd, paras, (Class<? extends Model<?>>) object, (String) alias);
 			} else if(IBean.class.isAssignableFrom((Class<?>) object)) {
 				initForBeanClass(cnd, paras, (Class<?>) object, (String) alias);
 			}

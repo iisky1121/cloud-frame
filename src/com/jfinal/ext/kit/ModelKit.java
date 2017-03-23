@@ -115,7 +115,7 @@ public class ModelKit {
 		copyColumns(src, desc, true, columns);
     }
 
-	public static void copyColumns(Model src, Model desc, boolean onlyNotNull, String... columns){
+	public static void copyColumns(Model<?> src, Model<?> desc, boolean onlyNotNull, String... columns){
 		for(String column:columns)  {
 			String[] res = column.split(",");
 			if(res.length==1){

@@ -3,6 +3,7 @@ package com.jfinal.base;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.jfinal.aop.ISuccCallback;
 import com.jfinal.kit.StrKit;
 
 public class ReturnResult {
@@ -160,5 +161,17 @@ public class ReturnResult {
 			map.put("cause", cause);
 		}
 		return map;
+    }
+    
+    /**
+     * 成功回调，用户多个ReturnResult直接调用
+     * @param call
+     * @return
+     */
+    public ReturnResult call(ISuccCallback<ReturnResult> call){
+    	if(!this.isSucceed()){
+    		return this;
+    	}
+    	return call.callback();
     }
 }

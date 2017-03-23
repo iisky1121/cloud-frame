@@ -50,7 +50,6 @@ public class ActionHandler extends Handler {
 	 * 2: new Invocation(...).invoke()
 	 * 3: render(...)
 	 */
-	@SuppressWarnings("unchecked")
 	public final void handle(String target, HttpServletRequest request, HttpServletResponse response, boolean[] isHandled) {
 		if (target.indexOf('.') != -1) {
 			return ;

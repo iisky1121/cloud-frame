@@ -216,7 +216,7 @@ public class ExcelKit {
 	 * @return void 返回类型
 	 * @throws
 	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@SuppressWarnings({ "rawtypes" })
 	public static void renderExcel(HttpServletResponse response,String fileName, String[] titles, String[] keys, List list){
     	//String[] keys = new String[]{"refundCount","exceptionCount","refundBalanceSum","payBalanceCount","balanceCount","singleSum","refundBalanceCount","billDate","paySum","balanceSum","statisticId","createTime","payCount","offsetSum","singleCount","payBalanceSum","offsetCount","exceptionSum"};
         //String[] titles = new String[]{"字段1","字段2","字段3","字段4","字段5","字段6","字段7","字段8","字段9","字段10","字段11","字段12","字段13","字段14","字段15","字段16","字段17","字段18"};

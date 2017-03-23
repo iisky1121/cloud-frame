@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-@SuppressWarnings("rawtypes")
 public class RedisDb {
 	private Cache cache;
 	private Pipeline pipeline;
@@ -144,6 +143,7 @@ public class RedisDb {
 	 * @param cacheKey
 	 * @return
 	 */
+	@SuppressWarnings("unchecked")
 	Map<String,Object> getRedisMap(String cacheKey){
 		Object data = this.cache().get(cacheKey);
 		if(data == null || "nil".equals(data.toString())){

@@ -10,11 +10,11 @@ import java.util.Map;
 /**
  * 键值对类型处理器
  * ====================================================================
- * 　　==       ==         ==         ===      ==       ==== == ==
- * 　　==       ==       ==  ==       == ==    ==      ==
- * 　　== == == ==      == == ==      ==  ==   ==      ==     = ==
- * 　　==       ==     ==      ==     ==    == ==      ==       ==
- * 　　==       ==    ==        ==    ==      ===       ==== == ==
+ *　　==       ==         ==         ===      ==       ==== == ==
+ *　　==       ==       ==  ==       == ==    ==      ==
+ *　　== == == ==      == == ==      ==  ==   ==      ==     = ==
+ *　　==       ==     ==      ==     ==    == ==      ==       ==
+ *　　==       ==    ==        ==    ==      ===       ==== == ==
  * ====================================================================
  * Created by iisky on 2017/3/23 0023.
  * ====================================================================
@@ -25,13 +25,14 @@ public class KVPFactory {
      * @param object
      * @return
      */
-    public static Map<String, Object> toMap(Object object){
+    @SuppressWarnings("unchecked")
+	public static Map<String, Object> toMap(Object object){
         if(object instanceof Map){
             return (Map<String, Object>) object;
         } else if(object instanceof JSONObject) {
             return (JSONObject) object;
         } else if(Model.class.isAssignableFrom(object.getClass())){
-            return ModelKit.toMap((Model)object);
+            return ModelKit.toMap((Model<?>)object);
         } else if(object instanceof Record){
             return RecordKit.toMap((Record)object);
         } else{
@@ -59,13 +60,14 @@ public class KVPFactory {
      * @param map
      * @param prefix
      */
-    public static void conditionMap(Object object, Map<String,Object> map, String prefix){
+    @SuppressWarnings("unchecked")
+	public static void conditionMap(Object object, Map<String,Object> map, String prefix){
         if(object instanceof Map){
             mapConditionMap((Map<String, Object>) object, map, prefix);
         } else if(object instanceof JSONObject) {
             jsonConditionMap((JSONObject) object, map, prefix);
         } else if(Model.class.isAssignableFrom(object.getClass())){
-            modelConditionMap((Model) object, map, prefix);
+            modelConditionMap((Model<?>) object, map, prefix);
         } else if(object instanceof Record){
             recordConditionMap((Record) object, map, prefix);
         } else{
@@ -82,7 +84,7 @@ public class KVPFactory {
      * @param map
      * @param prefix
      */
-    static void mapConditionMap(Map object, Map<String,Object> map, String prefix){
+    static void mapConditionMap(Map<String, Object> object, Map<String,Object> map, String prefix){
         if(object == null || map == null){
             return;
         }
@@ -98,7 +100,7 @@ public class KVPFactory {
      * @param map
      * @param prefix
      */
-    static void modelConditionMap(Model model, Map<String,Object> map, String prefix){
+    static void modelConditionMap(Model<?> model, Map<String,Object> map, String prefix){
         if(model == null || map == null){
             return;
         }

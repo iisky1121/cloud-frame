@@ -18,9 +18,10 @@ public class RedisDbManager {
      * @param idKey
      * @param filterAttrs
      */
-    static void select(RedisDb redisDb, String alias, String idKey, String[] filterAttrs){
+    @SuppressWarnings("unchecked")
+	static void select(RedisDb redisDb, String alias, String idKey, String[] filterAttrs){
         if(isList(redisDb.getObject())){
-            Collection<Object> collection = (Collection)redisDb.getObject();
+            Collection<Object> collection = (Collection<Object>)redisDb.getObject();
             for(Object object : collection){
                 selectObject(redisDb, object, alias, idKey, filterAttrs);
             }
@@ -37,9 +38,10 @@ public class RedisDbManager {
         KVPFactory.conditionMap(object, redisMap, alias.concat("."));
     }
 
-    static void addObject(RedisDb redisDb, Object object, String alias, String idKey){
+    @SuppressWarnings("unchecked")
+	static void addObject(RedisDb redisDb, Object object, String alias, String idKey){
         if(isList(object)){
-            Collection<Object> collection = (Collection)object;
+            Collection<Object> collection = (Collection<Object>)object;
             for(Object obj : collection){
                 addSingleObject(redisDb, obj, alias, idKey);
             }

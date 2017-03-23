@@ -90,7 +90,6 @@ public class Cnd {
     	return toCnd(m, "");
     }
     
-	@SuppressWarnings({ "rawtypes"})
 	public static Cnd toCnd(Object ...modelAndAlias) {
 		Cnd cnd = new Cnd();
 		CndBuilder.init(cnd, modelAndAlias);
@@ -106,7 +105,6 @@ public class Cnd {
 		return queryToCnd(paras, list.toArray());
 	}
 	
-	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public static Cnd queryToCnd(Map<String, String[]> paras, Object ...modelClassAndAlias){
 		if (paras == null) {
 			throw new IllegalArgumentException("paras参数不能为空");
