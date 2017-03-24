@@ -1,10 +1,10 @@
 package com.jfinal.base;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.jfinal.aop.ISuccCallback;
 import com.jfinal.kit.StrKit;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class ReturnResult {
 	private String code;//系统默认标识code
@@ -165,13 +165,21 @@ public class ReturnResult {
     
     /**
      * 成功回调，用户多个ReturnResult直接调用
-     * @param call
+     * @param calls
      * @return
      */
-    public ReturnResult call(ISuccCallback<ReturnResult> call){
-    	if(!this.isSucceed()){
+    public ReturnResult call(ISuccCallback<ReturnResult> ... calls){
+    	if(calls == null || calls.length == 0 || !this.isSucceed()){
     		return this;
     	}
-    	return call.callback(this);
+
+		ReturnResult returnResult;
+    	for(ISuccCallback<ReturnResult> call : calls){
+			returnResult = call.callback(this);
+			if(!returnResult.isSucceed()){
+				return returnResult;
+			}
+		}
+		return this;
     }
 }
