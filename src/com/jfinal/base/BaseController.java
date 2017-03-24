@@ -1,5 +1,6 @@
 package com.jfinal.base;
 
+import com.jfinal.interfaces.ISuccCallback;
 import com.jfinal.kit.StrKit;
 import com.jfinal.plugin.activerecord.Model;
 /**
@@ -11,17 +12,26 @@ public abstract class BaseController<M extends Model<M>> extends BaseQueryContro
 	 * 
 	 */
 	public void delete() {
+		delete(null);
+	}
+
+	public void delete(ISuccCallback call){
 		String id = getPara();
 		if(StrKit.isBlank(id)){
 			renderResult(BaseConfig.attrValueEmpty("id"));
 			return;
 		}
-		M data = getM().findById(id);
-		if(data == null){
-			renderResult(BaseConfig.dataNotExist());
-			return;
-		}
-		renderResult(data.delete());
+		ReturnResult result = ReturnResult.create(getM().deletes(id)).call(new ISuccCallback<ReturnResult>() {
+			@Override
+			public ReturnResult callback(ReturnResult object) {
+				if(call != null){
+					object.setResult(id);
+					call.callback(object);
+				}
+				return object;
+			}
+		});
+		renderResult(result.render());
 	}
 
 	/**
@@ -29,36 +39,58 @@ public abstract class BaseController<M extends Model<M>> extends BaseQueryContro
 	 * 
 	 */
 	public void deletes() {
-		ReturnResult result = checkNotNull("ids");;
-		if(!result.isSucceed()){
-			renderResult(result);
-			return;
-		}
-		
-		String ids[] = getPara("ids").split(",");
-		renderResult(getM().deletes(ids));
-	}	
+		deletes(null);
+	}
+	public void deletes(ISuccCallback call){
+		ReturnResult result = checkNotNull("ids").call(new ISuccCallback<ReturnResult>() {
+			@Override
+			public ReturnResult callback(ReturnResult object) {
+				String ids[] = getPara("ids").split(",");
+				return ReturnResult.create(getM().deletes(ids)).call(new ISuccCallback<ReturnResult>() {
+					@Override
+					public ReturnResult callback(ReturnResult object) {
+						if(call != null){
+							object.setResult(ids);
+							call.callback(object);
+						}
+						return object;
+					}
+				});
+			}
+		});
+		renderResult(result.render());
+	}
 
 	/**
 	 * 通用新增
 	 * 
 	 */
 	public void save(){
-		M data = getData();
-		ReturnResult result = checkSaveOrUpdate(data);
-		if(!result.isSucceed()){
-			renderResult(result);
-			return;
-		}
-		renderJson(save(data));
+		renderResult(save(getData(), null).render());
 	}
 	
-	public ReturnResult save(M data){
-		ReturnResult result = checkSaveOrUpdate(data);
-		if(!result.isSucceed()){
-			return result;
-		}
-		return ReturnResult.create(data.save());
+	public void save(ISuccCallback call){
+		renderResult(save(getData(), call).render());
+	}
+
+	public void save(M data){
+		renderResult(save(data, null).render());
+	}
+
+	public ReturnResult save(M data, ISuccCallback call){
+		return checkSaveOrUpdate(data).call(new ISuccCallback<ReturnResult>() {
+			@Override
+			public ReturnResult callback(ReturnResult object) {
+				return ReturnResult.create(data.save()).call(new ISuccCallback<ReturnResult>() {
+					@Override
+					public ReturnResult callback(ReturnResult object) {
+						if(call != null)
+							call.callback(object);
+						return object;
+					}
+				});
+			}
+		});
 	}
 
 	/**
@@ -66,23 +98,33 @@ public abstract class BaseController<M extends Model<M>> extends BaseQueryContro
 	 * 
 	 */
 	public void update(){
-		M data = getData();
-		ReturnResult result = checkSaveOrUpdate(data);
-		if(!result.isSucceed()){
-			renderResult(result);
-			return;
-		}
-		renderJson(update(data));
+		renderResult(update(getData(), null).render());
 	}
-	
+
+	public void update(ISuccCallback call){
+		renderResult(update(getData(), call).render());
+	}
+
 	public ReturnResult update(M data){
-		ReturnResult result = checkSaveOrUpdate(data);
-		if(!result.isSucceed()){
-			return result;
-		}
-		return ReturnResult.create(data.update());
+		return update(data, null);
 	}
-	
+
+	public ReturnResult update(M data, ISuccCallback call){
+		return checkSaveOrUpdate(data).call(new ISuccCallback<ReturnResult>() {
+			@Override
+			public ReturnResult callback(ReturnResult object) {
+				return ReturnResult.create(data.update()).call(new ISuccCallback<ReturnResult>() {
+					@Override
+					public ReturnResult callback(ReturnResult object) {
+						if(call != null)
+							call.callback(object);
+						return object;
+					}
+				});
+			}
+		});
+	}
+
 	private ReturnResult checkSaveOrUpdate(M data){
 		if(data == null || data._getAttrNames() == null || data._getAttrNames().length == 0){
 			return BaseConfig.dataError();

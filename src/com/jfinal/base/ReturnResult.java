@@ -1,6 +1,6 @@
 package com.jfinal.base;
 
-import com.jfinal.aop.ISuccCallback;
+import com.jfinal.interfaces.ISuccCallback;
 import com.jfinal.kit.StrKit;
 
 import java.util.HashMap;

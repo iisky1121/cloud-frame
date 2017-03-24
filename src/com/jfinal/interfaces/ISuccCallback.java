@@ -1,4 +1,4 @@
-package com.jfinal.aop;
+package com.jfinal.interfaces;
 
 /**
  * 成功回调
