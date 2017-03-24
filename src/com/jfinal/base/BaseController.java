@@ -15,7 +15,7 @@ public abstract class BaseController<M extends Model<M>> extends BaseQueryContro
 		delete(null);
 	}
 
-	public void delete(ISuccCallback call){
+	public void delete(ISuccCallback<ReturnResult> call){
 		String id = getPara();
 		if(StrKit.isBlank(id)){
 			renderResult(BaseConfig.attrValueEmpty("id"));
@@ -41,7 +41,7 @@ public abstract class BaseController<M extends Model<M>> extends BaseQueryContro
 	public void deletes() {
 		deletes(null);
 	}
-	public void deletes(ISuccCallback call){
+	public void deletes(ISuccCallback<ReturnResult> call){
 		ReturnResult result = checkNotNull("ids").call(new ISuccCallback<ReturnResult>() {
 			@Override
 			public ReturnResult callback(ReturnResult object) {
@@ -69,15 +69,15 @@ public abstract class BaseController<M extends Model<M>> extends BaseQueryContro
 		renderResult(save(getData(), null).render());
 	}
 	
-	public void save(ISuccCallback call){
+	public void save(ISuccCallback<ReturnResult> call){
 		renderResult(save(getData(), call).render());
 	}
 
-	public void save(M data){
-		renderResult(save(data, null).render());
+	public ReturnResult save(M data){
+		return save(data, null);
 	}
 
-	public ReturnResult save(M data, ISuccCallback call){
+	public ReturnResult save(M data, ISuccCallback<ReturnResult> call){
 		return checkSaveOrUpdate(data).call(new ISuccCallback<ReturnResult>() {
 			@Override
 			public ReturnResult callback(ReturnResult object) {
@@ -101,7 +101,7 @@ public abstract class BaseController<M extends Model<M>> extends BaseQueryContro
 		renderResult(update(getData(), null).render());
 	}
 
-	public void update(ISuccCallback call){
+	public void update(ISuccCallback<ReturnResult> call){
 		renderResult(update(getData(), call).render());
 	}
 
@@ -109,7 +109,7 @@ public abstract class BaseController<M extends Model<M>> extends BaseQueryContro
 		return update(data, null);
 	}
 
-	public ReturnResult update(M data, ISuccCallback call){
+	public ReturnResult update(M data, ISuccCallback<ReturnResult> call){
 		return checkSaveOrUpdate(data).call(new ISuccCallback<ReturnResult>() {
 			@Override
 			public ReturnResult callback(ReturnResult object) {
