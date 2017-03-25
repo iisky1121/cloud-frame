@@ -13,5 +13,5 @@ package com.jfinal.interfaces;
  * ====================================================================
  */
 public interface ISuccCallback<T> {
-	T callback(T object);
+	T callback(T t);
 }

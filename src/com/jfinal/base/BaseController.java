@@ -84,8 +84,10 @@ public abstract class BaseController<M extends Model<M>> extends BaseQueryContro
 				return ReturnResult.create(data.save()).call(new ISuccCallback<ReturnResult>() {
 					@Override
 					public ReturnResult callback(ReturnResult object) {
-						if(call != null)
+						if(call != null){
+							object.setResult(data);
 							call.callback(object);
+						}
 						return object;
 					}
 				});
@@ -116,8 +118,10 @@ public abstract class BaseController<M extends Model<M>> extends BaseQueryContro
 				return ReturnResult.create(data.update()).call(new ISuccCallback<ReturnResult>() {
 					@Override
 					public ReturnResult callback(ReturnResult object) {
-						if(call != null)
+						if(call != null){
+							object.setResult(data);
 							call.callback(object);
+						}
 						return object;
 					}
 				});
