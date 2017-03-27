@@ -23,12 +23,12 @@ public abstract class BaseController<M extends Model<M>> extends BaseQueryContro
 		}
 		ReturnResult result = ReturnResult.create(getM().deletes(id)).call(new ISuccCallback<ReturnResult>() {
 			@Override
-			public ReturnResult callback(ReturnResult object) {
+			public ReturnResult callback(ReturnResult returnResult) {
 				if(call != null){
-					object.setResult(id);
-					call.callback(object);
+					returnResult.setResult(id);
+					call.callback(returnResult);
 				}
-				return object;
+				return returnResult;
 			}
 		});
 		renderResult(result.render());
@@ -44,16 +44,16 @@ public abstract class BaseController<M extends Model<M>> extends BaseQueryContro
 	public void deletes(ISuccCallback<ReturnResult> call){
 		ReturnResult result = checkNotNull("ids").call(new ISuccCallback<ReturnResult>() {
 			@Override
-			public ReturnResult callback(ReturnResult object) {
+			public ReturnResult callback(ReturnResult returnResult) {
 				String ids[] = getPara("ids").split(",");
 				return ReturnResult.create(getM().deletes(ids)).call(new ISuccCallback<ReturnResult>() {
 					@Override
-					public ReturnResult callback(ReturnResult object) {
+					public ReturnResult callback(ReturnResult returnResult) {
 						if(call != null){
-							object.setResult(ids);
-							call.callback(object);
+							returnResult.setResult(ids);
+							call.callback(returnResult);
 						}
-						return object;
+						return returnResult;
 					}
 				});
 			}
@@ -80,15 +80,15 @@ public abstract class BaseController<M extends Model<M>> extends BaseQueryContro
 	public ReturnResult save(M data, ISuccCallback<ReturnResult> call){
 		return checkSaveOrUpdate(data).call(new ISuccCallback<ReturnResult>() {
 			@Override
-			public ReturnResult callback(ReturnResult object) {
+			public ReturnResult callback(ReturnResult returnResult) {
 				return ReturnResult.create(data.save()).call(new ISuccCallback<ReturnResult>() {
 					@Override
-					public ReturnResult callback(ReturnResult object) {
+					public ReturnResult callback(ReturnResult returnResult) {
 						if(call != null){
-							object.setResult(data);
-							call.callback(object);
+							returnResult.setResult(data);
+							call.callback(returnResult);
 						}
-						return object;
+						return returnResult;
 					}
 				});
 			}
@@ -114,15 +114,15 @@ public abstract class BaseController<M extends Model<M>> extends BaseQueryContro
 	public ReturnResult update(M data, ISuccCallback<ReturnResult> call){
 		return checkSaveOrUpdate(data).call(new ISuccCallback<ReturnResult>() {
 			@Override
-			public ReturnResult callback(ReturnResult object) {
+			public ReturnResult callback(ReturnResult returnResult) {
 				return ReturnResult.create(data.update()).call(new ISuccCallback<ReturnResult>() {
 					@Override
-					public ReturnResult callback(ReturnResult object) {
+					public ReturnResult callback(ReturnResult returnResult) {
 						if(call != null){
-							object.setResult(data);
-							call.callback(object);
+							returnResult.setResult(data);
+							call.callback(returnResult);
 						}
-						return object;
+						return returnResult;
 					}
 				});
 			}
