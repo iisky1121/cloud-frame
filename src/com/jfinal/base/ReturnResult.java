@@ -165,20 +165,17 @@ public class ReturnResult {
     
     /**
      * 成功回调，用户多个ReturnResult直接调用
-     * @param calls
+     * @param call
      * @return
      */
-    public ReturnResult call(ISuccCallback<ReturnResult> ... calls){
-    	if(calls == null || calls.length == 0 || !this.isSucceed()){
+    public ReturnResult call(ISuccCallback<ReturnResult> call){
+    	if(call == null || !this.isSucceed()){
     		return this;
     	}
 
-		ReturnResult returnResult;
-    	for(ISuccCallback<ReturnResult> call : calls){
-			returnResult = call.callback(this);
-			if(!returnResult.isSucceed()){
-				return returnResult;
-			}
+		ReturnResult returnResult = call.callback(this);
+		if(!returnResult.isSucceed()){
+			return returnResult;
 		}
 		return this;
     }
