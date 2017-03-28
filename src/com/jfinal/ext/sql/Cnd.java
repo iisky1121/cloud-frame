@@ -44,6 +44,8 @@ public class Cnd {
 	private Map<String, Param> querys = new HashMap<String, Param>();
 	//默认值设置
 	private Map<String, Param> defaults = new HashMap<String, Param>();
+	//排除值设置
+	private Set<String>  removes = new HashSet<String>();
 	//全文搜索值设置
 	private Map<String, String> fuzzyQuerys = new HashMap<String, String>();
 	//排序值设置
@@ -162,6 +164,13 @@ public class Cnd {
     	defaults.put(key, new Param(key, type, value));
     	return this;
     }
+
+    public Cnd setRemove(String ... keys){
+    	for(String key : keys){
+    		removes.add(key);
+		}
+    	return this;
+	}
     
     /**
      * 设置fuzzyQuery属性
