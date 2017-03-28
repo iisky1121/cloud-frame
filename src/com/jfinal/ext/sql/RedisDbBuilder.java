@@ -10,7 +10,7 @@ import java.util.Map;
 /**
  * Created by hang on 2017/3/15 0015.
  */
-public class RedisDbManager {
+class RedisDbBuilder {
     /**
      * 查询
      * @param redisDb
@@ -63,7 +63,7 @@ public class RedisDbManager {
         if(StrKit.isBlank(alias) || map == null || idValue == null){
             return;
         }
-        String key = RedisDbManager.getKey(alias, idValue);
+        String key = RedisDbBuilder.getKey(alias, idValue);
         if(redisDb.isOpenPipeline()){
             redisDb.pipeline().set(keyToBytes(key), valueToBytes(map));
         } else{

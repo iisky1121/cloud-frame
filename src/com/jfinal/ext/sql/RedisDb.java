@@ -60,11 +60,11 @@ public class RedisDb {
 	 * @return
 	 */
 	public RedisDb select(String idKey, String alias, String[] filterAttrs){
-		RedisDbManager.select(this, alias, idKey, filterAttrs);
+		RedisDbBuilder.select(this, alias, idKey, filterAttrs);
 		return this;
 	}
 	public RedisDb select(String idKey, Class<?> beanClass, String[] filterAttrs){
-		return select(idKey, RedisDbManager.getAlias(beanClass), filterAttrs);
+		return select(idKey, RedisDbBuilder.getAlias(beanClass), filterAttrs);
 	}
 	public  RedisDb select(String idKey, Class<?> beanClass){
 		return select(idKey, beanClass, null);
@@ -85,7 +85,7 @@ public class RedisDb {
 			return null;
 		}
 		//从redis获取数据
-		Map<String,Object> map = getRedisMap(RedisDbManager.getKey(alias, idValue));
+		Map<String,Object> map = getRedisMap(RedisDbBuilder.getKey(alias, idValue));
 		//过滤属性
 		if(map != null && map.size() > 0 && filterAttrs != null && filterAttrs.length > 0){
 			List<String> fAttrs = Arrays.asList(filterAttrs);
@@ -98,7 +98,7 @@ public class RedisDb {
 		return map;
 	}
 	public Map<String,Object> getRedisDbMap(Class<?> beanClass, Object idValue, String[] filterAttrs){
-		return getRedisDbMap(RedisDbManager.getAlias(beanClass), idValue, filterAttrs);
+		return getRedisDbMap(RedisDbBuilder.getAlias(beanClass), idValue, filterAttrs);
 	}
 	public Map<String,Object> getRedisDbMap(String alias, Object idValue){
 		return getRedisDbMap(alias, idValue, null);
@@ -129,7 +129,7 @@ public class RedisDb {
 		return list;
 	}
 	public List<Map<String,Object>> getRedisDbList(Class<?> beanClass, List<Object> idValues, String[] filterAttrs){
-		return getRedisDbList(RedisDbManager.getAlias(beanClass), idValues, filterAttrs);
+		return getRedisDbList(RedisDbBuilder.getAlias(beanClass), idValues, filterAttrs);
 	}
 	public List<Map<String,Object>> getRedisDbList(String alias, List<Object> idValues){
 		return getRedisDbList(alias, idValues, null);
@@ -163,11 +163,11 @@ public class RedisDb {
 		if(StrKit.isBlank(alias) || object == null || StrKit.isBlank(idKey)){
 			return this;
 		}
-		RedisDbManager.addObject(this,object, alias, idKey);
+		RedisDbBuilder.addObject(this,object, alias, idKey);
 		return this;
 	}
 	public  RedisDb add(Class<?> beanClass, Object object, String idKey){
-		return add(RedisDbManager.getAlias(beanClass), object, idKey);
+		return add(RedisDbBuilder.getAlias(beanClass), object, idKey);
 	}
 
 	/**
@@ -181,7 +181,7 @@ public class RedisDb {
 			return this;
 		}
 		for(Object idValue : idValues){
-			String key = RedisDbManager.getKey(alias, idValue);
+			String key = RedisDbBuilder.getKey(alias, idValue);
 			if(isOpenPipeline()){
 				this.pipeline.del(key);
 			} else {
@@ -191,7 +191,7 @@ public class RedisDb {
 		return this;
 	}
 	public  RedisDb remove(Class<?> beanClass, Object... idValues){
-		return remove(RedisDbManager.getAlias(beanClass), idValues);
+		return remove(RedisDbBuilder.getAlias(beanClass), idValues);
 	}
 
 	/**

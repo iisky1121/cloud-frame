@@ -274,6 +274,9 @@ public class Cnd {
 		Object value;
 		//默认值优先
 		for(Entry<String, Param> entry : defaults.entrySet()){
+			if(removes.contains(entry.getKey())){
+				continue;
+			}
 			if(querys.containsKey(entry.getKey()) && entry.getValue().getValue()==null){
 				value = querys.get(entry.getKey()).getValue();
 				CndBuilder.buildSQL(sb, entry.getValue().getType(), entry.getValue().getKey(), value, paramArrayList);
@@ -284,6 +287,9 @@ public class Cnd {
 		}
 		//构建查询条件
 		for(Entry<String, Param> entry : querys.entrySet()){
+			if(removes.contains(entry.getKey())){
+				continue;
+			}
 			CndBuilder.buildSQL(sb, entry.getValue().getType(), entry.getValue().getKey(), entry.getValue().getValue(), paramArrayList);
 		}
 		//构建全文搜索
