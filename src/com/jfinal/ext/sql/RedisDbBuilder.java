@@ -67,7 +67,7 @@ class RedisDbBuilder {
         if(redisDb.isOpenPipeline()){
             redisDb.pipeline().set(keyToBytes(key), valueToBytes(map));
         } else{
-            redisDb.cache().set(key, valueToBytes(map));
+            redisDb.cache().set(key, map);
         }
     }
 

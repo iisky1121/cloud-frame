@@ -1179,13 +1179,11 @@ public abstract class Model<M extends Model> implements Serializable {
 			throw new IllegalArgumentException("存在联合主键,删除失败");
 		}
 		Cnd cnd = Cnd.toCnd().where().setDefault(pk, Cnd.Type.in, ids).build();
-		//return Enhancer.enhance(getClass()).deletes(cnd);
 		return deletes(cnd);
 	}
 	
 	public final boolean deletes(Cnd cnd){
 		if(cnd != null){
-			//return Db.update(String.format(Cnd.DELETE_FROM, getTableName()).concat(cnd.getSql()), cnd.getParas()) >= 1;
 			return delete(String.format(Cnd.DELETE_FROM, getTableName()).concat(cnd.getSql()), cnd.getParas());
 		}
 		return false;
@@ -1224,7 +1222,6 @@ public abstract class Model<M extends Model> implements Serializable {
 			}
 		}
 	}
-	
 	
 	/**
 	 * afterSave () 保存成功回调
