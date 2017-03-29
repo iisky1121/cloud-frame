@@ -35,7 +35,7 @@ import java.util.*;
  */
 
 public class ExcelKit {
-	private static final int maxRowCount = 60001;//不能够超过Excel的最大容量
+	private static final int maxRowCount = 60000;//不能够超过Excel的最大容量
 	/**
 	 * @throws IOException 
 	 * @throws BiffException 
@@ -108,7 +108,7 @@ public class ExcelKit {
 	 * @return void 返回类型
 	 * @throws
 	 */
-	public static void writeListToExcel(String fileName,List<Object[]> list,HttpServletResponse response) throws Exception {
+	public static void writeListToExcel(String fileName, String[] titles,List<Object[]> list,HttpServletResponse response) throws Exception {
 		// 设这输出的类型和文件格式
 		response.setContentType("application/vnd.ms-excel;charset=utf-8");
 		// 设置文件名和并且解决中文名不能下载
@@ -118,23 +118,19 @@ public class ExcelKit {
 
 		WritableWorkbook wbook = Workbook.createWorkbook(os);
 		// 生成名为“sheet1”的工作表，参数0表示这是第一页
-		int listSize = list.size();
 		int sheetNum = 0;
 		
 		WritableSheet sheet = wbook.createSheet("sheet"+(sheetNum+1), sheetNum);
-		
-		for(int i=0;i<listSize;i++){
+		for(int i=0,listSize = list.size(); i<listSize; i++){
 			int startIndex = i%maxRowCount;
 			if(startIndex == 0){
 				if(i != 0){
 					sheetNum++;
 					sheet = wbook.createSheet("sheet"+(sheetNum+1), sheetNum);
 				}
-				addSheetRow(sheet, list.get(0), 0);
+				addSheetRow(sheet, titles, 0);
 			}
-			if(i != 0){
-				addSheetRow(sheet, list.get(i), startIndex+1);
-			}
+			addSheetRow(sheet, list.get(i), startIndex+1);
 		}
 		
 		//写入数据并关闭文件   
@@ -222,7 +218,7 @@ public class ExcelKit {
         //String[] titles = new String[]{"字段1","字段2","字段3","字段4","字段5","字段6","字段7","字段8","字段9","字段10","字段11","字段12","字段13","字段14","字段15","字段16","字段17","字段18"};
         try {
         	List<Object[]> rows = new ArrayList<Object[]>();
-        	rows.add(titles);
+        	//rows.add(titles);
 
         	Map<String,Object> map = new HashMap<String, Object>();
         	for(Object object : list){
@@ -241,7 +237,7 @@ public class ExcelKit {
         	if(fileName != null && fileName.indexOf(".xls") == -1){
         		fileName +=".xls";
         	}
-			writeListToExcel(fileName, rows, response);
+			writeListToExcel(fileName, titles, rows, response);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
