@@ -17,6 +17,9 @@
 package com.jfinal.kit;
 
 import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.nio.charset.Charset;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -29,6 +32,9 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
+import javax.xml.bind.DatatypeConverter;
+
+import com.jfinal.core.Const;
 
 public class HashKit {
 	
@@ -59,7 +65,7 @@ public class HashKit {
 	public static String hash(String algorithm, String srcStr) {
 		try {
 			MessageDigest md = MessageDigest.getInstance(algorithm);
-			byte[] bytes = md.digest(srcStr.getBytes("utf-8"));
+			byte[] bytes = md.digest(srcStr.getBytes(Const.DEFAULT_ENCODING));
 			return toHex(bytes);
 		}
 		catch (Exception e) {
@@ -75,7 +81,7 @@ public class HashKit {
 	 */
 	private static String toHex(byte[] bytes) {
 		StringBuilder ret = new StringBuilder(bytes.length * 2);
-		for (int i=0; i<bytes.length; i++) {
+		for (int i=0,len = bytes.length; i<len; i++) {
 			ret.append(HEX_DIGITS[(bytes[i] >> 4) & 0x0f]);
 			ret.append(HEX_DIGITS[bytes[i] & 0x0f]);
 		}
@@ -89,10 +95,11 @@ public class HashKit {
 	 * @return
 	 */
 	public static byte[] hexToByte(String hexStr) {
-		if (hexStr.length() < 1)
+		int hexStrLength = hexStr.length();
+		if (hexStrLength < 1)
 			return null;
-		byte[] result = new byte[hexStr.length() / 2];
-		for (int i = 0; i < hexStr.length() / 2; i++) {
+		byte[] result = new byte[hexStrLength / 2];
+		for (int i = 0; i < hexStrLength / 2; i++) {
 			int high = Integer.parseInt(hexStr.substring(i * 2, i * 2 + 1), 16);
 			int low = Integer.parseInt(hexStr.substring(i * 2 + 1, i * 2 + 2), 16);
 			result[i] = (byte) (high * 16 + low);
@@ -135,6 +142,7 @@ public class HashKit {
 		return diff == 0;
     }
 	
+	private final static String AES = "AES";
 	/**
 	 * AES加密
 	 * @param content
@@ -143,7 +151,7 @@ public class HashKit {
 	 */
 	private static SecretKey getKey(String strKey) {
 		try {
-			KeyGenerator _generator = KeyGenerator.getInstance("AES");
+			KeyGenerator _generator = KeyGenerator.getInstance(AES);
 			SecureRandom secureRandom = SecureRandom.getInstance("SHA1PRNG");
 			secureRandom.setSeed(strKey.getBytes());
 			_generator.init(128, secureRandom);
@@ -158,10 +166,10 @@ public class HashKit {
 			return null;
 		}
 		try {
-			SecretKeySpec key = new SecretKeySpec(getKey(pwd).getEncoded(), "AES");
-			Cipher cipher = Cipher.getInstance("AES");
+			SecretKeySpec key = new SecretKeySpec(getKey(pwd).getEncoded(), AES);
+			Cipher cipher = Cipher.getInstance(AES);
 			cipher.init(Cipher.ENCRYPT_MODE, key);
-			byte[] result = cipher.doFinal(content.getBytes("utf-8"));
+			byte[] result = cipher.doFinal(content.getBytes(Const.DEFAULT_ENCODING));
 			return toHex(result);
 		} catch (NoSuchAlgorithmException e) {
 			e.printStackTrace();
@@ -190,8 +198,8 @@ public class HashKit {
 			return null;
 		}
 		try {
-			SecretKeySpec key = new SecretKeySpec(getKey(pwd).getEncoded(), "AES");
-			Cipher cipher = Cipher.getInstance("AES");
+			SecretKeySpec key = new SecretKeySpec(getKey(pwd).getEncoded(), AES);
+			Cipher cipher = Cipher.getInstance(AES);
 			cipher.init(Cipher.DECRYPT_MODE, key);
 			byte[] result = cipher.doFinal(hexToByte(content));
 			return new String(result);
@@ -208,6 +216,86 @@ public class HashKit {
 		}
 		return null;
 	}
+	
+	private static Charset CHARSET = Charset.forName(Const.DEFAULT_ENCODING);
+	
+	/**
+	 * Base64加密
+	 * @param content
+	 * @return
+	 */
+	public static String encryptToBase64(String content) {
+		byte[] val = content.getBytes(CHARSET);
+		return DatatypeConverter.printBase64Binary(val);
+	}
+	
+	/**
+	 * Base64解密
+	 * @param content
+	 * @return
+	 */
+	public static String decryptToBase64(String content) {
+		byte[] decodedValue = DatatypeConverter.parseBase64Binary(content);
+		return new String(decodedValue, CHARSET);
+	}
+	
+	/**
+	 * Base64加密 url变种，[+替换成*] [/替换成_]
+	 * @param content
+	 * @return
+	 */
+	public static String encryptToBase64Url(String url){
+		url = encryptToBase64(url);
+		if(url.indexOf("+") != -1){
+			url = url.replaceAll("\\+", "*");
+		}
+		if(url.indexOf("/") != -1){
+			url = url.replaceAll("/", "_");
+		}
+		return url;
+	}
+	
+	/**
+	 * Base64解密 url变种
+	 * @param content
+	 * @return
+	 */
+	public static String decryptToBase64Url(String encodeUrl){
+		encodeUrl = encryptToBase64Url(encodeUrl);
+		if(encodeUrl.indexOf("*") != -1){
+			encodeUrl = encodeUrl.replaceAll("\\*", "\\+");
+		}
+		if(encodeUrl.indexOf("_") != -1){
+			encodeUrl = encodeUrl.replaceAll("_", "/");
+		}
+		return encodeUrl;
+	}
+	
+	/**
+	 * url encode
+	 * @param url
+	 * @return
+	 */
+	public static String urlEncode(String url) {
+        try {
+            return URLEncoder.encode(url, Const.DEFAULT_ENCODING);
+        } catch (UnsupportedEncodingException e) {
+            return url;
+        }
+    }
+	
+	/**
+	 * url decode
+	 * @param url
+	 * @return
+	 */
+	public static String urlDecode(String url) {
+        try {
+        	return URLDecoder.decode(url, Const.DEFAULT_ENCODING);
+        } catch (UnsupportedEncodingException e) {
+            return url;
+        }
+    }
 }
 
 
