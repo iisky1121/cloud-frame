@@ -34,6 +34,8 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import javax.servlet.http.HttpServletRequest;
 
+import com.jfinal.core.Const;
+
 /**
  * HttpUtil
  */
@@ -72,7 +74,7 @@ public class HttpKit {
 		GET, POST, PUT, DELETE, UPLOAD, DOWNLOAD;
 	}
 
-	private static String CHARSET = "UTF-8";
+	private static String CHARSET = Const.DEFAULT_ENCODING;
 
 	private static final SSLSocketFactory sslSocketFactory = initSSLSocketFactory();
 	private static final TrustAnyHostnameVerifier trustAnyHostnameVerifier = new HttpKit().new TrustAnyHostnameVerifier();
@@ -193,7 +195,7 @@ public class HttpKit {
 			// 设置 HttpURLConnection的请求方式
 			conn.setRequestMethod("GET");
 			// 设置 HttpURLConnection的字符编码
-			conn.setRequestProperty("Accept-Charset", "UTF-8");
+			conn.setRequestProperty("Accept-Charset", CHARSET);
 			conn.setRequestProperty("Connection", "Keep-Alive");
 
 			// 连接指定的资源
@@ -311,10 +313,10 @@ public class HttpKit {
 			/* 允许Input、Output，不使用Cache */
 			conn.setUseCaches(false);
 			/* 设置传送的method=POST */
-			conn.setRequestMethod("POST");
+			conn.setRequestMethod(Method.POST.name());
 			/* setRequestProperty */
 			conn.setRequestProperty("Connection", "Keep-Alive");
-			conn.setRequestProperty("Charset", "UTF-8");
+			conn.setRequestProperty("Charset", CHARSET);
 			conn.setRequestProperty("Content-Type",
 					"multipart/form-data;boundary=" + boundary);
 			/* 设置DataOutputStream */
@@ -464,10 +466,10 @@ public class HttpKit {
 			con.setDoOutput(true);
 			con.setUseCaches(false);
 			/* 设置传送的method=POST */
-			con.setRequestMethod("POST");
+			con.setRequestMethod(Method.POST.name());
 			/* setRequestProperty */
 			con.setRequestProperty("Connection", "Keep-Alive");
-			con.setRequestProperty("Charset", "UTF-8");
+			con.setRequestProperty("Charset", CHARSET);
 			con.setRequestProperty("Content-Type",
 					"multipart/form-data;boundary=" + boundary);
 			/* 设置DataOutputStream */

@@ -164,13 +164,14 @@ public class StrKit {
 		
 		stringWithUnderline = stringWithUnderline.toLowerCase();
 		char[] fromArray = stringWithUnderline.toCharArray();
-		char[] toArray = new char[fromArray.length];
+		int len = fromArray.length;
+		char[] toArray = new char[len];
 		int j = 0;
-		for (int i=0; i<fromArray.length; i++) {
+		for (int i=0; i<len; i++) {
 			if (fromArray[i] == '_') {
 				// 当前字符为下划线时，将指针后移一位，将紧随下划线后面一个字符转成大写并存放
 				i++;
-				if (i < fromArray.length) {
+				if (i < len) {
 					toArray[j++] = Character.toUpperCase(fromArray[i]);
 				}
 			}
@@ -214,7 +215,7 @@ public class StrKit {
 	
 	public static String join(String[] stringArray, String separator) {
 		StringBuilder sb = new StringBuilder();
-		for (int i=0; i<stringArray.length; i++) {
+		for (int i=0,len = stringArray.length; i<len; i++) {
 			if (i > 0) {
 				sb.append(separator);
 			}
