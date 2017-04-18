@@ -49,6 +49,17 @@ class RedisDbBuilder {
             addSingleObject(redisDb, object, alias, idKey);
         }
     }
+
+    static void addSingleObject(RedisDb redisDb, Object object, String alias, Object idValue){
+        if(object == null){
+            return;
+        }
+        Map<String,Object> map = KVPFactory.toMap(object);
+        if(map != null){
+            setRedisData(redisDb, alias, map, idValue);
+        }
+    }
+
     private static void addSingleObject(RedisDb redisDb, Object object, String alias, String idKey){
         if(object == null){
             return;

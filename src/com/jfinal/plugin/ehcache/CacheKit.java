@@ -16,11 +16,13 @@
 
 package com.jfinal.plugin.ehcache;
 
-import java.util.List;
+import com.jfinal.interfaces.IDataLoader;
 import com.jfinal.log.Log;
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Element;
+
+import java.util.List;
 
 /**
  * CacheKit. Useful tool box for EhCache.

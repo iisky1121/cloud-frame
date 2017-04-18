@@ -1,5 +1,6 @@
 package com.jfinal.ext.sql;
 
+import com.jfinal.interfaces.IDataLoader;
 import com.jfinal.kit.StrKit;
 import com.jfinal.plugin.redis.Cache;
 import com.jfinal.plugin.redis.Redis;
@@ -156,18 +157,30 @@ public class RedisDb {
 	 * 设置 redis Object
 	 * @param alias
 	 * @param object
-	 * @param idKey
+	 * @param idValue
 	 * @return
 	 */
-	public RedisDb add(String alias, Object object, String idKey){
-		if(StrKit.isBlank(alias) || object == null || StrKit.isBlank(idKey)){
+	public RedisDb add(String alias, Object object, Object idValue){
+		if(StrKit.isBlank(alias) || object == null || idValue == null){
 			return this;
 		}
-		RedisDbBuilder.addObject(this,object, alias, idKey);
+		RedisDbBuilder.addSingleObject(this,object, alias, idValue);
 		return this;
 	}
-	public  RedisDb add(Class<?> beanClass, Object object, String idKey){
-		return add(RedisDbBuilder.getAlias(beanClass), object, idKey);
+	public RedisDb add(Class<?> beanClass, Object object, Object idValue){
+		return add(RedisDbBuilder.getAlias(beanClass), object, idValue);
+	}
+
+	public Map<String,Object> get(Class<?> beanClass, Object idValue, IDataLoader dataLoader) {
+		Map<String,Object> map = getRedisDbMap(beanClass, idValue);
+		if(map == null){
+			Object object = dataLoader.load();
+			if(object != null){
+				add(beanClass, object, idValue);
+				map = (Map<String,Object>)object;
+			}
+		}
+		return map;
 	}
 
 	/**
