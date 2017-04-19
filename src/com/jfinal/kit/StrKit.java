@@ -184,7 +184,7 @@ public class StrKit {
 	
 	/**
 	 * toUnderlineCase 驼峰转下划线
-	 * @param stringWithUnderline
+	 * @param stringWithCamel
 	 * @return
 	 */
 	public static String toUnderlineCase(String stringWithCamel) {
@@ -241,7 +241,13 @@ public class StrKit {
 	 * @return
 	 */
 	public static boolean valueEquals(Object object1, Object object2){
-		return object1.toString().equals(object2.toString());
+		if(object1==null && object2==null){
+			return true;
+		} else if(object1 != null && object2 != null) {
+			return object1.toString().equals(object2.toString());
+		} else {
+			return false;
+		}
 	}
 }
 
