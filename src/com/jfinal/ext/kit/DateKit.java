@@ -107,4 +107,29 @@ public class DateKit {
 		calendar.add(addType, addNumber);
 		return calendar.getTime();
 	}
+
+	/**
+	 * 获取当前时间的时间戳秒
+	 * @return
+	 */
+	public static int unixTimestamp(){
+		return timeMillisToSecond(System.currentTimeMillis());
+	}
+
+	/**
+	 * 获取指定时间的时间戳秒
+	 * @param date
+	 * @return
+	 */
+	public static int getUnixTimestamp(Date date){
+		return timeMillisToSecond(date.getTime());
+	}
+
+	public static int getUnixTimestamp(String dateStr){
+		return getUnixTimestamp(toDate(dateStr));
+	}
+
+	private static int timeMillisToSecond(long timeMillis){
+		return (int)(timeMillis/1000);
+	}
 }
