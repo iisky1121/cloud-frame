@@ -1,8 +1,10 @@
 package com.jfinal.ext.kit;
 
+import com.jfinal.interfaces.ICallback;
 import com.jfinal.interfaces.IDataFilter;
 import com.jfinal.interfaces.IDataGetter;
 import com.jfinal.interfaces.IDataSelector;
+import com.jfinal.kit.StrKit;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -51,5 +53,49 @@ public class DataKit {
             }
         }
         return set;
+    }
+
+    public static <T> T getOrDefault(T t, T def){
+        if(t == null){
+            return def;
+        }
+        return t;
+    }
+
+    public static void nullCall(Object object, ICallback call){
+        if(object == null && call != null){
+            call.callback();
+        }
+    }
+
+    public static void notNullCall(Object object, ICallback call){
+        if(object != null && call != null){
+            call.callback();
+        }
+    }
+
+    public static void notBlankCall(String str, ICallback call){
+        if(StrKit.notBlank(str) && call != null){
+            call.callback();
+        }
+    }
+
+    public static void blankCall(String str, ICallback call){
+        if(StrKit.isBlank(str) && call != null){
+            call.callback();
+        }
+    }
+
+    public static void succCall(Boolean b, ICallback call){
+        if(b != null && b && call != null){
+            call.callback();
+        }
+    }
+
+    public static <T> T ifNull(T t1, T t2){
+        if(t1 == null){
+            return t2;
+        }
+        return t1;
     }
 }

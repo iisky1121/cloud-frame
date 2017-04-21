@@ -12,6 +12,6 @@ package com.jfinal.interfaces;
  * Created by iisky on 2017/3/24 0024.
  * ====================================================================
  */
-public interface ICallback<T> {
-	T callback();
+public interface ICallback {
+	void callback();
 }

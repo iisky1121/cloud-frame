@@ -129,7 +129,12 @@ public class DateKit {
 		return getUnixTimestamp(toDate(dateStr));
 	}
 
-	private static int timeMillisToSecond(long timeMillis){
+	/**
+	 * 时间戳long转int
+	 * @param timeMillis
+	 * @return
+	 */
+	public static int timeMillisToSecond(long timeMillis){
 		return (int)(timeMillis/1000);
 	}
 }

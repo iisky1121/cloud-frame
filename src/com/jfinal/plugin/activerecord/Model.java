@@ -1195,8 +1195,8 @@ public abstract class Model<M extends Model> implements Serializable {
 		}
 		return Db.update(sql, paras) >= 1;
 	}
-	
-	private void beforeSave(){
+
+	protected void beforeSave(){
 		if(checkAttr("createTime")){
 			set("createTime", new Date());
 		}
@@ -1207,10 +1207,12 @@ public abstract class Model<M extends Model> implements Serializable {
 				set("createUser", user==null?"":user.get("id"));
 			}
 		}
-		beforeUpdate();
+		beforeOnlyUpdate();
 	}
-	
-	private void beforeUpdate(){
+	protected void beforeUpdate(){
+		beforeOnlyUpdate();
+	}
+	private void beforeOnlyUpdate(){
 		if(checkAttr("lastUpdateTime")){
 			set("lastUpdateTime", new Date());
 		}
