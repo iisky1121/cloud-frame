@@ -41,6 +41,18 @@ import com.jfinal.core.Const;
  */
 public class HttpKit {
 
+	private static int CONNECT_TIMEOUT=5000;
+	private static int READ_TIMEOUT=19000;
+	private final static String KEEP_ALIVE = "Keep-Alive";
+	
+	public static void setConnetTimeout(int millis){
+		CONNECT_TIMEOUT = millis;
+	}
+	
+	public static void setReadTimeout(int millis){
+		READ_TIMEOUT = millis;
+	}
+	
 	private HttpKit() {
 	}
 
@@ -191,12 +203,12 @@ public class HttpKit {
 			HttpURLConnection conn = (HttpURLConnection) new URL(uri)
 					.openConnection();
 			// 设置 HttpURLConnection的断开时间
-			conn.setConnectTimeout(5000);
+			conn.setConnectTimeout(CONNECT_TIMEOUT);
 			// 设置 HttpURLConnection的请求方式
-			conn.setRequestMethod("GET");
+			conn.setRequestMethod(Method.GET.name());
 			// 设置 HttpURLConnection的字符编码
 			conn.setRequestProperty("Accept-Charset", CHARSET);
-			conn.setRequestProperty("Connection", "Keep-Alive");
+			conn.setRequestProperty("Connection", KEEP_ALIVE);
 
 			// 连接指定的资源
 			conn.connect();
@@ -238,8 +250,7 @@ public class HttpKit {
 	private static SSLSocketFactory initSSLSocketFactory() {
 		try {
 			TrustManager[] tm = { new HttpKit().new TrustAnyTrustManager() };
-			SSLContext sslContext = SSLContext.getInstance("TLS"); // ("TLS",
-																	// "SunJSSE");
+			SSLContext sslContext = SSLContext.getInstance("TLS"); // ("TLS","SunJSSE");
 			sslContext.init(null, tm, new java.security.SecureRandom());
 			return sslContext.getSocketFactory();
 		} catch (Exception e) {
@@ -315,7 +326,7 @@ public class HttpKit {
 			/* 设置传送的method=POST */
 			conn.setRequestMethod(Method.POST.name());
 			/* setRequestProperty */
-			conn.setRequestProperty("Connection", "Keep-Alive");
+			conn.setRequestProperty("Connection", KEEP_ALIVE);
 			conn.setRequestProperty("Charset", CHARSET);
 			conn.setRequestProperty("Content-Type",
 					"multipart/form-data;boundary=" + boundary);
@@ -391,8 +402,8 @@ public class HttpKit {
 		conn.setDoInput(true);
 		conn.setRequestMethod(method.name());
 
-		conn.setConnectTimeout(19000);
-		conn.setReadTimeout(19000);
+		conn.setConnectTimeout(CONNECT_TIMEOUT);
+		conn.setReadTimeout(READ_TIMEOUT);
 
 		conn.setRequestProperty("Content-Type",
 				"application/x-www-form-urlencoded");
@@ -468,7 +479,7 @@ public class HttpKit {
 			/* 设置传送的method=POST */
 			con.setRequestMethod(Method.POST.name());
 			/* setRequestProperty */
-			con.setRequestProperty("Connection", "Keep-Alive");
+			con.setRequestProperty("Connection", KEEP_ALIVE);
 			con.setRequestProperty("Charset", CHARSET);
 			con.setRequestProperty("Content-Type",
 					"multipart/form-data;boundary=" + boundary);

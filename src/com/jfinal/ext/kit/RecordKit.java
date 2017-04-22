@@ -53,7 +53,6 @@ public class RecordKit {
         return true;
     }
 
-    @SuppressWarnings("rawtypes")
     public static boolean valueEquals(Record source, Record target, String... columns){
         for(String column : columns){
             if(!StrKit.valueEquals(source.get(column), target.get(column))) {

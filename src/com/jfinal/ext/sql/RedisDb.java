@@ -171,6 +171,7 @@ public class RedisDb {
 		return add(RedisDbBuilder.getAlias(beanClass), object, idValue);
 	}
 
+	@SuppressWarnings("unchecked")
 	public Map<String,Object> get(Class<?> beanClass, Object idValue, IDataLoader dataLoader) {
 		Map<String,Object> map = getRedisDbMap(beanClass, idValue);
 		if(map == null){

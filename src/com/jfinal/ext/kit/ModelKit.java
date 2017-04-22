@@ -24,7 +24,7 @@ public class ModelKit {
     
     @SuppressWarnings("unchecked")
     public static <T> T toModel(Class<T> entryClass, Map<String,Object> map) {
-		Model model = newInstance(entryClass);
+		Model<?> model = newInstance(entryClass);
 
 		Map<String, Class<?>> mappings = TableMapping.me().getTable(model.getClass()).getColumnTypeMap();
 		for(Entry<String, Class<?>> entry : mappings.entrySet()){
