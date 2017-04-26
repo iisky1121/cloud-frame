@@ -118,19 +118,19 @@ class Param {
 					return new Param(key,Cnd.Type.fuzzy_right,value);
 				}
 				//判断属性值 isNull
-				else if(Cnd.IS_NULL.equals(value)){
+				else if(Cnd.$IS_NULL.equals(value)){
 					return new Param(key,Cnd.Type.empty, null);
 				}
 				//判断属性值 isNotNull
-				else if(Cnd.IS_NOT_NULL.equals(value)){
+				else if(Cnd.$IS_NOT_NULL.equals(value)){
 					return new Param(key,Cnd.Type.not_empty, null);
 				}
 				//判断属性值 isEmpty
-				else if(Cnd.IS_EMPTY.equals(value)){
+				else if(Cnd.$IS_EMPTY.equals(value)){
 					return new Param(key,Cnd.Type.equal, "");
 				}
 				//判断属性值 isNotEmpty
-				else if(Cnd.IS_NOT_EMPTY.equals(value)){
+				else if(Cnd.$IS_NOT_EMPTY.equals(value)){
 					return new Param(key,Cnd.Type.not_equal, "");
 				}
 			}

@@ -16,27 +16,19 @@
 
 package com.jfinal.plugin.activerecord;
 
-import static com.jfinal.plugin.activerecord.DbKit.NULL_PARA_ARRAY;
-
-import java.io.Serializable;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
 import com.jfinal.base.UserSession;
 import com.jfinal.ext.plugin.tablebind.TableBind;
 import com.jfinal.ext.sql.Cnd;
 import com.jfinal.kit.StrKit;
 import com.jfinal.plugin.activerecord.cache.ICache;
+
+import java.io.Serializable;
+import java.sql.*;
+import java.util.*;
+import java.util.Date;
+import java.util.Map.Entry;
+
+import static com.jfinal.plugin.activerecord.DbKit.NULL_PARA_ARRAY;
 
 /**
  * Model.
@@ -76,14 +68,7 @@ public abstract class Model<M extends Model> implements Serializable {
 	 */
 	private Set<String> modifyFlag;
 	
-	/*
-	private Set<String> getModifyFlag() {
-		if (modifyFlag == null)
-			modifyFlag = getConfig().containerFactory.getModifyFlagSet();	// new HashSet<String>();
-		return modifyFlag;
-	}*/
-	
-	Set<String> getModifyFlag() {
+	protected Set<String> getModifyFlag() {
 		if (modifyFlag == null) {
 			Config config = getConfig();
 			if (config == null)
@@ -1022,7 +1007,12 @@ public abstract class Model<M extends Model> implements Serializable {
 		if (tableBind != null && !StrKit.isBlank(tableBind.pkName())) {
 			return tableBind.pkName();
 		}
-		return null;
+		String[] pkKeys = getTable().getPrimaryKey();
+		if(StrKit.notNull(pkKeys)){
+			return StrKit.join(pkKeys, ",");
+		}
+		Config config = getConfig();
+		return config.dialect.getDefaultPrimaryKey();
 	}
 	
 	/**
@@ -1092,7 +1082,7 @@ public abstract class Model<M extends Model> implements Serializable {
 	 * Return all results
 	 */
 	public final List<M> getAll(){
-		return find(String.format(Cnd.SELECT_FROM, getTableName()));
+		return find(String.format(Cnd.$SELECT_FROM, getTableName()));
 	}
 	
 	public final List<M> getByWhat(String attr,Object value){
@@ -1108,15 +1098,15 @@ public abstract class Model<M extends Model> implements Serializable {
 		if(!StrKit.notNull(attr, cndType, value)){
 			throw new IllegalArgumentException("属性attr、 cndType和value不能为空！");
 		}
-		Cnd cnd = Cnd.toCnd().where().setDefault(attr, cndType, value).build();
-		return find(String.format(Cnd.SELECT_FROM, getTableName()).concat(cnd.getSql()), cnd.getParas());
+		Cnd.Select cnd = Cnd.select().toCnd().where().setDefault(attr, cndType, value).build();
+		return find(String.format(Cnd.$SELECT_FROM, getTableName()).concat(cnd.getSql()), cnd.getParas());
 	}
 	public final List<M> getByWhat(M m){
 		if(m == null || !StrKit.notNull(m._getAttrValues())){
 				throw new IllegalArgumentException(String.format("对象：%s，对象及其属性值不能为空！", m.getClass().getSimpleName()));
 		}
-		Cnd cnd = Cnd.toCnd(m).where().build();
-		return find(String.format(Cnd.SELECT_FROM, getTableName()).concat(cnd.getSql()), cnd.getParas());
+		Cnd.Select cnd = Cnd.select().toCnd(m).where().build();
+		return find(String.format(Cnd.$SELECT_FROM, getTableName()).concat(cnd.getSql()), cnd.getParas());
 	}
 	
 	/**
@@ -1151,7 +1141,7 @@ public abstract class Model<M extends Model> implements Serializable {
 		if(!StrKit.notNull(attr, cndType, value)){
 			throw new IllegalArgumentException("属性attr、 cndType和value不能为空!");
 		}
-		Cnd cnd = Cnd.toCnd().where().setDefault(attr, cndType, value).build();
+		Cnd.Select cnd = Cnd.select().toCnd().where().setDefault(attr, cndType, value).build();
 		//return Enhancer.enhance(getClass()).deletes(cnd);
 		return deletes(cnd);
 	}
@@ -1159,7 +1149,7 @@ public abstract class Model<M extends Model> implements Serializable {
 		if(m == null || !StrKit.notNull(m._getAttrValues())){
 			throw new IllegalArgumentException(String.format("对象：%s，对象及其属性值不能为空！", m.getClass().getSimpleName()));
 		}
-		Cnd cnd = Cnd.toCnd(m).where().build();
+		Cnd.Select cnd = Cnd.select().toCnd(m).where().build();
 		return deletes(cnd);
 	}
 	
@@ -1171,20 +1161,20 @@ public abstract class Model<M extends Model> implements Serializable {
 			return false;
 		}
 		
-		String pk = StrKit.notNull(getPkName())?getPkName():"id";
-		if("".equals(pk.trim())){
+		String pk = getPkName();
+		if(StrKit.isBlank(pk)){
 			throw new IllegalArgumentException("主键没有设置,删除失败");
 		}
 		else if(pk.indexOf(",") != -1){
 			throw new IllegalArgumentException("存在联合主键,删除失败");
 		}
-		Cnd cnd = Cnd.toCnd().where().setDefault(pk, Cnd.Type.in, ids).build();
+		Cnd.Select cnd = Cnd.select().toCnd().where().setDefault(pk, Cnd.Type.in, ids).build();
 		return deletes(cnd);
 	}
 	
-	public final boolean deletes(Cnd cnd){
+	public final boolean deletes(Cnd.Select cnd){
 		if(cnd != null){
-			return delete(String.format(Cnd.DELETE_FROM, getTableName()).concat(cnd.getSql()), cnd.getParas());
+			return delete(String.format(Cnd.$DELETE_FROM, getTableName()).concat(cnd.getSql()), cnd.getParas());
 		}
 		return false;
 	}

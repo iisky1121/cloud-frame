@@ -137,4 +137,25 @@ public class DateKit {
 	public static int timeMillisToSecond(long timeMillis){
 		return (int)(timeMillis/1000);
 	}
+
+	/**
+	 * 获取时间戳秒转时间
+	 * @param timestamp
+	 * @return
+	 */
+	public static Date unixTimestampToDate(int timestamp){
+		Date date = new Date(timestamp*1000L);
+		return date;
+	}
+
+	/**
+	 * 获取时间戳秒转时间字符串
+	 * @param timestamp
+	 * @param format
+	 * @return
+	 */
+	public static String unixTimestampToDateStr(int timestamp, String format){
+		Date date = unixTimestampToDate(timestamp);
+		return toStr(date, format);
+	}
 }

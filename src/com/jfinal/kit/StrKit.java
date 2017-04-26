@@ -151,7 +151,11 @@ public class StrKit {
 		}
 		return true;
 	}
-	
+
+	public static boolean isNull(Object object){
+		return object == null;
+	}
+
 	/**
 	 * toCamelCase 下划线转驼峰
 	 * @param stringWithUnderline
@@ -206,17 +210,13 @@ public class StrKit {
 	}
 	
 	public static String join(String[] stringArray) {
-		StringBuilder sb = new StringBuilder();
-		for (String s : stringArray) {
-			sb.append(s);
-		}
-		return sb.toString();
+		return join(stringArray, "");
 	}
 	
 	public static String join(String[] stringArray, String separator) {
 		StringBuilder sb = new StringBuilder();
 		for (int i=0,len = stringArray.length; i<len; i++) {
-			if (i > 0) {
+			if (i > 0 && StrKit.notBlank(separator)) {
 				sb.append(separator);
 			}
 			sb.append(stringArray[i]);

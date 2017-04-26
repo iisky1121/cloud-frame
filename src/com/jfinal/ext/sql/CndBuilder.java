@@ -16,7 +16,7 @@ class CndBuilder {
 	static void buildSQL(StringBuilder sb, Param param, ArrayList<Object> params) {
 		buildSQL(sb, param.getType(), param.getKey(), param.getValue(), params);
 	}
-	static void buildSQL(StringBuilder sb, Cnd.Type queryType, String fieldName, Object fieldValue, ArrayList<Object> params) {
+	static void buildSQL(StringBuilder sb, Cnd.Type queryType, String fieldName, Object fieldValue, List<Object> params) {
         // 非空的时候进行设置
         if ((StrKit.notNull(fieldValue) || queryType.equals(Cnd.Type.empty) || queryType.equals(Cnd.Type.not_empty)) 
         		&& StrKit.notNull(fieldName)) {
@@ -24,7 +24,7 @@ class CndBuilder {
         	if(values == null){
         		return;
         	}
-        	sb.append(String.format(Cnd.BLANK_FNT, Cnd.AND) +fieldName + values[0]);
+        	sb.append(String.format(Cnd.$BLANK_FNT, Cnd.AND) +fieldName + values[0]);
         	if(values[1] == null){
         		return;
         	}
@@ -44,9 +44,9 @@ class CndBuilder {
 	/**
 	 * 组建各种order by及赋值
 	 */
-	static void buildOrderBy(Map<String,Cnd.OrderByType> orderByMap, StringBuilder sql){
+	static void buildOrderBy(Map<String,CndSelect.OrderByType> orderByMap, StringBuilder sql){
 		int i = 0, size = orderByMap.size();
-		for(Entry<String,Cnd.OrderByType> entry : orderByMap.entrySet()){
+		for(Entry<String,CndSelect.OrderByType> entry : orderByMap.entrySet()){
 			if(i == 0){
 				sql.append(" order by ");
 			}
@@ -100,11 +100,11 @@ class CndBuilder {
 	}
 
 	/*#####################################################################################################################################*/
-	static void init(Cnd cnd, Object ...objects){
+	static void init(CndSelect cnd, Object ...objects){
 		init(cnd, null, objects);
 	}
 
-	static void init(Cnd cnd, Map<String, String[]> paras, Object ...objects){
+	static void init(CndSelect cnd, Map<String, String[]> paras, Object ...objects){
 		int len = objects.length;
 		if (len % 2 != 0 ) {
 			throw new IllegalArgumentException("参数需为：成对的(key,value)列表");
@@ -116,7 +116,7 @@ class CndBuilder {
 	}
 
 	@SuppressWarnings("unchecked")
-	static void init(Cnd cnd, Map<String, String[]> paras, Object object, Object alias){
+	static void init(CndSelect cnd, Map<String, String[]> paras, Object object, Object alias){
 		if(object == null || alias == null){
 			throw new IllegalArgumentException("参数不允许存在值为空值或者空字符串");
 		}
@@ -138,7 +138,7 @@ class CndBuilder {
 	 * 初始化Model, for modelClass
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	static void initForModelClass(Cnd cnd, Map<String, String[]> paras, Class<? extends Model> modelClass, String alias){
+	static void initForModelClass(CndSelect cnd, Map<String, String[]> paras, Class<? extends Model> modelClass, String alias){
 		alias = (alias==null?StrKit.firstCharToLowerCase(modelClass.getSimpleName()):("".equals(alias.trim())?"":(alias+".")));
 		Model model = ModelKit.newInstance(modelClass);
 		if(model == null){
@@ -168,7 +168,7 @@ class CndBuilder {
 	/**
 	 * 初始化Model, for beanClass
 	 */
-	static void initForBeanClass(Cnd cnd, Map<String, String[]> paras, Class<?> beanClass, String alias){
+	static void initForBeanClass(CndSelect cnd, Map<String, String[]> paras, Class<?> beanClass, String alias){
 		if(beanClass == null){
 			return;
 		}
@@ -195,7 +195,7 @@ class CndBuilder {
 	 * 初始化Model, for model
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	static void initForModel(Cnd cnd, Model model, String alias){
+	static void initForModel(CndSelect cnd, Model model, String alias){
 		alias = (alias==null?StrKit.firstCharToLowerCase(model.getClass().getSimpleName()):("".equals(alias.trim())?"":(alias+".")));
 		if(model == null){
 			return;
