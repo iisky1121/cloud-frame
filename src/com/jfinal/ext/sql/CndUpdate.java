@@ -77,7 +77,7 @@ class CndUpdate<M extends CndUpdate> extends Cnd {
             i++;
         }
         for(Map.Entry<String, Param> entry : wheres.entrySet()){
-            CndBuilder.buildSQL(sb, entry.getValue().getType(), entry.getValue().getKey(), entry.getValue().getValue(), paramArrayList);
+            CndBuilder.buildSQL(sb, entry.getValue().getSymbol(), entry.getValue().getType(), entry.getValue().getKey(), entry.getValue().getValue(), paramArrayList);
         }
         sql.append(sb.toString().replaceFirst(Symbol.and.name(), Cnd.$WHERE));
         paramList.addAll(paramArrayList);

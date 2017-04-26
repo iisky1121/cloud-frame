@@ -11,7 +11,7 @@ class Param {
 	private Object value;
 	private Cnd.Type type;
 	private Class<?> classType;
-	private Cnd.Symbol symbol;
+	private Cnd.Symbol symbol = Cnd.Symbol.and;
 
 	public Param(String key, Cnd.Type type) {
 		this.key = key;

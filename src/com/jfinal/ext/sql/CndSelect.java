@@ -233,7 +233,7 @@ class CndSelect<M extends CndSelect> extends Cnd {
 			}
 			if(querys.containsKey(entry.getKey()) && entry.getValue().getValue()==null){
 				value = querys.get(entry.getKey()).getValue();
-				CndBuilder.buildSQL(sb, entry.getValue().getType(), entry.getValue().getKey(), value, paramArrayList);
+				CndBuilder.buildSQL(sb, entry.getValue().getSymbol(), entry.getValue().getType(), entry.getValue().getKey(), value, paramArrayList);
 				querys.remove(entry.getKey());
 			} else {
 				CndBuilder.buildSQL(sb, entry.getValue(), paramArrayList);
@@ -244,7 +244,7 @@ class CndSelect<M extends CndSelect> extends Cnd {
 			if(removes.contains(entry.getKey())){
 				continue;
 			}
-			CndBuilder.buildSQL(sb, entry.getValue().getType(), entry.getValue().getKey(), entry.getValue().getValue(), paramArrayList);
+			CndBuilder.buildSQL(sb, entry.getValue().getSymbol(), entry.getValue().getType(), entry.getValue().getKey(), entry.getValue().getValue(), paramArrayList);
 		}
 		//构建全文搜索
 		CndBuilder.bulidFuzzyQuery(fuzzyQuerys, sb, paramArrayList);

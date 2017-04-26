@@ -9,13 +9,22 @@ import java.util.Map;
 class Cnd$Where {
     private int groupIndex = 0;
     //默认初始化一个
-    private Map<Integer, Cnd$Group> wheres = new HashMap<Integer, Cnd$Group>(){{
+    @SuppressWarnings("serial")
+	private Map<Integer, Cnd$Group> wheres = new HashMap<Integer, Cnd$Group>(){{
         put(groupIndex, new Cnd$Group());
     }};
+    
+    public Map<Integer, Cnd$Group> getWheres(){
+    	return wheres;
+    }
 
-    public Cnd$Where addGroup(Cnd$Group group){
-        groupIndex++;
-        wheres.put(groupIndex, group);
+    public Cnd$Where group(){
+    	groupIndex++;
+    	wheres.put(groupIndex, new Cnd$Group());
+        return this;
+    } 
+    public Cnd$Where group(Cnd$Group group){
+        wheres.put(wheres.size(), group);
         return this;
     }
 

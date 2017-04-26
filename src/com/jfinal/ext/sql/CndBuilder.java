@@ -1,22 +1,26 @@
 package com.jfinal.ext.sql;
 
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
 import com.jfinal.ext.kit.ModelKit;
 import com.jfinal.kit.StrKit;
 import com.jfinal.plugin.activerecord.IBean;
 import com.jfinal.plugin.activerecord.Model;
 
-import java.lang.reflect.Field;
-import java.util.*;
-import java.util.Map.Entry;
-
 class CndBuilder {
 	/**
 	 * 组建各种sql及赋值
 	 */
-	static void buildSQL(StringBuilder sb, Param param, ArrayList<Object> params) {
-		buildSQL(sb, param.getType(), param.getKey(), param.getValue(), params);
+	static void buildSQL(StringBuilder sb, Param param, List<Object> params) {
+		buildSQL(sb, param.getSymbol(), param.getType(), param.getKey(), param.getValue(), params);
 	}
-	static void buildSQL(StringBuilder sb, Cnd.Type queryType, String fieldName, Object fieldValue, List<Object> params) {
+	static void buildSQL(StringBuilder sb, Cnd.Symbol symbol, Cnd.Type queryType, String fieldName, Object fieldValue, List<Object> params) {
         // 非空的时候进行设置
         if ((StrKit.notNull(fieldValue) || queryType.equals(Cnd.Type.empty) || queryType.equals(Cnd.Type.not_empty)) 
         		&& StrKit.notNull(fieldName)) {
@@ -24,7 +28,7 @@ class CndBuilder {
         	if(values == null){
         		return;
         	}
-        	sb.append(String.format(Cnd.$BLANK_FNT, Cnd.Symbol.and.name()) +fieldName + values[0]);
+        	sb.append(String.format(Cnd.$BLANK_FNT, symbol.name()) +fieldName + values[0]);
         	if(values[1] == null){
         		return;
         	}
@@ -221,5 +225,29 @@ class CndBuilder {
 				cnd.addQuery(newKey, Param.create(newKey, model.get(entry.getKey()), entry.getValue()));
 			}
 		}
+	}
+	
+	static void buildCnd$Where(Cnd$Where where, StringBuilder sb, List<Object> params) {
+		Cnd$Group group;
+		for(Entry<Integer, Cnd$Group> entry : where.getWheres().entrySet()){
+			group = entry.getValue();
+			if(group.isEmtry()){
+				continue;
+			}
+			
+			for(Param param : group.getParams()){
+				buildSQL(sb, param, params);
+			}
+		}
+	}
+	
+    public static void main(String[] args) {
+    	StringBuilder sb = new StringBuilder();
+    	List<Object> params = new ArrayList<Object>();
+    	Cnd$Where where = new Cnd$Where().group().and("xxx", 1).or("eee", "111");
+    	
+    	buildCnd$Where(where, sb, params);
+    	
+    	System.out.println(sb.toString());
 	}
 }
