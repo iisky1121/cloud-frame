@@ -8,13 +8,9 @@ import java.util.Map;
 /**
  * Created by hang on 2017/4/26 0026.
  */
-class CndUpdate<M extends CndUpdate> {
+class CndUpdate<M extends CndUpdate> extends Cnd {
     //操作的表名
     private String tableName;
-    //用于接收SQL语句
-    private StringBuilder sql = new StringBuilder();
-    //用于接收参数数组
-    private List<Object> paramList = new ArrayList<Object>();
     //set
     private Map<String, Object> sets = new HashMap<String, Object>();
     //where
@@ -83,23 +79,9 @@ class CndUpdate<M extends CndUpdate> {
         for(Map.Entry<String, Param> entry : wheres.entrySet()){
             CndBuilder.buildSQL(sb, entry.getValue().getType(), entry.getValue().getKey(), entry.getValue().getValue(), paramArrayList);
         }
-        sql.append(sb.toString().replaceFirst(Cnd.AND, Cnd.WHERE));
+        sql.append(sb.toString().replaceFirst(Symbol.and.name(), Cnd.$WHERE));
         paramList.addAll(paramArrayList);
         return (M)this;
-    }
-
-    /**
-     * 获取参数集合
-     */
-    public Object[] getParas() {
-        return paramList.toArray();
-    }
-
-    /**
-     * 获取sql
-     */
-    public String getSql() {
-        return sql.toString();
     }
 
     public static void main(String[] args) {

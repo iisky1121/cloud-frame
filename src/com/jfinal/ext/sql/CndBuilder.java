@@ -24,7 +24,7 @@ class CndBuilder {
         	if(values == null){
         		return;
         	}
-        	sb.append(String.format(Cnd.$BLANK_FNT, Cnd.AND) +fieldName + values[0]);
+        	sb.append(String.format(Cnd.$BLANK_FNT, Cnd.Symbol.and.name()) +fieldName + values[0]);
         	if(values[1] == null){
         		return;
         	}

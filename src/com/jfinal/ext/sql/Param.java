@@ -11,6 +11,7 @@ class Param {
 	private Object value;
 	private Cnd.Type type;
 	private Class<?> classType;
+	private Cnd.Symbol symbol;
 
 	public Param(String key, Cnd.Type type) {
 		this.key = key;
@@ -42,6 +43,20 @@ class Param {
 		return type;
 	}
 
+	public Cnd.Symbol getSymbol() {
+		return symbol;
+	}
+
+	Param setSymbol(Cnd.Symbol symbol) {
+		this.symbol = symbol;
+		return this;
+	}
+
+	Param setType(Type type) {
+		this.type = type;
+		return this;
+	}
+
 	public Object getValue() {
 		return value;
 	}
@@ -49,6 +64,7 @@ class Param {
 	public Class<?> getClassType() {
 		return classType;
 	}
+
 	
 	public static Param create(String key, Object val){
 		return create(key, val, val.getClass());

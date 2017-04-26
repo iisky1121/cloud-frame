@@ -6,7 +6,7 @@ import com.jfinal.plugin.activerecord.Model;
 import java.util.*;
 import java.util.Map.Entry;
 
-class CndSelect<M extends CndSelect> {
+class CndSelect<M extends CndSelect> extends Cnd {
 	//是否拼接where
 	private boolean hasWhere = false;
 	//字段存储
@@ -29,10 +29,6 @@ class CndSelect<M extends CndSelect> {
 	private Map<String,OrderByType> orderBys = new HashMap<String, OrderByType>();
 	//分组值设置
 	private Set<String> groupBys = new HashSet<String>();
-	//用于接收SQL语句
-    private StringBuilder sql = new StringBuilder();
-    //用于接收参数数组
-    private List<Object> paramList = new ArrayList<Object>();
 
 	M addQuery(String key, Param value){
     	querys.put(key, value);
@@ -224,20 +220,6 @@ class CndSelect<M extends CndSelect> {
     }
     
     /**
-	 * 获取参数集合
-	 */
-    public Object[] getParas() {
-        return paramList.toArray();
-    }
-    
-    /**
-	 * 获取sql
-	 */
-    public String getSql() {
-        return sql.toString();
-    }
-    
-    /**
 	 * 组建各种参数值
 	 */
     public M build(){
@@ -273,7 +255,7 @@ class CndSelect<M extends CndSelect> {
 		
 		//设置where关键字，解决1=1效率的问题
 		if(hasWhere && !StrKit.isBlank(sb.toString())){
-			sql.append(sb.toString().replaceFirst(Cnd.AND, Cnd.WHERE));
+			sql.append(sb.toString().replaceFirst(Symbol.and.name(), Cnd.$WHERE));
 		} else {
 			sql.append(sb.toString());
 		}

@@ -1,6 +1,9 @@
 package com.jfinal.ext.sql;
 
-public class Cnd {
+import java.util.ArrayList;
+import java.util.List;
+
+public abstract class Cnd {
 	public final static String $SELECT_ = "select * ";
 	public final static String $SELECT_FROM = "select * from `%s`";
 	public final static String $_FROM = " from %s";
@@ -10,9 +13,10 @@ public class Cnd {
 	public final static String $IS_NULL = "$isNull";
 	public final static String $IS_NOT_NULL = "$isNotNull";
 	public final static String $BLANK_FNT = " %s ";
-	public final static String WHERE = "where";
-	public final static String AND = "and";
-	public final static String OR = "or";
+	public final static String $WHERE = "where";
+	public enum Symbol{
+		and,or
+	}
 	public enum Type {
 		equal,// 相等
 		not_equal,// 不相等
@@ -29,6 +33,26 @@ public class Cnd {
 		not_in, // 不在范围内
 		between_and;// 在范围内
 	}
+
+	//用于接收SQL语句
+	StringBuilder sql = new StringBuilder();
+	//用于接收参数数组
+	List<Object> paramList = new ArrayList<Object>();
+
+	/**
+	 * 获取参数集合
+	 */
+	public Object[] getParas() {
+		return paramList.toArray();
+	}
+
+	/**
+	 * 获取sql
+	 */
+	public String getSql() {
+		return sql.toString();
+	}
+
 
 	public static class Update extends CndUpdate<Update>{}
 	public static Update update(){

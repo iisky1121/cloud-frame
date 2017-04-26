@@ -139,7 +139,7 @@ public class StrKit {
 		}
 		return true;
 	}
-	
+
 	public static boolean notNull(Object... paras) {
 		if (paras == null) {
 			return false;
@@ -210,7 +210,7 @@ public class StrKit {
 	}
 	
 	public static String join(String[] stringArray) {
-		return join(stringArray, "");
+		return join(stringArray);
 	}
 	
 	public static String join(String[] stringArray, String separator) {

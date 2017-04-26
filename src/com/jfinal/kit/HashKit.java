@@ -145,8 +145,7 @@ public class HashKit {
 	private final static String AES = "AES";
 	/**
 	 * AES加密
-	 * @param content
-	 * @param pwd
+	 * @param strKey
 	 * @return
 	 */
 	private static SecretKey getKey(String strKey) {
@@ -241,7 +240,7 @@ public class HashKit {
 	
 	/**
 	 * Base64加密 url变种，[+替换成*] [/替换成_]
-	 * @param content
+	 * @param url
 	 * @return
 	 */
 	public static String encryptToBase64Url(String url){
@@ -257,7 +256,7 @@ public class HashKit {
 	
 	/**
 	 * Base64解密 url变种
-	 * @param content
+	 * @param encodeUrl
 	 * @return
 	 */
 	public static String decryptToBase64Url(String encodeUrl){
