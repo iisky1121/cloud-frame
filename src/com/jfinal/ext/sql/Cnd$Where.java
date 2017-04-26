@@ -19,17 +19,31 @@ class Cnd$Where {
         return this;
     }
 
-    public Cnd$Where where(String key, Object val){
-        return where(key, val, val.getClass());
+    public Cnd$Where and(String key, Object val){
+        return and(key, val, val.getClass());
     }
 
-    public Cnd$Where where(String key, Object val, Class<?> classType){
-        wheres.put(key, Param.create(key, val, classType));
+    public Cnd$Where and(String key, Object val, Class<?> classType){
+        wheres.get(groupIndex).and(Param.create(key, val, classType));
         return this;
     }
 
-    public Cnd$Where where(String key, Cnd.Type type, Object val){
-        wheres.put(key, new Param(key, type, val));
+    public Cnd$Where and(String key, Cnd.Type type, Object val){
+        wheres.get(groupIndex).and(new Param(key, type, val));
+        return this;
+    }
+
+    public Cnd$Where or(String key, Object val){
+        return or(key, val, val.getClass());
+    }
+
+    public Cnd$Where or(String key, Object val, Class<?> classType){
+        wheres.get(groupIndex).or(Param.create(key, val, classType));
+        return this;
+    }
+
+    public Cnd$Where or(String key, Cnd.Type type, Object val){
+        wheres.get(groupIndex).or(new Param(key, type, val));
         return this;
     }
 }
