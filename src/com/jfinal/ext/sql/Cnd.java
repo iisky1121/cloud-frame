@@ -82,6 +82,11 @@ public abstract class Cnd {
 		return new ModelSelect();
 	}
 
+	public static class Template extends CndTemplate<Template>{}
+	public static Template $template(){
+		return new Template();
+	}
+
 	public static CndGroup $group(){
 		return new CndGroup();
 	}

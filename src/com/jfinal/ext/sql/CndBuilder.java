@@ -288,10 +288,11 @@ class CndBuilder {
 			if(entry.getValue() instanceof CndUpdate.IncrBy){
 				CndUpdate.IncrBy incrBy = (CndUpdate.IncrBy) entry.getValue();
 				sb.append(String.format("%s = %s %s ?", entry.getKey(), incrBy.getKey(), incrBy.getVal()>=0?"+":"-"));
+				params.add(incrBy.getVal());
 			} else {
 				sb.append(String.format("%s = ?", entry.getKey()));
+				params.add(entry.getValue());
 			}
-			params.add(entry.getValue());
 			if(i<setSize-1){
 				sb.append(",");
 			}

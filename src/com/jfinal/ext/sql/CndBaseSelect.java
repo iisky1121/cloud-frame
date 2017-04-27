@@ -8,10 +8,10 @@ abstract class CndBaseSelect<M extends CndBaseSelect> extends Cnd {
 		return (M)this;
 	}
 
-	public M and(CndParam p){
+	/*public M and(CndParam p){
 		where.and(p);
 		return (M)this;
-	}
+	}*/
 
 	public M and(Enum key, Object val){
 		return and(key.name(), val);
@@ -37,10 +37,10 @@ abstract class CndBaseSelect<M extends CndBaseSelect> extends Cnd {
 		return (M)this;
 	}
 
-	public M or(CndParam p){
+	/*public M or(CndParam p){
 		where.or(p);
 		return (M)this;
-	}
+	}*/
 
 	public M or(Enum key, Object val){
 		return or(key.name(), val);

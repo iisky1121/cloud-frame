@@ -34,7 +34,7 @@ public class CndGroup {
         return this;
     }
 
-    public CndGroup and(CndParam p){
+    CndGroup and(CndParam p){
         p.setSymbol(Cnd.Symbol.and);
         return add(p);
     }
@@ -66,7 +66,7 @@ public class CndGroup {
         return this;
     }
 
-    public CndGroup or(CndParam p){
+    CndGroup or(CndParam p){
         p.setSymbol(Cnd.Symbol.or);
         return add(p);
     }

@@ -1,7 +1,5 @@
 package com.jfinal.ext.sql;
 
-import com.jfinal.kit.StrKit;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
