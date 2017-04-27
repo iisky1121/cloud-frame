@@ -69,16 +69,16 @@ public abstract class BaseQueryController<M extends Model<M>> extends CommonCont
 	 * 
 	 * @return M
 	 */
-	public Cnd.Select getQuery(Object ...modelClassAndAlias) {
+	public Cnd.Query getQuery(Object ...modelClassAndAlias) {
 		return getQuery(getParaMap(), modelClassAndAlias);
 	}
-	public Cnd.Select getQuery(Map<String, String[]> params) {
+	public Cnd.Query getQuery(Map<String, String[]> params) {
 		String alias = getAlias();
 		alias = (alias == null? "" : alias);
 		return getQuery(params, getClazz(), alias);
 	}
-	public Cnd.Select getQuery(Map<String, String[]> params, Object ...modelClassAndAlias) {
-		return Cnd.select().queryToCnd(params, modelClassAndAlias);
+	public Cnd.Query getQuery(Map<String, String[]> params, Object ...modelClassAndAlias) {
+		return Cnd.$query().queryToCnd(params, modelClassAndAlias);
 	}
 
 	/**
@@ -109,12 +109,12 @@ public abstract class BaseQueryController<M extends Model<M>> extends CommonCont
 		return getPage(getParaMap());
 	}
 	public Page<M> getPage(Map<String, String[]> params) {
-		Cnd.Select cnd = getQuery(params).where().build();
+		Cnd.Query cnd = getQuery(params).where().build();
 		
 		Page<M> page = getM().paginate(getParaToInt("pageNumber", 1),
 						getParaToInt("pageSize", 10),
 						Cnd.$SELECT_,
-						String.format(Cnd.$_FROM, getTableName()).concat(getAlias()==null?"":" "+getAlias()).concat(cnd.getSql()),
+						String.format(Cnd.$_FROM_TABLE, getTableName()).concat(getAlias()==null?"":" "+getAlias()).concat(cnd.getSql()),
 						cnd.getParas()
 						);
 		return page;
@@ -131,8 +131,8 @@ public abstract class BaseQueryController<M extends Model<M>> extends CommonCont
 		return getList(getParaMap());
 	}
 	public List<M> getList(Map<String, String[]> params) {
-		Cnd.Select cnd =getQuery(params).where().build();
-		List<M> list = getM().find(String.format(Cnd.$SELECT_FROM, getTableName()).concat(getAlias()==null?"":" "+getAlias()).concat(cnd.getSql()), cnd.getParas());
+		Cnd.Query cnd =getQuery(params).where().build();
+		List<M> list = getM().find(String.format(Cnd.$SELECT_FROM_TABLE, getTableName()).concat(getAlias()==null?"":" "+getAlias()).concat(cnd.getSql()), cnd.getParas());
 		return list;
 	}
 

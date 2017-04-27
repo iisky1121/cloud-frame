@@ -1019,7 +1019,7 @@ public abstract class Model<M extends Model> implements Serializable {
 	 * Return columns values of this model.
 	 */
 	public final Map<String, Class<?>> getColumns(){
-		return TableMapping.me().getTable(getClass()).getColumnTypeMap();
+		return getTable().getColumnTypeMap();
 	}
 	
 	/**
@@ -1082,7 +1082,7 @@ public abstract class Model<M extends Model> implements Serializable {
 	 * Return all results
 	 */
 	public final List<M> getAll(){
-		return find(String.format(Cnd.$SELECT_FROM, getTableName()));
+		return find(String.format(Cnd.$SELECT_FROM_TABLE, getTableName()));
 	}
 	
 	public final List<M> getByWhat(String attr,Object value){
@@ -1098,15 +1098,15 @@ public abstract class Model<M extends Model> implements Serializable {
 		if(!StrKit.notNull(attr, cndType, value)){
 			throw new IllegalArgumentException("属性attr、 cndType和value不能为空！");
 		}
-		Cnd cnd = Cnd.select().toCnd().where().setDefault(attr, cndType, value).build();
-		return find(String.format(Cnd.$SELECT_FROM, getTableName()).concat(cnd.getSql()), cnd.getParas());
+		Cnd cnd = Cnd.$select().$query().where().setDefault(attr, cndType, value).build();
+		return find(String.format(Cnd.$SELECT_FROM_TABLE, getTableName()).concat(cnd.getSql()), cnd.getParas());
 	}
 	public final List<M> getByWhat(M m){
 		if(m == null || !StrKit.notNull(m._getAttrValues())){
 				throw new IllegalArgumentException(String.format("对象：%s，对象及其属性值不能为空！", m.getClass().getSimpleName()));
 		}
-		Cnd cnd = Cnd.select().toCnd(m).where().build();
-		return find(String.format(Cnd.$SELECT_FROM, getTableName()).concat(cnd.getSql()), cnd.getParas());
+		Cnd cnd = Cnd.$query().toCnd(m).where().build();
+		return find(String.format(Cnd.$SELECT_FROM_TABLE, getTableName()).concat(cnd.getSql()), cnd.getParas());
 	}
 	
 	/**
@@ -1141,7 +1141,7 @@ public abstract class Model<M extends Model> implements Serializable {
 		if(!StrKit.notNull(attr, cndType, value)){
 			throw new IllegalArgumentException("属性attr、 cndType和value不能为空!");
 		}
-		Cnd cnd = Cnd.select().toCnd().where().setDefault(attr, cndType, value).build();
+		Cnd cnd = Cnd.$query().toCnd().where().setDefault(attr, cndType, value).build();
 		//return Enhancer.enhance(getClass()).deletes(cnd);
 		return deletes(cnd);
 	}
@@ -1149,7 +1149,7 @@ public abstract class Model<M extends Model> implements Serializable {
 		if(m == null || !StrKit.notNull(m._getAttrValues())){
 			throw new IllegalArgumentException(String.format("对象：%s，对象及其属性值不能为空！", m.getClass().getSimpleName()));
 		}
-		Cnd cnd = Cnd.select().toCnd(m).where().build();
+		Cnd cnd = Cnd.$query().toCnd(m).where().build();
 		return deletes(cnd);
 	}
 	
@@ -1168,13 +1168,13 @@ public abstract class Model<M extends Model> implements Serializable {
 		else if(pk.indexOf(",") != -1){
 			throw new IllegalArgumentException("存在联合主键,删除失败");
 		}
-		Cnd cnd = Cnd.select().toCnd().where().setDefault(pk, Cnd.Type.in, ids).build();
+		Cnd cnd = Cnd.$query().toCnd().where().setDefault(pk, Cnd.Type.in, ids).build();
 		return deletes(cnd);
 	}
 	
 	public final boolean deletes(Cnd cnd){
 		if(cnd != null){
-			return delete(String.format(Cnd.$DELETE_FROM, getTableName()).concat(cnd.getSql()), cnd.getParas());
+			return delete(String.format(Cnd.$DELETE_FROM_TABLE, getTableName()).concat(cnd.getSql()), cnd.getParas());
 		}
 		return false;
 	}

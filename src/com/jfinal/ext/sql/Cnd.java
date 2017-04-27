@@ -5,9 +5,10 @@ import java.util.List;
 
 public abstract class Cnd {
 	public final static String $SELECT_ = "select * ";
-	public final static String $SELECT_FROM = "select * from `%s`";
-	public final static String $_FROM = " from %s";
-	public final static String $DELETE_FROM = "delete from `%s`";
+	public final static String $SELECT_FROM_TABLE = "select * from `%s`";
+	public final static String $_FROM_TABLE = " from %s";
+	public final static String $DELETE_FROM_TABLE = "delete from `%s`";
+	public final static String $UPDATE_TABLE = "update `%s`";
 	public final static String $IS_EMPTY = "$isEmpty";
 	public final static String $IS_NOT_EMPTY = "$isNotEmpty";
 	public final static String $IS_NULL = "$isNull";
@@ -16,6 +17,9 @@ public abstract class Cnd {
 	public final static String $WHERE = "where";
 	public enum Symbol{
 		and,or
+	}
+	public enum OrderByType{
+		asc,desc;
 	}
 	public enum Type {
 		equal,// 相等
@@ -53,14 +57,32 @@ public abstract class Cnd {
 		return sql.toString();
 	}
 
-
 	public static class Update extends CndUpdate<Update>{}
-	public static Update update(){
+	public static Update $update(){
 		return new Update();
 	}
 
-	public static class Select extends CndSelect<Select> {}
-	public static Select select(){
+	public static class Delete extends CndDelete<Delete>{}
+	public static Delete $delete(){
+		return new Delete();
+	}
+
+	public static class Query extends CndQuery<Query> {}
+	public static Query $query(){
+		return new Query();
+	}
+
+	public static class Select extends CndSelect<Select>{}
+	public static Select $select(){
 		return new Select();
+	}
+
+	public static class ModelSelect extends CndModelSelect<ModelSelect>{}
+	public static ModelSelect $modelselect(){
+		return new ModelSelect();
+	}
+
+	public static CndGroup $group(){
+		return new CndGroup();
 	}
 }

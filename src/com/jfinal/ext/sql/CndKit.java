@@ -210,14 +210,14 @@ public class CndKit {
 	public static Map<String,Object> formatValues(Map<String, String[]> paras, Class<?> entryClass){
 		Map<String,Object> map = new HashMap<String, Object>();
 		
-		Param param;
+		CndParam param;
 		if(Model.class.isAssignableFrom(entryClass)){
 			Model model = ModelKit.newInstance(entryClass);
 	    	if(model != null){
 	    		Set<Entry<String, Class<?>>> attrs = model.getColumns().entrySet();
 	    		for(Entry<String, Class<?>> entry : attrs){
 	    			if(paras.containsKey(entry.getKey()) && !StrKit.isBlank(paras.get(entry.getKey())[0])){
-	        			param = Param.create(entry.getKey(), paras.get(entry.getKey())[0], entry.getValue());
+	        			param = CndParam.create(entry.getKey(), paras.get(entry.getKey())[0], entry.getValue());
 	        			map.put(param.getKey(), param.getValue());
 	        		}
 	    		}
@@ -227,7 +227,7 @@ public class CndKit {
 			Field[] fields = entryClass.getDeclaredFields();
     		for(Field field : fields){
     			if(paras.containsKey(field.getName()) && !StrKit.isBlank(paras.get(field.getName())[0])){
-        			param = Param.create(field.getName(), paras.get(field.getName())[0], field.getType());
+        			param = CndParam.create(field.getName(), paras.get(field.getName())[0], field.getType());
         			map.put(param.getKey(), param.getValue());
         		}
     		}
