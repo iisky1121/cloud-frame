@@ -1,12 +1,16 @@
 package com.jfinal.ext.sql;
 
-import com.jfinal.kit.StrKit;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 import com.jfinal.plugin.activerecord.IBean;
 import com.jfinal.plugin.activerecord.Model;
 
-import java.util.*;
-
-class CndModelSelect<M extends CndModelSelect> extends CndSelect<M> {
+@SuppressWarnings("unchecked")
+class CndModelSelect<M extends CndModelSelect<M>> extends CndSelect<M> {
 	//字段存储
 	private Map<String, Class<?>> columnMap = new HashMap<String, Class<?>>();
 	private Set<String> fuzzyQueryColumnSet = new HashSet<String>();

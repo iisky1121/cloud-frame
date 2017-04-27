@@ -59,6 +59,131 @@ class CndBuilder {
 		}
 	}
 
+
+	/*#####################################################################################################################################*/
+	static void init(CndModelSelect<?> cnd, Object ...objects){
+		init(cnd, null, objects);
+	}
+
+	static void init(CndModelSelect<?> cnd, Map<String, String[]> paras, Object ...objects){
+		int len = objects.length;
+		if (len % 2 != 0 ) {
+			throw new IllegalArgumentException("参数需为：成对的(key,value)列表");
+		}
+
+		for (int i =0 ; i < len; i+=2) {
+			CndBuilder.init(cnd, paras, objects[i], objects[i + 1]);
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	static void init(CndModelSelect<?> cnd, Map<String, String[]> paras, Object object, Object alias){
+		if(object == null || alias == null){
+			throw new IllegalArgumentException("参数不允许存在值为空值或者空字符串");
+		}
+
+		if(object instanceof Model && alias instanceof String) {
+			initForModel(cnd, (Model<?>)object, (String)alias);
+		} else if(paras != null && object instanceof Class && alias instanceof String) {
+			//初始化model
+			if(Model.class.isAssignableFrom((Class<?>) object)){
+				initForModelClass(cnd, paras, (Class<? extends Model<?>>) object, (String) alias);
+			} else if(IBean.class.isAssignableFrom((Class<?>) object)) {
+				initForBeanClass(cnd, paras, (Class<?>) object, (String) alias);
+			}
+		} else {
+			throw new IllegalArgumentException(String.format("%s 参数需为Model、IBean、Model.Class、IBean.class类型", object));
+		}
+	}
+	/**
+	 * 初始化Model, for modelClass
+	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	static void initForModelClass(CndModelSelect cnd, Map<String, String[]> paras, Class<? extends Model> modelClass, String alias){
+		alias = (alias==null?StrKit.firstCharToLowerCase(modelClass.getSimpleName()):("".equals(alias.trim())?"":(alias+".")));
+		Model model = ModelKit.newInstance(modelClass);
+		if(model == null){
+			return;
+		}
+
+		List<String> fuzzyQueryList = Arrays.asList(model.getFuzzyQuery());
+		List<String> orderByList = Arrays.asList(model.getOrderBy());
+		Set<Entry<String, Class<?>>> attrs = model.getColumns().entrySet();
+		for(Entry<String, Class<?>> entry : attrs){
+			String newKey = alias + entry.getKey();
+			cnd.addColumn(newKey, entry.getValue());
+			//初始化query column, 默认String
+			if((fuzzyQueryList.size() == 0 && entry.getValue().equals(String.class)) || fuzzyQueryList.contains(entry.getKey())){
+				cnd.addFuzzyQueryColumn(newKey);
+			}
+			//初始化order column,默认全部
+			if(orderByList.size() == 0 || orderByList.contains(entry.getKey())){
+				cnd.addOrderByColumn(newKey);
+			}
+			//初始化query column
+			if(paras.containsKey(newKey) && !StrKit.isBlank(paras.get(newKey)[0])){
+				cnd.addQuery(newKey, CndParam.create(newKey, paras.get(newKey)[0], entry.getValue()));
+			}
+		}
+	}
+	/**
+	 * 初始化Model, for beanClass
+	 */
+	static void initForBeanClass(CndModelSelect<?> cnd, Map<String, String[]> paras, Class<?> beanClass, String alias){
+		if(beanClass == null){
+			return;
+		}
+		alias = (alias==null?StrKit.firstCharToLowerCase(beanClass.getSimpleName()):("".equals(alias.trim())?"":(alias+".")));
+
+		Field[] fields = beanClass.getDeclaredFields();
+		for(Field field : fields){
+			String newKey = alias + field.getName();
+			cnd.addColumn(newKey, field.getType());
+			//初始化query column, 默认String
+			if(field.getType().equals(String.class)){
+				cnd.addFuzzyQueryColumn(newKey);
+			}
+			//初始化order column,默认全部
+			cnd.addOrderByColumn(newKey);
+			//初始化query column
+			if(paras.containsKey(newKey) && !StrKit.isBlank(paras.get(newKey)[0])){
+				cnd.addQuery(newKey, CndParam.create(newKey, paras.get(newKey)[0], field.getType()));
+			}
+		}
+	}
+
+	/**
+	 * 初始化Model, for model
+	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	static void initForModel(CndModelSelect cnd, Model model, String alias){
+		alias = (alias==null?StrKit.firstCharToLowerCase(model.getClass().getSimpleName()):("".equals(alias.trim())?"":(alias+".")));
+		if(model == null){
+			return;
+		}
+
+		List<String> fuzzyQueryList = Arrays.asList(model.getFuzzyQuery());
+		List<String> orderByList = Arrays.asList(model.getOrderBy());
+		List<String> attrNameList = Arrays.asList(model._getAttrNames());
+		Set<Entry<String, Class<?>>> attrs = model.getColumns().entrySet();
+		for(Entry<String, Class<?>> entry : attrs){
+			String newKey = alias + entry.getKey();
+			cnd.addColumn(newKey, entry.getValue());
+			//初始化query column, 默认String
+			if((fuzzyQueryList.size() == 0 && entry.getValue().equals(String.class)) || fuzzyQueryList.contains(entry.getKey())){
+				cnd.addFuzzyQueryColumn(newKey);
+			}
+			//初始化order column,默认全部
+			if((orderByList.size() == 0) || orderByList.contains(entry.getKey())){
+				cnd.addOrderByColumn(newKey);
+			}
+			//初始化query column
+			if(attrNameList.contains(entry.getKey()) && model.get(entry.getKey()) != null){
+				cnd.addQuery(newKey, CndParam.create(newKey, model.get(entry.getKey()), entry.getValue()));
+			}
+		}
+	}
+	
 	/**
 	 * 组建各种order by及赋值
 	 */
@@ -125,130 +250,6 @@ class CndBuilder {
 			}
 			sb.append(")");
 		    i++;
-		}
-	}
-
-	/*#####################################################################################################################################*/
-	static void init(CndModelSelect cnd, Object ...objects){
-		init(cnd, null, objects);
-	}
-
-	static void init(CndModelSelect cnd, Map<String, String[]> paras, Object ...objects){
-		int len = objects.length;
-		if (len % 2 != 0 ) {
-			throw new IllegalArgumentException("参数需为：成对的(key,value)列表");
-		}
-
-		for (int i =0 ; i < len; i+=2) {
-			CndBuilder.init(cnd, paras, objects[i], objects[i + 1]);
-		}
-	}
-
-	@SuppressWarnings("unchecked")
-	static void init(CndModelSelect cnd, Map<String, String[]> paras, Object object, Object alias){
-		if(object == null || alias == null){
-			throw new IllegalArgumentException("参数不允许存在值为空值或者空字符串");
-		}
-
-		if(object instanceof Model && alias instanceof String) {
-			initForModel(cnd, (Model<?>)object, (String)alias);
-		} else if(paras != null && object instanceof Class && alias instanceof String) {
-			//初始化model
-			if(Model.class.isAssignableFrom((Class<?>) object)){
-				initForModelClass(cnd, paras, (Class<? extends Model<?>>) object, (String) alias);
-			} else if(IBean.class.isAssignableFrom((Class<?>) object)) {
-				initForBeanClass(cnd, paras, (Class<?>) object, (String) alias);
-			}
-		} else {
-			throw new IllegalArgumentException(String.format("%s 参数需为Model、IBean、Model.Class、IBean.class类型", object));
-		}
-	}
-	/**
-	 * 初始化Model, for modelClass
-	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	static void initForModelClass(CndModelSelect cnd, Map<String, String[]> paras, Class<? extends Model> modelClass, String alias){
-		alias = (alias==null?StrKit.firstCharToLowerCase(modelClass.getSimpleName()):("".equals(alias.trim())?"":(alias+".")));
-		Model model = ModelKit.newInstance(modelClass);
-		if(model == null){
-			return;
-		}
-
-		List<String> fuzzyQueryList = Arrays.asList(model.getFuzzyQuery());
-		List<String> orderByList = Arrays.asList(model.getOrderBy());
-		Set<Entry<String, Class<?>>> attrs = model.getColumns().entrySet();
-		for(Entry<String, Class<?>> entry : attrs){
-			String newKey = alias + entry.getKey();
-			cnd.addColumn(newKey, entry.getValue());
-			//初始化query column, 默认String
-			if((fuzzyQueryList.size() == 0 && entry.getValue().equals(String.class)) || fuzzyQueryList.contains(entry.getKey())){
-				cnd.addFuzzyQueryColumn(newKey);
-			}
-			//初始化order column,默认全部
-			if(orderByList.size() == 0 || orderByList.contains(entry.getKey())){
-				cnd.addOrderByColumn(newKey);
-			}
-			//初始化query column
-			if(paras.containsKey(newKey) && !StrKit.isBlank(paras.get(newKey)[0])){
-				cnd.addQuery(newKey, CndParam.create(newKey, paras.get(newKey)[0], entry.getValue()));
-			}
-		}
-	}
-	/**
-	 * 初始化Model, for beanClass
-	 */
-	static void initForBeanClass(CndModelSelect cnd, Map<String, String[]> paras, Class<?> beanClass, String alias){
-		if(beanClass == null){
-			return;
-		}
-		alias = (alias==null?StrKit.firstCharToLowerCase(beanClass.getSimpleName()):("".equals(alias.trim())?"":(alias+".")));
-
-		Field[] fields = beanClass.getDeclaredFields();
-		for(Field field : fields){
-			String newKey = alias + field.getName();
-			cnd.addColumn(newKey, field.getType());
-			//初始化query column, 默认String
-			if(field.getType().equals(String.class)){
-				cnd.addFuzzyQueryColumn(newKey);
-			}
-			//初始化order column,默认全部
-			cnd.addOrderByColumn(newKey);
-			//初始化query column
-			if(paras.containsKey(newKey) && !StrKit.isBlank(paras.get(newKey)[0])){
-				cnd.addQuery(newKey, CndParam.create(newKey, paras.get(newKey)[0], field.getType()));
-			}
-		}
-	}
-
-	/**
-	 * 初始化Model, for model
-	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	static void initForModel(CndModelSelect cnd, Model model, String alias){
-		alias = (alias==null?StrKit.firstCharToLowerCase(model.getClass().getSimpleName()):("".equals(alias.trim())?"":(alias+".")));
-		if(model == null){
-			return;
-		}
-
-		List<String> fuzzyQueryList = Arrays.asList(model.getFuzzyQuery());
-		List<String> orderByList = Arrays.asList(model.getOrderBy());
-		List<String> attrNameList = Arrays.asList(model._getAttrNames());
-		Set<Entry<String, Class<?>>> attrs = model.getColumns().entrySet();
-		for(Entry<String, Class<?>> entry : attrs){
-			String newKey = alias + entry.getKey();
-			cnd.addColumn(newKey, entry.getValue());
-			//初始化query column, 默认String
-			if((fuzzyQueryList.size() == 0 && entry.getValue().equals(String.class)) || fuzzyQueryList.contains(entry.getKey())){
-				cnd.addFuzzyQueryColumn(newKey);
-			}
-			//初始化order column,默认全部
-			if((orderByList.size() == 0) || orderByList.contains(entry.getKey())){
-				cnd.addOrderByColumn(newKey);
-			}
-			//初始化query column
-			if(attrNameList.contains(entry.getKey()) && model.get(entry.getKey()) != null){
-				cnd.addQuery(newKey, CndParam.create(newKey, model.get(entry.getKey()), entry.getValue()));
-			}
 		}
 	}
 	

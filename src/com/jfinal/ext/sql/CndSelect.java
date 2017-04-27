@@ -4,7 +4,8 @@ import com.jfinal.kit.StrKit;
 
 import java.util.*;
 
-class CndSelect<M extends CndSelect> extends CndBaseSelect<M> {
+@SuppressWarnings("unchecked")
+class CndSelect<M extends CndSelect<M>> extends CndBaseSelect<M> {
 	private Map<String,Cnd.OrderByType> orderBys = new HashMap<String, Cnd.OrderByType>();
 	//分组值设置
 	private Set<String> groupBys = new HashSet<String>();

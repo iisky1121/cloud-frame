@@ -8,7 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-class CndQuery<M extends CndQuery> extends CndModelSelect<M> {
+@SuppressWarnings("unchecked")
+class CndQuery<M extends CndQuery<M>> extends CndModelSelect<M> {
 	//全文搜索值设置
 	private Map<String, String> fuzzyQuerys = new HashMap<String, String>();
 

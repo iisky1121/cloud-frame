@@ -1,14 +1,13 @@
 package com.jfinal.ext.sql;
 
-import com.jfinal.kit.StrKit;
-
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Created by hang on 2017/4/27 0027.
  */
-class CndDelete<M extends CndDelete> extends CndBaseSelect<M> {
+@SuppressWarnings("unchecked")
+class CndDelete<M extends CndDelete<M>> extends CndBaseSelect<M> {
     //操作的表名
     private String tableName;
 

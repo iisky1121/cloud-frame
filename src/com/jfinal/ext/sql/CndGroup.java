@@ -11,14 +11,14 @@ public class CndGroup {
     private List<CndGroup> groupList;
 	private List<CndParam> params = new ArrayList<CndParam>();
 
-    public CndGroup create(Enum key, Object val){
+    public CndGroup create(Enum<?> key, Object val){
         return create(key.name(), val);
     }
     public CndGroup create(String key, Object val){
         return and(key, val, val.getClass());
     }
 
-    public CndGroup create(Enum key, Object val, Class<?> classType){
+    public CndGroup create(Enum<?> key, Object val, Class<?> classType){
         return create(key.name(), val, classType);
     }
     public CndGroup create(String key, Object val, Class<?> classType){
@@ -26,7 +26,7 @@ public class CndGroup {
         return this;
     }
 
-    public CndGroup create(Enum key, Cnd.Type type, Object val){
+    public CndGroup create(Enum<?> key, Cnd.Type type, Object val){
         return create(key.name(), type, val);
     }
     public CndGroup create(String key, Cnd.Type type, Object val){
@@ -39,14 +39,14 @@ public class CndGroup {
         return add(p);
     }
 
-    public CndGroup and(Enum key, Object val){
+    public CndGroup and(Enum<?> key, Object val){
         return and(key.name(), val);
     }
     public CndGroup and(String key, Object val){
         return and(key, val, val.getClass());
     }
 
-    public CndGroup and(Enum key, Object val, Class<?> classType){
+    public CndGroup and(Enum<?> key, Object val, Class<?> classType){
         return  and(key.name(), val, classType);
     }
     public CndGroup and(String key, Object val, Class<?> classType){
@@ -56,7 +56,7 @@ public class CndGroup {
         return this;
     }
 
-    public CndGroup and(Enum key, Cnd.Type type, Object val){
+    public CndGroup and(Enum<?> key, Cnd.Type type, Object val){
         return and(key.name(), type, val);
     }
     public CndGroup and(String key, Cnd.Type type, Object val){
@@ -71,14 +71,14 @@ public class CndGroup {
         return add(p);
     }
 
-    public CndGroup or(Enum key, Object val){
+    public CndGroup or(Enum<?> key, Object val){
         return or(key.name(), val);
     }
     public CndGroup or(String key, Object val){
         return or(key, val, val.getClass());
     }
 
-    public CndGroup or(Enum key, Object val, Class<?> classType){
+    public CndGroup or(Enum<?> key, Object val, Class<?> classType){
         return or(key.name(), val, classType);
     }
     public CndGroup or(String key, Object val, Class<?> classType){
@@ -88,7 +88,7 @@ public class CndGroup {
         return this;
     }
 
-    public CndGroup or(Enum key, Cnd.Type type, Object val){
+    public CndGroup or(Enum<?> key, Cnd.Type type, Object val){
         return or(key.name(), type, val);
     }
     public CndGroup or(String key, Cnd.Type type, Object val){

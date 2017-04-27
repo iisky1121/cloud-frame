@@ -1,6 +1,7 @@
 package com.jfinal.ext.sql;
 
-abstract class CndBaseSelect<M extends CndBaseSelect> extends Cnd {
+@SuppressWarnings("unchecked")
+abstract class CndBaseSelect<M extends CndBaseSelect<M>> extends Cnd {
 	private CndWhere where = new CndWhere();
 
 	public M where(){
@@ -13,7 +14,7 @@ abstract class CndBaseSelect<M extends CndBaseSelect> extends Cnd {
 		return (M)this;
 	}*/
 
-	public M and(Enum key, Object val){
+	public M and(Enum<?> key, Object val){
 		return and(key.name(), val);
 	}
 	public M and(String key, Object val){
@@ -21,7 +22,7 @@ abstract class CndBaseSelect<M extends CndBaseSelect> extends Cnd {
 		return (M)this;
 	}
 
-	public M and(Enum key, Object val, Class<?> classType){
+	public M and(Enum<?> key, Object val, Class<?> classType){
 		return and(key.name(), val, classType);
 	}
 	public M and(String key, Object val, Class<?> classType){
@@ -29,7 +30,7 @@ abstract class CndBaseSelect<M extends CndBaseSelect> extends Cnd {
 		return (M)this;
 	}
 
-	public M and(Enum key, Cnd.Type type, Object val){
+	public M and(Enum<?> key, Cnd.Type type, Object val){
 		return and(key.name(), type, val);
 	}
 	public M and(String key, Cnd.Type type, Object val){
@@ -42,7 +43,7 @@ abstract class CndBaseSelect<M extends CndBaseSelect> extends Cnd {
 		return (M)this;
 	}*/
 
-	public M or(Enum key, Object val){
+	public M or(Enum<?> key, Object val){
 		return or(key.name(), val);
 	}
 	public M or(String key, Object val){
@@ -50,7 +51,7 @@ abstract class CndBaseSelect<M extends CndBaseSelect> extends Cnd {
 		return (M)this;
 	}
 
-	public M or(Enum key, Object val, Class<?> classType){
+	public M or(Enum<?> key, Object val, Class<?> classType){
 		return or(key.name(), val, classType);
 	}
 	public M or(String key, Object val, Class<?> classType){
@@ -58,7 +59,7 @@ abstract class CndBaseSelect<M extends CndBaseSelect> extends Cnd {
 		return (M)this;
 	}
 
-	public M or(Enum key, Cnd.Type type, Object val){
+	public M or(Enum<?> key, Cnd.Type type, Object val){
 		return or(key.name(), type, val);
 	}
 	public M or(String key, Cnd.Type type, Object val){

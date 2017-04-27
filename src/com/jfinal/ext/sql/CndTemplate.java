@@ -12,7 +12,8 @@ import java.util.Map;
 /**
  * Created by hang on 2017/4/27 0027.
  */
-class CndTemplate<M extends CndTemplate> extends Cnd {
+@SuppressWarnings("unchecked")
+class CndTemplate<M extends CndTemplate<M>> extends Cnd {
     static Engine engine = new Engine()
             .setDevMode(true)
             .addDirective("namespace", new NameSpaceDirective())
@@ -34,7 +35,7 @@ class CndTemplate<M extends CndTemplate> extends Cnd {
         return (M)this;
     }
 
-    SqlPara getSqlParaByStr(String sql, Map data){
+    SqlPara getSqlParaByStr(String sql, Map<String, Object> data){
         SqlPara sqlPara = new SqlPara();
         data.put(SQL_PARA_KEY, sqlPara);
         sqlPara.setSql(sql);
@@ -42,7 +43,7 @@ class CndTemplate<M extends CndTemplate> extends Cnd {
     }
 
     public static void main(String[] args) {
-        Map<String,Object> map = new HashMap();
+        Map<String,Object> map = new HashMap<String, Object>();
         map.put("status", 0);
         map.put("qq", 1);
 

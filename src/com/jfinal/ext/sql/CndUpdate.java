@@ -8,7 +8,8 @@ import java.util.Map;
 /**
  * Created by hang on 2017/4/26 0026.
  */
-class CndUpdate<M extends CndUpdate> extends CndBaseSelect<M> {
+@SuppressWarnings("unchecked")
+class CndUpdate<M extends CndUpdate<M>> extends CndBaseSelect<M> {
     //操作的表名
     private String tableName;
     //set
@@ -19,15 +20,24 @@ class CndUpdate<M extends CndUpdate> extends CndBaseSelect<M> {
         return (M)this;
     }
 
+    public M set(Enum<?> key, Object val){
+    	return set(key.name(), val);
+    }
     public M set(String key, Object val){
         sets.put(key,val);
         return (M)this;
     }
 
+    public M setIncrBy(Enum<?> key, double val){
+    	return setIncrBy(key.name(), val);
+    }
     public M setIncrBy(String key, double val){
         return setIncrBy(key, key, val);
     }
 
+    public M setIncrBy(Enum<?> key, String byKey, double val){
+    	return setIncrBy(key.name(), byKey, val);
+    }
     public M setIncrBy(String key, String byKey, double val){
         sets.put(key, new IncrBy(byKey, val));
         return (M)this;

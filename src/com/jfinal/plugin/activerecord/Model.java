@@ -1008,7 +1008,7 @@ public abstract class Model<M extends Model> implements Serializable {
 			return tableBind.pkName();
 		}
 		String[] pkKeys = getTable().getPrimaryKey();
-		if(StrKit.notNull(pkKeys)){
+		if(pkKeys != null){
 			return StrKit.join(pkKeys, ",");
 		}
 		Config config = getConfig();
@@ -1098,7 +1098,7 @@ public abstract class Model<M extends Model> implements Serializable {
 		if(!StrKit.notNull(attr, cndType, value)){
 			throw new IllegalArgumentException("属性attr、 cndType和value不能为空！");
 		}
-		Cnd cnd = Cnd.$select().$query().where().setDefault(attr, cndType, value).build();
+		Cnd cnd = Cnd.$query().where().setDefault(attr, cndType, value).build();
 		return find(String.format(Cnd.$SELECT_FROM_TABLE, getTableName()).concat(cnd.getSql()), cnd.getParas());
 	}
 	public final List<M> getByWhat(M m){
