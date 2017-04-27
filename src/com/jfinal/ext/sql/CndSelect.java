@@ -80,7 +80,9 @@ class CndSelect<M extends CndSelect<M>> extends CndBaseSelect<M> {
 	}
 
 	public static void main(String[] args) {
-		Cnd cnd = Cnd.$select()
+		Cnd cnd = new CndSelect<>()
+				.select(Cnd.$SELECT_)
+				.from("from talble")
 				.where()
 				.and("ccc", "1,2,3")
 				.or("a", 1)

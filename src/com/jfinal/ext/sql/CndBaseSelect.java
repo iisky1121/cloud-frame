@@ -3,16 +3,26 @@ package com.jfinal.ext.sql;
 @SuppressWarnings("unchecked")
 abstract class CndBaseSelect<M extends CndBaseSelect<M>> extends Cnd {
 	private CndWhere where = new CndWhere();
+	private String selectSql;
+	private String fromSql;
+	
+	public M select(String select){
+		this.selectSql = select;
+		sql.append(select);
+		return (M)this;
+	}
+	
+	public M from(String from){
+		this.fromSql = from;
+		sql.append(" ").append(from);
+		return (M)this;
+	}
 
 	public M where(){
 		where.setHasWhere(true);
 		return (M)this;
 	}
 
-	/*public M and(CndParam p){
-		where.and(p);
-		return (M)this;
-	}*/
 
 	public M and(Enum<?> key, Object val){
 		return and(key.name(), val);
@@ -38,10 +48,6 @@ abstract class CndBaseSelect<M extends CndBaseSelect<M>> extends Cnd {
 		return (M)this;
 	}
 
-	/*public M or(CndParam p){
-		where.or(p);
-		return (M)this;
-	}*/
 
 	public M or(Enum<?> key, Object val){
 		return or(key.name(), val);
@@ -79,6 +85,14 @@ abstract class CndBaseSelect<M extends CndBaseSelect<M>> extends Cnd {
 
 	public CndWhere getWhere() {
 		return where;
+	}
+	
+	public String getSelectSql() {
+		return selectSql;
+	}
+
+	public String getFromSql() {
+		return fromSql;
 	}
 
 	public abstract M build();
