@@ -31,8 +31,8 @@ import com.jfinal.template.Template;
 @SuppressWarnings({"unchecked", "rawtypes"})
 public class SqlKit {
 	
-	static final String SQL_KIT_KEY = "_SQL_KIT_";
-	static final String SQL_PARA_KEY = "_SQL_PARA_";
+	public static final String SQL_KIT_KEY = "_SQL_KIT_";
+	public static final String SQL_PARA_KEY = "_SQL_PARA_";
 	
 	private String configName;
 	private boolean devMode;

@@ -4,6 +4,7 @@ import com.jfinal.plugin.activerecord.SqlPara;
 import com.jfinal.plugin.activerecord.sql.NameSpaceDirective;
 import com.jfinal.plugin.activerecord.sql.ParaDirective;
 import com.jfinal.plugin.activerecord.sql.SqlDirective;
+import com.jfinal.plugin.activerecord.sql.SqlKit;
 import com.jfinal.template.Engine;
 
 import java.util.HashMap;
@@ -21,7 +22,6 @@ class CndTemplate<M extends CndTemplate<M>> extends Cnd {
             .addDirective("para", new ParaDirective())
             .addDirective("p", new ParaDirective());
 
-    static final String SQL_PARA_KEY = "_SQL_PARA_";
     public M toCndByStr(String templateStr, Map<String,Object> map){
         SqlPara sqlPara = getSqlParaByStr(templateStr, map);
         StringBuilder sb = engine.getTemplateByString(templateStr).renderToStringBuilder(map);
@@ -37,7 +37,7 @@ class CndTemplate<M extends CndTemplate<M>> extends Cnd {
 
     SqlPara getSqlParaByStr(String sql, Map<String, Object> data){
         SqlPara sqlPara = new SqlPara();
-        data.put(SQL_PARA_KEY, sqlPara);
+        data.put(SqlKit.SQL_PARA_KEY, sqlPara);
         sqlPara.setSql(sql);
         return sqlPara;
     }
