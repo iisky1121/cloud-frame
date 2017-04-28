@@ -1,18 +1,17 @@
 package com.jfinal.ext.sql;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.jfinal.plugin.activerecord.SqlPara;
 import com.jfinal.plugin.activerecord.sql.SqlKit;
-import com.jfinal.template.Engine;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by hang on 2017/4/27 0027.
  */
 @SuppressWarnings("unchecked")
 class CndTemplate<M extends CndTemplate<M>> extends Cnd {
-    static Engine engine = new SqlKit(CndTemplate.class.getSimpleName()).getEngine();
+    static SqlKit sqlKit = new SqlKit(CndTemplate.class.getSimpleName());
     
     StringBuilder selectSql = new StringBuilder();
     StringBuilder fromSql = new StringBuilder();
@@ -21,15 +20,43 @@ class CndTemplate<M extends CndTemplate<M>> extends Cnd {
     	build(sqlStr, map);
     	return (M)this;
     }
+
+    public M toCndBySqlKey(String key, Map data){
+        this.sql.append(getSql(key, data));
+        return (M)this;
+    }
+
+    public M toCndBySqlParaKey(String key, Map data){
+        SqlPara sqlPara = getSqlPara(key, data);
+        if(sqlPara != null){
+            this.sql.append(sqlPara.getSql());
+            for(Object object : sqlPara.getPara()){
+                paramList.add(object);
+            }
+        }
+        return (M)this;
+    }
 	
     public Cnd.Select to$Select(String sqlStr, Map<String,Object> map){
     	 this.selectSql = build(sqlStr, map);
         return to$Select();
     }
-    
+
     public Cnd.Select to$Select(String select, String sqlExceptSelect, Map<String,Object> map){
         this.selectSql = build(select, map);
         this.fromSql = build(sqlExceptSelect, map);
+        return to$Select();
+    }
+
+    public Cnd.Select to$SelectBySqlKey(String key, Map map){
+        toCndBySqlKey(key, map);
+        this.selectSql = sql;
+        return to$Select();
+    }
+
+    public Cnd.Select to$SelectBySqlParaKey(String key, Map map){
+        toCndBySqlParaKey(key, map);
+        this.selectSql = sql;
         return to$Select();
     }
     
@@ -41,7 +68,7 @@ class CndTemplate<M extends CndTemplate<M>> extends Cnd {
     
     private StringBuilder build(String sqlStr, Map<String,Object> map){
     	SqlPara sqlPara = getSqlParaByStr(sqlStr, map);
-        StringBuilder sb = engine.getTemplateByString(sqlStr).renderToStringBuilder(map);
+        StringBuilder sb = sqlKit.getEngine().getTemplateByString(sqlStr).renderToStringBuilder(map);
 
         sql.append(sb.toString());
         if(sqlPara != null){
@@ -57,6 +84,14 @@ class CndTemplate<M extends CndTemplate<M>> extends Cnd {
         data.put(SqlKit.SQL_PARA_KEY, sqlPara);
         sqlPara.setSql(sql);
         return sqlPara;
+    }
+
+    String getSql(String key, Map data) {
+        return sqlKit.getSql(key, data);
+    }
+
+    SqlPara getSqlPara(String key, Map data) {
+        return sqlKit.getSqlPara(key, data);
     }
 
     public static void main(String[] args) {
