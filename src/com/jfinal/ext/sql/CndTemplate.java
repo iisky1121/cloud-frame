@@ -9,19 +9,19 @@ import java.util.Map;
 /**
  * Created by hang on 2017/4/27 0027.
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked", "rawtypes"})
 class CndTemplate<M extends CndTemplate<M>> extends Cnd {
     static SqlKit sqlKit = new SqlKit(CndTemplate.class.getSimpleName());
     
     StringBuilder selectSql = new StringBuilder();
     StringBuilder fromSql = new StringBuilder();
     
-    public M toCndByStr(String sqlStr, Map<String,Object> map){
+    public M toCndByStr(String sqlStr, Map map){
     	build(sqlStr, map);
     	return (M)this;
     }
 
-    public M toCndBySqlKey(String key, Map data){
+	public M toCndBySqlKey(String key, Map data){
         this.sql.append(getSql(key, data));
         return (M)this;
     }
@@ -37,12 +37,12 @@ class CndTemplate<M extends CndTemplate<M>> extends Cnd {
         return (M)this;
     }
 	
-    public Cnd.Select to$Select(String sqlStr, Map<String,Object> map){
+    public Cnd.Select to$Select(String sqlStr, Map map){
     	 this.selectSql = build(sqlStr, map);
         return to$Select();
     }
 
-    public Cnd.Select to$Select(String select, String sqlExceptSelect, Map<String,Object> map){
+    public Cnd.Select to$Select(String select, String sqlExceptSelect, Map map){
         this.selectSql = build(select, map);
         this.fromSql = build(sqlExceptSelect, map);
         return to$Select();
@@ -66,7 +66,7 @@ class CndTemplate<M extends CndTemplate<M>> extends Cnd {
     	return select.select(selectSql.toString()).from(fromSql.toString());
     }
     
-    private StringBuilder build(String sqlStr, Map<String,Object> map){
+    private StringBuilder build(String sqlStr, Map map){
     	SqlPara sqlPara = getSqlParaByStr(sqlStr, map);
         StringBuilder sb = sqlKit.getEngine().getTemplateByString(sqlStr).renderToStringBuilder(map);
 
