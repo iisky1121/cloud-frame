@@ -16,17 +16,17 @@ class CndTemplate<M extends CndTemplate<M>> extends Cnd {
     StringBuilder selectSql = new StringBuilder();
     StringBuilder fromSql = new StringBuilder();
     
-    public M toCndByStr(String sqlStr, Map map){
+    public M byStr(String sqlStr, Map map){
     	build(sqlStr, map);
     	return (M)this;
     }
 
-	public M toCndBySqlKey(String key, Map data){
+	public M bySqlKey(String key, Map data){
         this.sql.append(getSql(key, data));
         return (M)this;
     }
 
-    public M toCndBySqlParaKey(String key, Map data){
+    public M bySqlParaKey(String key, Map data){
         SqlPara sqlPara = getSqlPara(key, data);
         if(sqlPara != null){
             this.sql.append(sqlPara.getSql());
@@ -49,13 +49,13 @@ class CndTemplate<M extends CndTemplate<M>> extends Cnd {
     }
 
     public Cnd.Select to$SelectBySqlKey(String key, Map map){
-        toCndBySqlKey(key, map);
+        bySqlKey(key, map);
         this.selectSql = sql;
         return to$Select();
     }
 
     public Cnd.Select to$SelectBySqlParaKey(String key, Map map){
-        toCndBySqlParaKey(key, map);
+        bySqlParaKey(key, map);
         this.selectSql = sql;
         return to$Select();
     }
