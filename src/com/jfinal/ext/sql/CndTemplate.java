@@ -79,7 +79,7 @@ class CndTemplate<M extends CndTemplate<M>> extends Cnd {
         return sb;
     }
 
-    SqlPara getSqlParaByStr(String sql, Map<String, Object> data){
+    SqlPara getSqlParaByStr(String sql, Map data){
         SqlPara sqlPara = new SqlPara();
         data.put(SqlKit.SQL_PARA_KEY, sqlPara);
         sqlPara.setSql(sql);
