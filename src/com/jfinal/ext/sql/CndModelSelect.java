@@ -68,13 +68,28 @@ class CndModelSelect<M extends CndModelSelect<M>> extends CndSelect<M> {
 	/**
 	 * Model转换成Cnd
 	 */
-	@SuppressWarnings({ "rawtypes" })
-	public M toCnd(Model m){
+	@Deprecated
+	public M toCnd(Model<?> m){
 		return toCnd(m, "");
 	}
 
+	@Deprecated
 	public M toCnd(Object ...modelAndAlias) {
 		CndBuilder.init(this, modelAndAlias);
+		return (M)this;
+	}
+	
+	public M setCnd(Model<?> m){
+		return setCnd(m, m.getAlias());
+	}
+	
+	public M setCnd(Model<?> m, String alias){
+		CndBuilder.init(this, m, alias);
+		return (M)this;
+	}
+	
+	public M setCnd(Class<?> clazz, String alias){
+		CndBuilder.init(this, clazz, alias);
 		return (M)this;
 	}
 

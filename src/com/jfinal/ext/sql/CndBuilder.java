@@ -44,12 +44,12 @@ class CndBuilder {
 		}
 
 		for (int i =0 ; i < len; i+=2) {
-			CndBuilder.init1(cnd, paras, objects[i], objects[i + 1]);
+			CndBuilder.init(cnd, paras, objects[i], objects[i + 1]);
 		}
 	}
 
 	@SuppressWarnings("unchecked")
-	static void init1(CndModelSelect<?> cnd, Map<String, String[]> paras, Object object, Object alias){
+	static void init(CndModelSelect<?> cnd, Map<String, String[]> paras, Object object, Object alias){
 		if(object == null || alias == null){
 			throw new IllegalArgumentException("参数不允许存在值为空值或者空字符串");
 		}

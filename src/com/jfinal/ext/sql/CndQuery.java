@@ -47,6 +47,10 @@ class CndQuery<M extends CndQuery<M>> extends CndModelSelect<M> {
 		}
 		return (M)this;
 	}
+	
+	public M setQuery(Object paras){
+		return (M)this;
+	}
     
     /**
      * 设置fuzzyQuery属性
