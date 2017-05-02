@@ -10,35 +10,7 @@ import java.util.*;
 import java.util.Map.Entry;
 
 class CndBuilder {
-	/**
-	 * 组建各种sql及赋值
-	 */
-	static void buildSQL(StringBuilder sb, CndParam param, List<Object> params) {
-		buildSQL(sb, param.getSymbol(), param.getType(), param.getKey(), param.getValue(), params);
-	}
-	static void buildSQL(StringBuilder sb, Cnd.Symbol symbol, Cnd.Type queryType, String fieldName, Object fieldValue, List<Object> params) {
-        // 非空的时候进行设置
-        if ((StrKit.notNull(fieldValue) || queryType.equals(Cnd.Type.empty) || queryType.equals(Cnd.Type.not_empty)) 
-        		&& StrKit.notNull(fieldName)) {
-        	Object[] values = CndKit.buildValue(queryType, fieldValue);
-        	if(values == null){
-        		return;
-        	}
-        	sb.append(String.format(Cnd.$BLANK_FNT, symbol.name()) +fieldName + values[0]);
-        	if(values[1] == null){
-        		return;
-        	}
-        	
-        	if(values[1] instanceof Object[]){
-        		for(Object obj : (Object[])values[1]){
-        			params.add(obj);
-        		}
-        	}
-        	else{
-        		params.add(values[1]);
-        	}
-        }
-    }
+	
     static void buildSql(StringBuilder sb, CndParam param, List<Object> params){
 		Object[] values = CndKit.buildValue(param.getType(), param.getValue());
 		if(values == null){
@@ -72,12 +44,12 @@ class CndBuilder {
 		}
 
 		for (int i =0 ; i < len; i+=2) {
-			CndBuilder.init(cnd, paras, objects[i], objects[i + 1]);
+			CndBuilder.init1(cnd, paras, objects[i], objects[i + 1]);
 		}
 	}
 
 	@SuppressWarnings("unchecked")
-	static void init(CndModelSelect<?> cnd, Map<String, String[]> paras, Object object, Object alias){
+	static void init1(CndModelSelect<?> cnd, Map<String, String[]> paras, Object object, Object alias){
 		if(object == null || alias == null){
 			throw new IllegalArgumentException("参数不允许存在值为空值或者空字符串");
 		}
