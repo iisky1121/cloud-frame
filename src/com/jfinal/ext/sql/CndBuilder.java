@@ -300,7 +300,12 @@ class CndBuilder {
 		//设置where关键字，解决1=1效率的问题
 		if(!StrKit.isBlank(sb.toString())){
 			if(where.hasWhere()){
-				sql.append(String.format(Cnd.$BLANK_FNT, Cnd.$WHERE).concat(sb.toString()));
+				if(sb.toString().startsWith(String.format(Cnd.$BLANK_FNT, Cnd.Symbol.and.name()))
+						|| sb.toString().startsWith(String.format(Cnd.$BLANK_FNT, Cnd.Symbol.or.name()))){
+					sql.append(sb.toString());
+				} else {
+					sql.append(String.format(Cnd.$BLANK_FNT, Cnd.$WHERE).concat(sb.toString()));
+				}
 			} else {
 				sql.append(String.format(Cnd.$BLANK_FNT, Cnd.Symbol.and.name()).concat(sb.toString()));
 			}

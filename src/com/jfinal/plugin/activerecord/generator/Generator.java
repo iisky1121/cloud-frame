@@ -162,6 +162,13 @@ public class Generator {
 	public void addExcludedTable(String... excludedTables) {
 		metaBuilder.addExcludedTable(excludedTables);
 	}
+
+	public void addIncludedTable(String tableName){
+		addIncludedTable(tableName, null);
+	}
+	public void addIncludedTable(String tableName, String alias){
+		metaBuilder.addIncludedTable(tableName, alias);
+	}
 	
 	/**
 	 * 添加不需要处理的数据表类型

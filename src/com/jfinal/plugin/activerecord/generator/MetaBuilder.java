@@ -42,6 +42,7 @@ public class MetaBuilder {
 	
 	protected DataSource dataSource;
 	protected Dialect dialect = new MysqlDialect();
+	protected Set<String> includedTables = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
 	protected Set<String> excludedTables = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
 	protected Set<String> excludedTableTypes = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
 	protected Map<String, String> tableAliass = new HashMap<String, String>();
@@ -65,7 +66,16 @@ public class MetaBuilder {
 			this.dialect = dialect;
 		}
 	}
-	
+
+	public void addIncludedTable(String tableName, String alias) {
+		if (StrKit.notBlank(tableName)) {
+			this.includedTables.add(tableName);
+			if(StrKit.notBlank(alias)){
+				this.addTableAlias(tableName, alias);
+			}
+		}
+	}
+
 	public void addExcludedTable(String... excludedTables) {
 		if (excludedTables != null) {
 			for (String table : excludedTables) {
@@ -111,12 +121,19 @@ public class MetaBuilder {
 			List<TableMeta> ret = new ArrayList<TableMeta>();
 			buildTableNames(ret);
 			for (TableMeta tableMeta : ret) {
+				if(includedTables.contains(tableMeta.name)){
+					buildPrimaryKey(tableMeta);
+					buildColumnMetas(tableMeta);
+					continue;
+				}
+
 				if (excludedTableTypes.contains(tableMeta.type.toLowerCase())){
 					continue;
 				}
 				if (excludedTables.contains(tableMeta.name)) {
 					continue ;
 				}
+
 				buildPrimaryKey(tableMeta);
 				buildColumnMetas(tableMeta);
 			}
@@ -193,19 +210,23 @@ public class MetaBuilder {
 		while (rs.next()) {
 			String tableName = rs.getString("TABLE_NAME");
 			String tableType = rs.getString("TABLE_TYPE");
-			if (excludedTableTypes.contains(tableType.toLowerCase())){
-				System.out.println("Skip tableType :" + tableType + ", table :" + tableName);
-				continue ;
+			if(includedTables.contains(tableName)) {
+
+			} else {
+				if (excludedTableTypes.contains(tableType.toLowerCase())) {
+					System.out.println("Skip tableType :" + tableType + ", table :" + tableName);
+					continue;
+				}
+				if (excludedTables.contains(tableName)) {
+					System.out.println("Skip table :" + tableName);
+					continue;
+				}
+				if (isSkipTable(tableName)) {
+					System.out.println("Skip table :" + tableName);
+					continue;
+				}
 			}
-			if (excludedTables.contains(tableName)) {
-				System.out.println("Skip table :" + tableName);
-				continue ;
-			}
-			if (isSkipTable(tableName)) {
-				System.out.println("Skip table :" + tableName);
-				continue ;
-			}
-			
+
 			TableMeta tableMeta = new TableMeta();
 			tableMeta.name = tableName;
 			tableMeta.type = tableType;
