@@ -57,7 +57,7 @@ public class PathKit {
 		return rootClassPath;
 	}
 	
-	public void setRootClassPath(String rootClassPath) {
+	public static void setRootClassPath(String rootClassPath) {
 		PathKit.rootClassPath = rootClassPath;
 	}
 	

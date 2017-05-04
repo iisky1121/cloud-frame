@@ -249,6 +249,10 @@ public class StrKit {
 			return false;
 		}
 	}
+	
+	public static boolean equals(String a, String b) {
+		return a == null ? b == null : a.equals(b);
+	}
 }
 
 

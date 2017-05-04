@@ -16,6 +16,7 @@
 
 package com.jfinal.template.expr.ast;
 
+import java.lang.reflect.Array;
 import com.jfinal.kit.StrKit;
 import com.jfinal.plugin.activerecord.Model;
 import com.jfinal.plugin.activerecord.Record;
@@ -31,7 +32,7 @@ import com.jfinal.template.stat.Scope;
  * 1：假如 user.getName() 存在，则优先调用
  * 2：假如 user 为 Model 子类，则调用 user.get("name")
  * 3：假如 user 为 Record，则调用 user.get("name")
- * 4：假如 user 为 Map，则调用 user.get("user")
+ * 4：假如 user 为 Map，则调用 user.get("name")
  * 5：假如 user 具有 public name 属性，则取 user.name 属性值
  */
 public class Field extends Expr {
@@ -55,6 +56,10 @@ public class Field extends Expr {
 		if (target == null) {
 			if (scope.getCtrl().isNullSafe()) {
 				return null;
+			}
+			if (expr instanceof Id) {
+				String id = ((Id)expr).getId();
+				throw new TemplateException("\"" + id + "\" can not be null for accessed by \"" + id + "." + fieldName + "\"", location);
 			}
 			throw new TemplateException("Can not accessed by \"" + fieldName + "\" field from null target", location);
 		}
@@ -88,6 +93,11 @@ public class Field extends Expr {
 			if (field != null) {
 				return field.get(target);
 			}
+			
+			// 支持获取数组长度： array.length
+			if ("length".equals(fieldName) && target.getClass().isArray()) {
+				return Array.getLength(target);
+			}
 		} catch (Exception e) {
 			throw new TemplateException(e.getMessage(), location, e);
 		}
@@ -95,11 +105,12 @@ public class Field extends Expr {
 		if (scope.getCtrl().isNullSafe()) {
 			return null;
 		}
-		throw new TemplateException(
-			"In the class " + targetClass.getName() + " can not find " +
-			getterName + "() method, also can not find \"" + fieldName + "\" field",
-			location
-		);
+		
+		if (expr instanceof Id) {
+			String id = ((Id)expr).getId();
+			throw new TemplateException("Field not found: \"" + id + "." + fieldName + "\" and getter method not found: \"" + id + "." + getterName + "()\"", location);
+		}
+		throw new TemplateException("Field not found: \"" + fieldName + "\" and getter method not found: \"" + getterName + "()\"", location);
 	}
 }
 

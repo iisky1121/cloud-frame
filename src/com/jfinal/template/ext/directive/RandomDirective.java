@@ -14,22 +14,24 @@
  * limitations under the License.
  */
 
-package com.jfinal.ext.interceptor;
+package com.jfinal.template.ext.directive;
 
-import com.jfinal.aop.Interceptor;
-import com.jfinal.aop.Invocation;
-import com.jfinal.core.Controller;
+import java.io.Writer;
+import com.jfinal.template.Directive;
+import com.jfinal.template.Env;
+import com.jfinal.template.stat.Scope;
 
 /**
- * Accept POST method only.
+ * 输出随机数
  */
-public class POST implements Interceptor {
-	public void intercept(Invocation inv) {
-		Controller controller = inv.getController();
-		if ("POST".equalsIgnoreCase(controller.getRequest().getMethod())) {
-			inv.invoke();
-		} else {
-			controller.renderError(405);
-		}
+public class RandomDirective extends Directive {
+	
+	private java.util.Random random = new java.util.Random();
+	
+	public void exec(Env env, Scope scope, Writer writer) {
+		write(writer, String.valueOf(random.nextInt()));
 	}
 }
+
+
+

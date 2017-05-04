@@ -21,11 +21,6 @@ class CndTemplate<M extends CndTemplate<M>> extends Cnd {
     	return (M)this;
     }
 
-	public M bySqlKey(String key, Map data){
-        this.sql.append(getSql(key, data));
-        return (M)this;
-    }
-
     public M bySqlParaKey(String key, Map data){
         SqlPara sqlPara = getSqlPara(key, data);
         if(sqlPara != null){
@@ -45,12 +40,6 @@ class CndTemplate<M extends CndTemplate<M>> extends Cnd {
     public Cnd.Select to$Select(String select, String sqlExceptSelect, Map map){
         this.selectSql = build(select, map);
         this.fromSql = build(sqlExceptSelect, map);
-        return to$Select();
-    }
-
-    public Cnd.Select to$SelectBySqlKey(String key, Map map){
-        bySqlKey(key, map);
-        this.selectSql = sql;
         return to$Select();
     }
 
@@ -84,10 +73,6 @@ class CndTemplate<M extends CndTemplate<M>> extends Cnd {
         data.put(SqlKit.SQL_PARA_KEY, sqlPara);
         sqlPara.setSql(sql);
         return sqlPara;
-    }
-
-    String getSql(String key, Map data) {
-        return sqlKit.getSql(key, data);
     }
 
     SqlPara getSqlPara(String key, Map data) {
