@@ -16,12 +16,12 @@
 package com.jfinal.ext.plugin.tablebind;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import javax.sql.DataSource;
 
-import com.google.common.collect.Lists;
 import com.jfinal.ext.kit.ClassSearcher;
 import com.jfinal.ext.kit.Reflect;
 import com.jfinal.kit.PathKit;
@@ -38,12 +38,12 @@ public class AutoTableBindPlugin extends ActiveRecordPlugin {
 	private static Log log = Log.getLog(AutoTableBindPlugin.class);
 
     @SuppressWarnings("rawtypes")
-    private List<Class<? extends Model>> excludeClasses = Lists.newArrayList();
-    private List<String> includeJars = Lists.newArrayList();
+    private List<Class<? extends Model>> excludeClasses = new ArrayList<Class<? extends Model>>();
+    private List<String> includeJars = new ArrayList<String>();
     private boolean autoScan = true;
     private String configName = null;
     private boolean includeAllJarsInLib = false;
-    private List<String> scanPackages = Lists.newArrayList();
+    private List<String> scanPackages = new ArrayList<String>();
     private INameStyle nameStyle;
     private String classpath = PathKit.getRootClassPath();
     private String libDir = PathKit.getWebRootPath() + File.separator + "WEB-INF" + File.separator + "lib";

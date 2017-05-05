@@ -16,17 +16,6 @@
 
 package com.jfinal.core;
 
-import java.io.File;
-import java.text.ParseException;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import com.jfinal.aop.Enhancer;
 import com.jfinal.aop.Interceptor;
 import com.jfinal.kit.StrKit;
@@ -36,6 +25,18 @@ import com.jfinal.render.Render;
 import com.jfinal.render.RenderManager;
 import com.jfinal.upload.MultipartRequest;
 import com.jfinal.upload.UploadFile;
+
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import java.io.File;
+import java.text.ParseException;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * Controller
@@ -186,6 +187,16 @@ public abstract class Controller {
 			result[i] = Long.parseLong(values[i]);
 		return result;
 	}
+
+	public Double[] getParaValuesToDouble(String name) {
+		String[] values = request.getParameterValues(name);
+		if (values == null)
+			return null;
+		Double[] result = new Double[values.length];
+		for (int i=0; i<result.length; i++)
+			result[i] = Double.parseDouble(values[i]);
+		return result;
+	}
 	
 	/**
 	 * Returns an Enumeration containing the names of the attributes available to this request.
@@ -260,6 +271,28 @@ public abstract class Controller {
 	 */
 	public Integer getParaToInt(String name, Integer defaultValue) {
 		return toInt(request.getParameter(name), defaultValue);
+	}
+
+	private Double toDouble(String value, Double defaultValue) {
+		try {
+			if (StrKit.isBlank(value))
+				return defaultValue;
+			value = value.trim();
+			if (value.startsWith("N") || value.startsWith("n"))
+				return -Double.parseDouble(value.substring(1));
+			return Double.parseDouble(value);
+		}
+		catch (Exception e) {
+			throw new ActionException(404, renderManager.getRenderFactory().getErrorRender(404),  "Can not parse the parameter \"" + value + "\" to Double value.");
+		}
+	}
+
+	public Double getParaToDouble(String name) {
+		return toDouble(request.getParameter(name), null);
+	}
+
+	public Double getParaToDouble(String name, Double defaultValue) {
+		return toDouble(request.getParameter(name), defaultValue);
 	}
 	
 	private Long toLong(String value, Long defaultValue) {
@@ -1318,6 +1351,53 @@ public abstract class Controller {
 	
 	public <T> T enhance(String singletonKey, Object target, Class<? extends Interceptor>... injectIntersClasses) {
 		return (T)Enhancer.enhance(singletonKey, target, injectIntersClasses);
+	}
+
+	public <T> T getParaByClazz(String name, Class<T> clazz){
+		return getParaByClazz(name, clazz, null);
+	}
+
+	public <T> T getParaByClazz(String name, Class<T> clazz, T defaultValue){
+		if(clazz == String.class){
+			return (T)getPara(name, (String)defaultValue);
+		}
+		else if(clazz == Integer.class || clazz == int.class){
+			return (T)getParaToInt(name, (Integer) defaultValue);
+		}
+		else if(clazz == Long.class || clazz == long.class){
+			return (T)getParaToLong(name, (Long) defaultValue);
+		}
+		else if(clazz == Date.class){
+			return (T)getParaToDate(name, (Date)defaultValue);
+		}
+		else if(clazz == Double.class){
+			return (T)getParaToDouble(name, (Double) defaultValue);
+		}
+		else if(clazz == Boolean.class){
+			return (T)getParaToBoolean(name, (Boolean) defaultValue);
+		}
+		else if(clazz == Integer[].class || clazz == int[].class){
+			Integer[] obj = getParaValuesToInt(name);
+			if(StrKit.notNull(obj)){
+				return (T)obj;
+			}
+			return defaultValue;
+		}
+		else if(clazz == Long[].class || clazz == long[].class){
+			Long[] obj = getParaValuesToLong(name);
+			if(StrKit.notNull(obj)){
+				return (T)obj;
+			}
+			return defaultValue;
+		}
+		else if(clazz == Double[].class || clazz == double[].class){
+			Double[] obj = getParaValuesToDouble(name);
+			if(StrKit.notNull(obj)){
+				return (T)obj;
+			}
+			return defaultValue;
+		}
+		return null;
 	}
 }
 

@@ -18,9 +18,10 @@ import java.lang.annotation.Target;
 @Repeatable(Validates.class)
 public @interface Validate {
 	String name();//参数名称
+	Class<?> clazz();//参数类型
     boolean required() default false;//是否必填
     String description() default "";//描述
-	String groovyExp() default "";//groovy表达式
+	String express() default "";//表达式
 	Class<?> enumClass() default Enum.class;//枚举检查
 	String[] eitherOr() default {};//多选一
     String[] association() default {};//关联必填

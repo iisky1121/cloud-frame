@@ -1,10 +1,10 @@
 package com.jfinal.ext.kit;
 
-import com.google.common.collect.Maps;
 import com.jfinal.kit.StrKit;
 import com.jfinal.plugin.activerecord.Model;
 import com.jfinal.plugin.activerecord.Record;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -20,7 +20,7 @@ public class RecordKit {
     }
 
     public static Map<String, Object> toMap(Record record) {
-        Map<String, Object> map = Maps.newHashMap();
+        Map<String, Object> map = new HashMap<String, Object>();
         Set<Entry<String, Object>> attrs = record.getColumns().entrySet();
         for (Entry<String, Object> entry : attrs) {
             map.put(entry.getKey(), entry.getValue());

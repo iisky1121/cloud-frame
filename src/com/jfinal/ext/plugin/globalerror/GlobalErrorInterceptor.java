@@ -1,4 +1,4 @@
-package com.jfinal.ext.plugin.error;
+package com.jfinal.ext.plugin.globalerror;
 
 import com.jfinal.aop.Interceptor;
 import com.jfinal.aop.Invocation;
@@ -14,7 +14,7 @@ import com.jfinal.kit.StrKit;
  * 全局异常错误处理
  *
  */
-public class ErrorInterceptor implements Interceptor {
+public class GlobalErrorInterceptor implements Interceptor {
 	
 	public void intercept(Invocation ai) {
 		Controller c = ai.getController();

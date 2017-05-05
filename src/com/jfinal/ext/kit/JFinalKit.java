@@ -15,15 +15,11 @@
  */
 package com.jfinal.ext.kit;
 
-import java.util.List;
-
-import com.google.common.collect.Lists;
-import com.jfinal.config.Constants;
-import com.jfinal.config.Handlers;
-import com.jfinal.config.Interceptors;
-import com.jfinal.config.Plugins;
-import com.jfinal.config.Routes;
+import com.jfinal.config.*;
 import com.jfinal.plugin.IPlugin;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class JFinalKit {
 
@@ -81,7 +77,7 @@ public class JFinalKit {
     }
 
     public static List<IPlugin> findPlugin(String pluginName) {
-        List<IPlugin> plugins = Lists.newArrayList();
+        List<IPlugin> plugins = new ArrayList<IPlugin>();
         for (IPlugin iPlugin : pluginList) {
             if (iPlugin.getClass().getSimpleName().equals(pluginName)) {
                 plugins.add(iPlugin);

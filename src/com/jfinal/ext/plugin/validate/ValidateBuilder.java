@@ -1,12 +1,12 @@
 package com.jfinal.ext.plugin.validate;
 
-import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
-
 import com.jfinal.base.ReturnResult;
 import com.jfinal.core.Controller;
 import com.jfinal.kit.StrKit;
+
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 
@@ -47,11 +47,11 @@ class ValidateBuilder {
 	}
 	
 	private static ReturnResult validate(Controller controller, CheckNotNull checkNotNull){
-		return ValidateKit.checkNotNull(controller, checkNotNull.attrs());
+		return ValidateKit.checkNotNull(controller, checkNotNull.value());
 	}
 	
 	private static ReturnResult validate(Controller controller, Validate[] validates){
-		Map<String,String> expressMap = new HashMap<String, String>();
+		Map<String,Validate> expressMap = new HashMap<String, Validate>();
 		ReturnResult result;
 		for(Validate v : validates){
 			if(v.required()){
@@ -78,14 +78,11 @@ class ValidateBuilder {
 					return result;
 				}
 			}
-			if(!StrKit.isBlank(v.groovyExp())){
-				expressMap.put(v.name(), v.groovyExp());
-			}
-		}
-		if(expressMap.size() > 0){
-			result = ValidateKit.groovyCheck(controller, expressMap);
-			if(!result.isSucceed()){
-				return result;
+			if(!StrKit.isBlank(v.express())){
+				result = ValidateKit.expressCheck(controller, v);
+				if(!result.isSucceed()){
+					return result;
+				}
 			}
 		}
 		return ReturnResult.success();

@@ -1,11 +1,11 @@
 package com.jfinal.ext.kit;
 
-import com.google.common.collect.Maps;
 import com.jfinal.kit.StrKit;
 import com.jfinal.plugin.activerecord.Model;
 import com.jfinal.plugin.activerecord.Record;
 import com.jfinal.plugin.activerecord.TableMapping;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -36,7 +36,7 @@ public class ModelKit {
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public static Map<String, Object> toMap(Model model) {
-        Map<String, Object> map = Maps.newHashMap();
+        Map<String, Object> map = new HashMap<String, Object>();
         Set<Entry<String, Object>> attrs = model._getAttrsEntrySet();
         for (Entry<String, Object> entry : attrs) {
             map.put(entry.getKey(), entry.getValue());
