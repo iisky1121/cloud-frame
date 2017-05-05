@@ -16,7 +16,7 @@ import java.util.Map;
  * @author iisky1121
  * 2017年1月6日 下午4:43:42
  */
-class ValidateKit {
+public class ValidateKit {
 	public static boolean isBlank(Map<String, String[]> paraMap, String attr){
 		return paraMap.get(attr) == null || paraMap.get(attr).length == 0 || StrKit.isBlank(paraMap.get(attr)[0]);
 	}
