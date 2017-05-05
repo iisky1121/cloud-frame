@@ -66,6 +66,7 @@ class CndSelect<M extends CndSelect<M>> extends CndBaseSelect<M> {
 
 		//构建where条件
 		CndBuilder.build$CndWhere(where, sb, paramArrayList);
+		CndBuilder.build$Symbol(where, sb);
 		//构建分组
 		CndBuilder.build$GroupBy(sb, groupBys);
 		//构建排序
@@ -73,8 +74,7 @@ class CndSelect<M extends CndSelect<M>> extends CndBaseSelect<M> {
 		//构建limit
 		CndBuilder.build$Limit(sb, offset, limit);
 
-		CndBuilder.build$Symbol(where, sb, sql);
-
+		sql.append(sb.toString());
 		paramList.addAll(paramArrayList);
 		return (M)this;
 	}

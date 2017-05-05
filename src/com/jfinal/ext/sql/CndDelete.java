@@ -25,7 +25,8 @@ class CndDelete<M extends CndDelete<M>> extends CndBaseSelect<M> {
         CndWhere where = getWhere();
         CndBuilder.build$CndWhere(where, sb, paramArrayList);
 
-        CndBuilder.build$Symbol(where, sb, sql);
+        CndBuilder.build$Symbol(where, sb);
+        sql.append(sb.toString());
 
         paramList.addAll(paramArrayList);
         return (M)this;

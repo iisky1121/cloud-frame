@@ -86,6 +86,8 @@ class CndQuery<M extends CndQuery<M>> extends CndModelSelect<M> {
 		CndBuilder.build$DRQ(where, getDefaults(), getRemoves(), getQuerys());
 
 		CndBuilder.build$CndWhere(where, sb, paramArrayList);
+		CndBuilder.build$Symbol(where, sb);
+
 		//构建全文搜索
 		CndBuilder.bulid$FuzzyQuery(sb, paramArrayList, fuzzyQuerys);
 		//构建分组
@@ -93,8 +95,7 @@ class CndQuery<M extends CndQuery<M>> extends CndModelSelect<M> {
 		//构建排序
 		CndBuilder.build$OrderBy(sb, getOrderBys());
 
-		CndBuilder.build$Symbol(where, sb, sql);
-
+		sql.append(sb.toString());
 		paramList.addAll(paramArrayList);
     	return (M)this;
     }

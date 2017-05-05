@@ -124,13 +124,14 @@ class CndModelSelect<M extends CndModelSelect<M>> extends CndSelect<M> {
 		CndBuilder.build$DRQ(where, defaults, removes, querys);
 
 		CndBuilder.build$CndWhere(where, sb, paramArrayList);
+		CndBuilder.build$Symbol(where, sb);
+
 		//构建分组
 		CndBuilder.build$GroupBy(sb, getGroupBys());
 		//构建排序
 		CndBuilder.build$OrderBy(sb, getOrderBys());
 
-		CndBuilder.build$Symbol(where, sb, sql);
-
+		sql.append(sb.toString());
 		paramList.addAll(paramArrayList);
 		return (M)this;
 	}

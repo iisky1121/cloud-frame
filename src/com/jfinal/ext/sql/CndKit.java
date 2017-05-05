@@ -234,15 +234,15 @@ public class CndKit {
 		}
 		return map;
 	}
-	
+
 	public static SqlArgs getSqlArgs(String sqlId){
 		return JSqlKit.getSqlArgs(sqlId);
 	}
-	
+
 	public static SqlArgs getSqlArgs(String sqlId, Object args){
 		return JSqlKit.getSqlArgs(sqlId, args);
 	}
-	
+
 	public static Long getCount(String sqlId, Map<String, String[]> params, Class<?> entryClass){
 		return getCount(sqlId, false, params, entryClass);
 	}
@@ -256,35 +256,35 @@ public class CndKit {
 		}
 		return Db.queryLong(sqlArgs.getSql(), sqlArgs.getArgs().toArray());
 	}
-	
+
 	public static List<Record> getList(String sqlId, Map<String, String[]> params, Class<?> entryClass){
 		Map<String,Object> map = formatValues(params, entryClass);
 		SqlArgs sqlArgs = getSqlArgs(sqlId, map);
 		return Db.find(sqlArgs.getSql(), sqlArgs.getArgs().toArray());
 	}
-	
+
 	public static List<Record> getList(String sqlId, int pageNumber, int pageSize, Map<String, String[]> params, Class<?> entryClass){
 		Map<String,Object> map = formatValues(params, entryClass);
 		map.put("limit", pageSize);
 		map.put("offset", (pageNumber-1)*pageSize);
-		
+
 		SqlArgs sqlArgs = getSqlArgs(sqlId, map);
 		return Db.find(sqlArgs.getSql(), sqlArgs.getArgs().toArray());
 	}
-	
+
 	public static Page<Record> paginate(String sqlId, int pageNumber, int pageSize, Map<String, String[]> params, Class<?> entryClass){
 		return paginate(sqlId, pageNumber, pageSize, false, params, entryClass);
 	}
-	
+
 	public static Page<Record> paginate(String sqlId, int pageNumber, int pageSize, boolean isGroupBy, Map<String, String[]> params, Class<?> entryClass){
 		Long totalRow = getCount(sqlId, isGroupBy, params, entryClass);
 		if(totalRow != null && totalRow > 0){
 			List<Record> list = getList(sqlId, pageNumber, pageSize, params, entryClass);
-			
+
 			int total = Integer.parseInt(String.valueOf(totalRow));
 			int totalPage = total%pageSize==0?(total/pageSize):(total/pageSize+1);
 			return new Page<Record>(list, pageNumber, pageSize, totalPage, total);
 		}
-		return new Page<Record>(new ArrayList<Record>(), pageNumber, pageSize, 0, 0); 
+		return new Page<Record>(new ArrayList<Record>(), pageNumber, pageSize, 0, 0);
 	}
 }

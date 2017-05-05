@@ -211,7 +211,11 @@ class CndBuilder {
 	static void bulid$FuzzyQuery(StringBuilder sb, List<Object> paramList, Map<String,String> fuzzyQueryMap){
 		if(fuzzyQueryMap.size() > 0){
 			int i = 0;
-			sb.append(" and (");
+			if(sb.length() > 0){
+				sb.append(" and (");
+			} else {
+				sb.append(" where (");
+			}
 			for(Entry<String,String> entry: fuzzyQueryMap.entrySet()){
 				if (i > 0) {
 					sb.append(" or ");
@@ -296,18 +300,20 @@ class CndBuilder {
 		}
 	}
 
-	static void build$Symbol(CndWhere where, StringBuilder sb, StringBuilder sql){
+	static void build$Symbol(CndWhere where, StringBuilder sb){
 		//设置where关键字，解决1=1效率的问题
 		if(!StrKit.isBlank(sb.toString())){
 			if(where.hasWhere()){
-				if(sb.toString().startsWith(String.format(Cnd.$BLANK_FNT, Cnd.Symbol.and.name()))
-						|| sb.toString().startsWith(String.format(Cnd.$BLANK_FNT, Cnd.Symbol.or.name()))){
-					sql.append(sb.toString());
-				} else {
+				/*if(sb.toString().indexOf(String.format(Cnd.$BLANK_FNT, "=")) != -1
+						|| sb.toString().indexOf(String.format(Cnd.$BLANK_FNT, Cnd.Symbol.and.name())) != -1
+						|| sb.toString().indexOf(String.format(Cnd.$BLANK_FNT, Cnd.Symbol.or.name())) != -1){
 					sql.append(String.format(Cnd.$BLANK_FNT, Cnd.$WHERE).concat(sb.toString()));
-				}
+				} else {
+					sql.append(sb.toString());
+				}*/
+				sb.insert(0, String.format(Cnd.$BLANK_FNT, Cnd.$WHERE));
 			} else {
-				sql.append(String.format(Cnd.$BLANK_FNT, Cnd.Symbol.and.name()).concat(sb.toString()));
+				sb.insert(0, String.format(Cnd.$BLANK_FNT, Cnd.Symbol.and.name()));
 			}
 		}
 	}

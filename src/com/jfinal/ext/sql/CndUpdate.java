@@ -57,9 +57,9 @@ class CndUpdate<M extends CndUpdate<M>> extends CndBaseSelect<M> {
 
         CndWhere where = getWhere();
         CndBuilder.build$CndWhere(where, sb, paramArrayList);
+        CndBuilder.build$Symbol(where, sb);
 
-        CndBuilder.build$Symbol(where, sb, sql);
-
+        sql.append(sb.toString());
         paramList.addAll(paramArrayList);
         return (M)this;
     }
