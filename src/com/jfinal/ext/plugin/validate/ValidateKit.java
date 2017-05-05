@@ -28,11 +28,18 @@ public class ValidateKit {
 		return booleanStr.equals("true");
 	}
 	public static ReturnResult expressCheck(Controller controller, Validate validate){
-		Object object = controller.getParaByClazz(validate.name(), validate.clazz());
-		if(object != null){
-			if(!expressCheck(validate.name(), validate.express(), object)){
+		if(StrKit.notBlank(controller.getPara(validate.name()))){
+			try {
+				Object object = controller.getParaByClazz(validate.name(), validate.clazz());
+				if(object != null){
+					if(!expressCheck(validate.name(), validate.express(), object)){
+						return BaseConfig.attrValueError(validate.name())
+								.setCause(String.format("属性[%s]值应符合规则[%s]", validate.name(), validate.express()));
+					}
+				}
+			} catch (Exception e){
 				return BaseConfig.attrValueError(validate.name())
-						.setCause(String.format("属性[%s]值应符合规则[%s]", validate.name(), validate.express()));
+						.setCause(String.format("属性[%s]类型错误，应为[%s]", validate.name(), validate.clazz()));
 			}
 		}
 		return ReturnResult.success();
@@ -82,11 +89,8 @@ public class ValidateKit {
 				.setCause(String.format("属性[%s]值应在列表%s中", Arrays.toString(values)));
 	}
 	
-	public static ReturnResult checkAttrValue(Controller controller, String attr, Class<?> enumClass){
+	public static ReturnResult checkAttrValue(Controller controller, String attr, Class<Enum<?>> enumClass){
 		if(enumClass != null){
-			if(!Enum.class.isAssignableFrom(enumClass)){
-				throw new IllegalArgumentException("Attribute enumClass type must be enumerated");
-			}
 			Object[] objects = enumClass.getEnumConstants();
 			return checkAttrValue(controller, attr, objects);
 		}

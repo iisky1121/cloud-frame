@@ -111,7 +111,7 @@ public abstract class CommonController extends Controller{
 	 * 检查属性值
 	 * 
 	 */
-	public ReturnResult checkAttrValue(String attr, Class<?> enumClass){
+	public ReturnResult checkAttrValue(String attr, Class<Enum<?>> enumClass){
 		return ValidateKit.checkAttrValue(this, attr, enumClass);
 	}
 }
