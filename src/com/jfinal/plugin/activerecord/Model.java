@@ -412,7 +412,9 @@ public abstract class Model<M extends Model> implements Serializable {
 		StringBuilder sql = new StringBuilder();
 		List<Object> paras = new ArrayList<Object>();
 		// before save
-		beforeSave();
+		if(!beforeSave()){
+			return false;
+		}
 		config.dialect.forModelSave(table, attrs, sql, paras);
 		// if (paras.size() == 0)	return false;	// The sql "insert into tableName() values()" works fine, so delete this line
 		
@@ -542,7 +544,9 @@ public abstract class Model<M extends Model> implements Serializable {
 		StringBuilder sql = new StringBuilder();
 		List<Object> paras = new ArrayList<Object>();
 		// before update
-		beforeUpdate();
+		if(!beforeUpdate()){
+			return false;
+		}
 		config.dialect.forModelUpdate(table, attrs, getModifyFlag(), sql, paras);
 		
 		if (paras.size() <= 1) {	// Needn't update
@@ -1193,7 +1197,7 @@ public abstract class Model<M extends Model> implements Serializable {
 		return Db.update(sql, paras) >= 1;
 	}
 
-	protected void beforeSave(){
+	protected boolean beforeSave(){
 		if(checkAttr("createTime")){
 			set("createTime", new Date());
 		}
@@ -1205,9 +1209,11 @@ public abstract class Model<M extends Model> implements Serializable {
 			}
 		}
 		beforeOnlyUpdate();
+		return true;
 	}
-	protected void beforeUpdate(){
+	protected boolean beforeUpdate(){
 		beforeOnlyUpdate();
+		return true;
 	}
 	private void beforeOnlyUpdate(){
 		if(checkAttr("lastUpdateTime")){
