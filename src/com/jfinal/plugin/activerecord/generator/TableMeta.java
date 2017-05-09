@@ -34,7 +34,8 @@ public class TableMeta {
 	
 	public String baseModelName;		// 生成的 base model 名
 	public String baseModelContent;		// 生成的 base model 内容
-	
+
+	public Class<?> modelExtendsClass;		//model继承的BaseModel类
 	public String modelName;			// 生成的 model 名
 	public String modelContent;			// 生成的 model 内容
 	

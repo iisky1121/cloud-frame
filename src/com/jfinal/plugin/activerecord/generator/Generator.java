@@ -16,9 +16,10 @@
 
 package com.jfinal.plugin.activerecord.generator;
 
-import java.util.List;
-import javax.sql.DataSource;
 import com.jfinal.plugin.activerecord.dialect.Dialect;
+
+import javax.sql.DataSource;
+import java.util.List;
 
 /**
  * 生成器
@@ -167,7 +168,10 @@ public class Generator {
 		addIncludedTable(tableName, null);
 	}
 	public void addIncludedTable(String tableName, String alias){
-		metaBuilder.addIncludedTable(tableName, alias);
+		addIncludedTable(tableName, alias, null);
+	}
+	public void addIncludedTable(String tableName, String alias, Class<?> modelExtendsClass){
+		metaBuilder.addIncludedTable(tableName, alias, modelExtendsClass);
 	}
 	
 	/**

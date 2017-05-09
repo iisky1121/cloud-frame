@@ -34,7 +34,7 @@ import java.util.Set;
 
 import com.jfinal.base.UserSession;
 import com.jfinal.ext.plugin.tablebind.TableBind;
-import com.jfinal.ext.sql.Cnd;
+import com.jfinal.ext.plugin.sql.Cnd;
 import com.jfinal.kit.StrKit;
 import com.jfinal.plugin.activerecord.cache.ICache;
 

@@ -1,4 +1,4 @@
-package com.jfinal.ext.sql;
+package com.jfinal.ext.plugin.sql;
 
 import com.jfinal.plugin.activerecord.SqlPara;
 import com.jfinal.plugin.activerecord.sql.SqlKit;

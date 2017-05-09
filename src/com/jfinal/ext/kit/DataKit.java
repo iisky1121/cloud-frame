@@ -6,6 +6,8 @@ import com.jfinal.interfaces.IDataGetter;
 import com.jfinal.interfaces.IDataSelector;
 import com.jfinal.kit.StrKit;
 
+import java.sql.Time;
+import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -97,5 +99,22 @@ public class DataKit {
             return t2;
         }
         return t1;
+    }
+
+    public static boolean isNumber(Class<?> classType){
+        return Number.class.isAssignableFrom(classType);
+    }
+
+    public static boolean isDate(Class<?> classType){
+        return classType.equals(java.sql.Date.class);
+    }
+
+    public static boolean isDateTime(Class<?> classType){
+        return classType.equals(java.util.Date.class)
+                || classType.equals(Timestamp.class);
+    }
+
+    public static boolean isTime(Class<?> classType){
+        return classType.equals(Time.class);
     }
 }

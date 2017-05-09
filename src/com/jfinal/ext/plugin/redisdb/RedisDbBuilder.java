@@ -1,4 +1,4 @@
-package com.jfinal.ext.sql;
+package com.jfinal.ext.plugin.redisdb;
 
 import com.jfinal.ext.kit.KVPFactory;
 import com.jfinal.kit.StrKit;

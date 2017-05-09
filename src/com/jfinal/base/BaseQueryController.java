@@ -5,7 +5,7 @@ import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 
-import com.jfinal.ext.sql.Cnd;
+import com.jfinal.ext.plugin.sql.Cnd;
 import com.jfinal.kit.StrKit;
 import com.jfinal.plugin.activerecord.IBean;
 import com.jfinal.plugin.activerecord.Model;

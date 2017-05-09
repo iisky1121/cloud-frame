@@ -16,24 +16,15 @@
 
 package com.jfinal.plugin.activerecord.generator;
 
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Types;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-import javax.sql.DataSource;
 import com.jfinal.kit.StrKit;
+import com.jfinal.plugin.activerecord.Model;
 import com.jfinal.plugin.activerecord.dialect.Dialect;
 import com.jfinal.plugin.activerecord.dialect.MysqlDialect;
 import com.jfinal.plugin.activerecord.dialect.OracleDialect;
+
+import javax.sql.DataSource;
+import java.sql.*;
+import java.util.*;
 
 /**
  * MetaBuilder
@@ -46,6 +37,7 @@ public class MetaBuilder {
 	protected Set<String> excludedTables = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
 	protected Set<String> excludedTableTypes = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
 	protected Map<String, String> tableAliass = new HashMap<String, String>();
+	protected Map<String, Class<?>> tableModelExtendsClass = new HashMap<String, Class<?>>();
 	
 	protected Connection conn = null;
 	protected DatabaseMetaData dbMeta = null;
@@ -67,11 +59,14 @@ public class MetaBuilder {
 		}
 	}
 
-	public void addIncludedTable(String tableName, String alias) {
+	public void addIncludedTable(String tableName, String alias, Class<?> modelExtendsClass) {
 		if (StrKit.notBlank(tableName)) {
 			this.includedTables.add(tableName);
 			if(StrKit.notBlank(alias)){
 				this.addTableAlias(tableName, alias);
+			}
+			if(modelExtendsClass != null){
+				this.addTableExtentModelClass(tableName, modelExtendsClass);
 			}
 		}
 	}
@@ -97,6 +92,12 @@ public class MetaBuilder {
 			this.tableAliass.put(tableName, alias);
 		}
 	}
+
+	public void addTableExtentModelClass(String tableName, Class<?> modelExtendsClass){
+		if (tableModelExtendsClass != null) {
+			this.tableModelExtendsClass.put(tableName, modelExtendsClass);
+		}
+	}
 	
 	/**
 	 * 设置需要被移除的表名前缀，仅用于生成 modelName 与  baseModelName
@@ -119,24 +120,8 @@ public class MetaBuilder {
 			dbMeta = conn.getMetaData();
 			
 			List<TableMeta> ret = new ArrayList<TableMeta>();
-			buildTableNames(ret);
-			for (TableMeta tableMeta : ret) {
-				if(includedTables.contains(tableMeta.name)){
-					buildPrimaryKey(tableMeta);
-					buildColumnMetas(tableMeta);
-					continue;
-				}
+			buildTables(ret);
 
-				if (excludedTableTypes.contains(tableMeta.type.toLowerCase())){
-					continue;
-				}
-				if (excludedTables.contains(tableMeta.name)) {
-					continue ;
-				}
-
-				buildPrimaryKey(tableMeta);
-				buildColumnMetas(tableMeta);
-			}
 			return ret;
 		}
 		catch (SQLException e) {
@@ -184,6 +169,13 @@ public class MetaBuilder {
 			return StrKit.firstCharToUpperCase(StrKit.toCamelCase(tableName));
 		}
 	}
+
+	protected Class<?> buildModelExtendsClass(String tableName) {
+		if (tableModelExtendsClass != null && tableModelExtendsClass.get(tableName) != null) {
+			return tableModelExtendsClass.get(tableName);
+		}
+		return Model.class;
+	}
 	
 	/**
 	 * 使用 modelName 构建 baseModelName
@@ -205,7 +197,7 @@ public class MetaBuilder {
 		return dbMeta.getTables(conn.getCatalog(), schemaPattern, null, new String[]{"TABLE", "VIEW"});
 	}
 	
-	protected void buildTableNames(List<TableMeta> ret) throws SQLException {
+	protected void buildTables(List<TableMeta> ret) throws SQLException {
 		ResultSet rs = getTablesResultSet();
 		while (rs.next()) {
 			String tableName = rs.getString("TABLE_NAME");
@@ -234,6 +226,11 @@ public class MetaBuilder {
 			
 			tableMeta.modelName = buildModelName(tableName);
 			tableMeta.baseModelName = buildBaseModelName(tableMeta.modelName);
+			tableMeta.modelExtendsClass = buildModelExtendsClass(tableName);
+
+			buildPrimaryKey(tableMeta);
+			buildColumnMetas(tableMeta);
+
 			ret.add(tableMeta);
 		}
 		rs.close();

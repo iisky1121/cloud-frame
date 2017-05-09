@@ -1,4 +1,4 @@
-package com.jfinal.ext.sql;
+package com.jfinal.ext.plugin.sql;
 
 @SuppressWarnings("unchecked")
 abstract class CndBaseSelect<M extends CndBaseSelect<M>> extends Cnd {

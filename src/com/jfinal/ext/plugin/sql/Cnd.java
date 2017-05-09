@@ -1,4 +1,4 @@
-package com.jfinal.ext.sql;
+package com.jfinal.ext.plugin.sql;
 
 import java.util.ArrayList;
 import java.util.List;

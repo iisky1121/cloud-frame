@@ -1,7 +1,8 @@
-package com.jfinal.ext.sql;
+package com.jfinal.ext.plugin.sql;
 
 import com.jfinal.ext.kit.ArrayKit;
-import com.jfinal.ext.sql.Cnd.Type;
+import com.jfinal.ext.kit.DataKit;
+import com.jfinal.ext.plugin.sql.Cnd.Type;
 import com.jfinal.kit.StrKit;
 
 import java.util.Collection;
@@ -83,13 +84,13 @@ class CndParam {
 			String value = (String)val;
 			if(!StrKit.isBlank(value)){
 				//判断属性值 between_and
-				if((CndKit.isDateOrTime(classType) || CndKit.isNumber(classType)) 
+				if((DataKit.isDateTime(classType) || DataKit.isDate(classType) || DataKit.isNumber(classType))
 						&& value.indexOf("-") != -1 && value.split("-").length == 2){
-					if(CndKit.isDateOrTime(classType)){
-						return new CndParam(key,Cnd.Type.between_and,CndKit.timeFmt(value.split("-"), classType));
+					if(DataKit.isNumber(classType)){
+						return new CndParam(key,Cnd.Type.between_and,value.split("-"));
 					}
 					else{
-						return new CndParam(key,Cnd.Type.between_and,value.split("-"));
+						return new CndParam(key,Cnd.Type.between_and,CndKit.timeFmt(value.split("-"), classType));
 					}
 				}
 				//判断属性值 not equal
@@ -109,22 +110,22 @@ class CndParam {
 				//判断属性值 >=
 				else if(value.startsWith(">=")){
 					value = value.replaceFirst(">=", "");
-					return new CndParam(key,Cnd.Type.greater_equal,CndKit.isDateOrTime(classType)?CndKit.timeFmt(value, classType, true):value);
+					return new CndParam(key,Cnd.Type.greater_equal,DataKit.isDateTime(classType)?CndKit.timeFmt(value, classType, true):value);
 				}
 				//判断属性值 >
 				else if(value.startsWith(">")){
 					value = value.replaceFirst(">", "");
-					return new CndParam(key,Cnd.Type.greater_then,CndKit.isDateOrTime(classType)?CndKit.timeFmt(value, classType, true):value);
+					return new CndParam(key,Cnd.Type.greater_then,DataKit.isDateTime(classType)?CndKit.timeFmt(value, classType, true):value);
 				}
 				//判断属性值 <=
 				else if(value.startsWith("<=")){
 					value = value.replaceFirst("<=", "");
-					return new CndParam(key,Cnd.Type.less_equal,CndKit.isDateOrTime(classType)?CndKit.timeFmt(value, classType, false):value);
+					return new CndParam(key,Cnd.Type.less_equal,DataKit.isDateTime(classType)?CndKit.timeFmt(value, classType, false):value);
 				}
 				//判断属性值 <
 				else if(value.startsWith("<")){
 					value = value.replaceFirst("<", "");
-					return new CndParam(key,Cnd.Type.less_then,CndKit.isDateOrTime(classType)?CndKit.timeFmt(value, classType, false):value);
+					return new CndParam(key,Cnd.Type.less_then,DataKit.isDateTime(classType)?CndKit.timeFmt(value, classType, false):value);
 				}
 				//判断属性值 %*%
 				else if(value.startsWith("%") && value.endsWith("%")){
