@@ -51,7 +51,6 @@ class ValidateBuilder {
 	}
 	
 	private static ReturnResult validate(Controller controller, Validate[] validates){
-		Map<String,Validate> expressMap = new HashMap<String, Validate>();
 		ReturnResult result;
 		for(Validate v : validates){
 			if(v.required()){

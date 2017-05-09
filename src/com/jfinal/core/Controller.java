@@ -1378,21 +1378,21 @@ public abstract class Controller {
 		}
 		else if(clazz == Integer[].class || clazz == int[].class){
 			Integer[] obj = getParaValuesToInt(name);
-			if(StrKit.notNull(obj)){
+			if(obj != null){
 				return (T)obj;
 			}
 			return defaultValue;
 		}
 		else if(clazz == Long[].class || clazz == long[].class){
 			Long[] obj = getParaValuesToLong(name);
-			if(StrKit.notNull(obj)){
+			if(obj != null){
 				return (T)obj;
 			}
 			return defaultValue;
 		}
 		else if(clazz == Double[].class || clazz == double[].class){
 			Double[] obj = getParaValuesToDouble(name);
-			if(StrKit.notNull(obj)){
+			if(obj != null){
 				return (T)obj;
 			}
 			return defaultValue;
