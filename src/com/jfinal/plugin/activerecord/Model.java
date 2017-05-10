@@ -39,7 +39,6 @@ import static com.jfinal.plugin.activerecord.DbKit.NULL_PARA_ARRAY;
  */
 @SuppressWarnings({"rawtypes", "unchecked"})
 public abstract class Model<M extends Model> implements Serializable {
-	public final static String DEFAULT_ALIAS = "#";
 	private static final long serialVersionUID = -990334519496260591L;
 	
 	public static final int FILTER_BY_SAVE = 0;
@@ -1030,10 +1029,10 @@ public abstract class Model<M extends Model> implements Serializable {
 	 */
 	public String getAlias(){
 		TableBind tableBind = getTableBind();
-		if (tableBind != null && tableBind.alias() != null && !DEFAULT_ALIAS.equals(tableBind.alias())) {
+		if (tableBind != null && tableBind.alias() != null) {
 			return tableBind.alias();
 		}
-		return null;
+		return "";
 	}
 	
 	/**

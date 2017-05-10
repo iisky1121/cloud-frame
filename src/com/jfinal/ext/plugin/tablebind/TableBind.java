@@ -30,7 +30,7 @@ public @interface TableBind {
     String tableName();
     String pkName() default "";
     String configName() default "";
-    String alias() default Model.DEFAULT_ALIAS;
+    String alias() default "";
     String[] fuzzyQuery() default {};
     String[] orderBy() default {};
 }
