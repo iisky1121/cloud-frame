@@ -31,7 +31,7 @@ public abstract class BaseController<M extends Model<M>> extends BaseQueryContro
 				return returnResult;
 			}
 		});
-		renderResult(result.render());
+		renderResult(result);
 	}
 
 	/**
@@ -58,7 +58,7 @@ public abstract class BaseController<M extends Model<M>> extends BaseQueryContro
 				});
 			}
 		});
-		renderResult(result.render());
+		renderResult(result);
 	}
 
 	/**
@@ -66,11 +66,11 @@ public abstract class BaseController<M extends Model<M>> extends BaseQueryContro
 	 * 
 	 */
 	public void save(){
-		renderResult(save(getData(), null).render());
+		renderResult(save(getData(), null));
 	}
 	
 	public void save(ISuccCallback<ReturnResult> call){
-		renderResult(save(getData(), call).render());
+		renderResult(save(getData(), call));
 	}
 
 	public ReturnResult save(M data){
@@ -100,11 +100,11 @@ public abstract class BaseController<M extends Model<M>> extends BaseQueryContro
 	 * 
 	 */
 	public void update(){
-		renderResult(update(getData(), null).render());
+		renderResult(update(getData(), null));
 	}
 
 	public void update(ISuccCallback<ReturnResult> call){
-		renderResult(update(getData(), call).render());
+		renderResult(update(getData(), call));
 	}
 
 	public ReturnResult update(M data){
