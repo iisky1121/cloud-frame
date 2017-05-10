@@ -16,27 +16,19 @@
 
 package com.jfinal.plugin.activerecord;
 
-import static com.jfinal.plugin.activerecord.DbKit.NULL_PARA_ARRAY;
-
-import java.io.Serializable;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
 import com.jfinal.base.UserSession;
-import com.jfinal.ext.plugin.tablebind.TableBind;
 import com.jfinal.ext.plugin.sql.Cnd;
+import com.jfinal.ext.plugin.tablebind.TableBind;
 import com.jfinal.kit.StrKit;
 import com.jfinal.plugin.activerecord.cache.ICache;
+
+import java.io.Serializable;
+import java.sql.*;
+import java.util.*;
+import java.util.Date;
+import java.util.Map.Entry;
+
+import static com.jfinal.plugin.activerecord.DbKit.NULL_PARA_ARRAY;
 
 /**
  * Model.
@@ -1002,7 +994,7 @@ public abstract class Model<M extends Model> implements Serializable {
 	/**
 	 * Return tableName values of this model.
 	 */
-	public final String getTableName(){
+	public String getTableName(){
 		TableBind tableBind = getTableBind();
 		if (tableBind != null) {
 			return tableBind.tableName();
@@ -1013,7 +1005,7 @@ public abstract class Model<M extends Model> implements Serializable {
 	/**
 	 * Return primary key values of this model.
 	 */
-	public final String getPkName(){
+	public String getPkName(){
 		TableBind tableBind = getTableBind();
 		if (tableBind != null && !StrKit.isBlank(tableBind.pkName())) {
 			return tableBind.pkName();
@@ -1029,14 +1021,14 @@ public abstract class Model<M extends Model> implements Serializable {
 	/**
 	 * Return columns values of this model.
 	 */
-	public final Map<String, Class<?>> getColumns(){
+	public Map<String, Class<?>> getColumns(){
 		return getTable().getColumnTypeMap();
 	}
 	
 	/**
 	 * Return alias values of this model.
 	 */
-	public final String getAlias(){
+	public String getAlias(){
 		TableBind tableBind = getTableBind();
 		if (tableBind != null && tableBind.alias() != null && !DEFAULT_ALIAS.equals(tableBind.alias())) {
 			return tableBind.alias();
@@ -1047,7 +1039,7 @@ public abstract class Model<M extends Model> implements Serializable {
 	/**
 	 * Return fuzzy query values of this model.
 	 */
-	public final String[] getFuzzyQuery(){
+	public String[] getFuzzyQuery(){
 		TableBind tableBind = getTableBind();
 		if (tableBind != null && tableBind.fuzzyQuery() != null) {
 			return tableBind.fuzzyQuery();
@@ -1058,7 +1050,7 @@ public abstract class Model<M extends Model> implements Serializable {
 	/**
 	 * Return order by values of this model.
 	 */
-	public final String[] getOrderBy(){
+	public String[] getOrderBy(){
 		TableBind tableBind = getTableBind();
 		if (tableBind != null && tableBind.orderBy() != null) {
 			return tableBind.orderBy();
@@ -1069,7 +1061,7 @@ public abstract class Model<M extends Model> implements Serializable {
 	/**
 	 * Check attribute exist
 	 */
-	public final boolean checkAttr(String attr){
+	public boolean checkAttr(String attr){
 		Map<String, Class<?>> columns = getTable().getColumnTypeMap();
 		return columns.containsKey(attr);
 	}
@@ -1077,7 +1069,7 @@ public abstract class Model<M extends Model> implements Serializable {
 	/**
 	 * Check attribute value is not null
 	 */
-	public final boolean checkAttrNotNull(String... columns){
+	public boolean checkAttrNotNull(String... columns){
 		if(columns == null){
 			return false;
 		}
@@ -1092,109 +1084,70 @@ public abstract class Model<M extends Model> implements Serializable {
 	/**
 	 * Return all results
 	 */
-	public final List<M> getAll(){
+	public List<M> getAll(){
 		return find(String.format(Cnd.$SELECT_FROM_TABLE, getTableName()));
 	}
 	
-	public final List<M> getByWhat(String attr,Object value){
+	public List<M> getByWhat(String attr,Object value){
+		return getByWhat(attr, Cnd.Type.equal, value);
+	}
+
+	public List<M> getByWhat(String attr, Cnd.Type cndType,Object value){
 		if(!StrKit.notNull(attr, value)){
-			throw new IllegalArgumentException("属性attr和 value不能为空！");
+			throw new IllegalArgumentException("属性attr和value不能为空！");
 		}
 		if(!checkAttr(attr)){
 			throw new IllegalArgumentException(String.format("属性%s不存在！", attr));
 		}
-		return getByWhat(attr, Cnd.Type.equal, value);
-	}
-	public final List<M> getByWhat(String attr, Cnd.Type cndType,Object value){
-		if(!StrKit.notNull(attr, cndType, value)){
-			throw new IllegalArgumentException("属性attr、 cndType和value不能为空！");
+		if(cndType == null){
+			cndType = Cnd.Type.equal;
 		}
-		Cnd cnd = Cnd.$query().where().setDefault(attr, cndType, value).build();
+		Cnd cnd = Cnd.$select().where(attr, cndType, value).build();
 		return find(String.format(Cnd.$SELECT_FROM_TABLE, getTableName()).concat(cnd.getSql()), cnd.getParas());
 	}
-	public final List<M> getByWhat(M m){
-		if(m == null || !StrKit.notNull(m._getAttrValues())){
-				throw new IllegalArgumentException(String.format("对象：%s，对象及其属性值不能为空！", m.getClass().getSimpleName()));
-		}
-		Cnd cnd = Cnd.$query().toCnd(m).where().build();
+	public List<M> getByWhat(M m){
+		Cnd cnd = Cnd.$modelselect().setCnd(m, "").where().build();
 		return find(String.format(Cnd.$SELECT_FROM_TABLE, getTableName()).concat(cnd.getSql()), cnd.getParas());
 	}
 	
 	/**
 	 * Find model by composite attribute values.
 	 */
-	public final M getFirstByWhat(String attr,Object value){
-		List<M> result = getByWhat(attr, value);
-		return result.size() > 0 ? result.get(0) : null;
+	public M getFirstByWhat(String attr,Object value){
+		return getFirstByWhat(attr, Cnd.Type.equal, value);
 	}
-	public final M getFirstByWhat(String attr, Cnd.Type cndType,Object value){
+	public M getFirstByWhat(String attr, Cnd.Type cndType,Object value){
 		List<M> result = getByWhat(attr, cndType, value);
 		return result.size() > 0 ? result.get(0) : null;
 	}
-	public final M getFirstByWhat(M m){
+	public M getFirstByWhat(M m){
 		List<M> result = getByWhat(m);
 		return result.size() > 0 ? result.get(0) : null;
 	}
-	
-	/**
-	 * Delete results by composite attribute values.
-	 */
-	public final boolean delete(String attr, Object value){
+
+	public boolean delete(String attr, Object value){
+		return delete(attr, Cnd.Type.equal, value);
+	}
+	public boolean delete(String attr, Cnd.Type cndType,Object value){
 		if(!StrKit.notNull(attr, value)){
-			throw new IllegalArgumentException("属性attr和 value不能为空!");
+			throw new IllegalArgumentException("属性attr和value不能为空！");
 		}
 		if(!checkAttr(attr)){
 			throw new IllegalArgumentException(String.format("属性%s不存在！", attr));
 		}
-		return delete(attr, Cnd.Type.equal, value);
+		if(cndType == null){
+			cndType = Cnd.Type.equal;
+		}
+		Cnd cnd = Cnd.$delete().table(getTableName()).where(attr, cndType, value).build();
+		return Db.update(cnd.getSql(), cnd.getParas()) > -1;
 	}
-	public final boolean delete(String attr, Cnd.Type cndType,Object value){
-		if(!StrKit.notNull(attr, cndType, value)){
-			throw new IllegalArgumentException("属性attr、 cndType和value不能为空!");
-		}
-		Cnd cnd = Cnd.$query().toCnd().where().setDefault(attr, cndType, value).build();
-		//return Enhancer.enhance(getClass()).deletes(cnd);
-		return deletes(cnd);
+	public boolean delete(M m){
+		Cnd cnd = Cnd.$modelselect().setCnd(m, "").where().build();
+		return Db.update(String.format(Cnd.$DELETE_FROM_TABLE, getTableName()).concat(cnd.getSql()), cnd.getParas()) > -1;
 	}
-	public final boolean delete(M m){
-		if(m == null || !StrKit.notNull(m._getAttrValues())){
-			throw new IllegalArgumentException(String.format("对象：%s，对象及其属性值不能为空！", m.getClass().getSimpleName()));
-		}
-		Cnd cnd = Cnd.$query().toCnd(m).where().build();
-		return deletes(cnd);
-	}
-	
-	/**
-	 * 单表批量删除
-	 */
-	public final boolean deletes(Object ids){
-		if(ids == null){
-			return false;
-		}
-		
-		String pk = getPkName();
-		if(StrKit.isBlank(pk)){
-			throw new IllegalArgumentException("主键没有设置,删除失败");
-		}
-		else if(pk.indexOf(",") != -1){
-			throw new IllegalArgumentException("存在联合主键,删除失败");
-		}
-		Cnd cnd = Cnd.$query().toCnd().where().setDefault(pk, Cnd.Type.in, ids).build();
-		return deletes(cnd);
-	}
-	
-	public final boolean deletes(Cnd cnd){
-		if(cnd != null){
-			return delete(String.format(Cnd.$DELETE_FROM_TABLE, getTableName()).concat(cnd.getSql()), cnd.getParas());
-		}
-		return false;
-	}
-	
-	private boolean delete(String sql, Object[] paras){
-		if(paras.length == 0){
-			throw new IllegalArgumentException("不允许进行全表删除操作");
-		}
-		return Db.update(sql, paras) >= 1;
+	public boolean deletes(Object[] idValue){
+		Cnd.Delete cnd = Cnd.$delete().table(getTableName()).where(getPkName(), idValue).build();
+		return Db.update(cnd.getSql(), cnd.getParas()) > -1;
 	}
 
 	protected boolean beforeSave(){

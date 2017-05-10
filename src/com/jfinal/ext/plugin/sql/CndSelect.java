@@ -13,6 +13,21 @@ class CndSelect<M extends CndSelect<M>> extends CndBaseSelect<M> {
 	private Integer offset;
 	private Integer limit;
 
+	private String selectSql;
+	private String fromSql;
+
+	public M select(String select){
+		this.selectSql = select;
+		sql.append(select);
+		return (M)this;
+	}
+
+	public M from(String from){
+		this.fromSql = from;
+		sql.append(" ").append(from);
+		return (M)this;
+	}
+
 	public Map<String, OrderByType> getOrderBys() {
 		return orderBys;
 	}
@@ -57,6 +72,14 @@ class CndSelect<M extends CndSelect<M>> extends CndBaseSelect<M> {
 		return limit(limit);
 	}
 
+	public String getSelectSql() {
+		return selectSql;
+	}
+
+	public String getFromSql() {
+		return fromSql;
+	}
+
 	@Override
 	public M build() {
 		ArrayList<Object> paramArrayList = new ArrayList<Object>();
@@ -81,8 +104,8 @@ class CndSelect<M extends CndSelect<M>> extends CndBaseSelect<M> {
 
 	public static void main(String[] args) {
 		Cnd cnd = new CndSelect<>()
-				.select(Cnd.$SELECT_)
-				.from("from talble")
+				//.select(Cnd.$SELECT_)
+				//.from("from talble")
 				.where()
 				.and("ccc", "1,2,3")
 				.or("a", 1)

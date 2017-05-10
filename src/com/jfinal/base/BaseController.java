@@ -21,7 +21,7 @@ public abstract class BaseController<M extends Model<M>> extends BaseQueryContro
 			renderResult(BaseConfig.attrValueEmpty("id"));
 			return;
 		}
-		ReturnResult result = ReturnResult.create(getM().deletes(id)).call(new ISuccCallback<ReturnResult>() {
+		ReturnResult result = ReturnResult.create(getM().deleteById(id)).call(new ISuccCallback<ReturnResult>() {
 			@Override
 			public ReturnResult callback(ReturnResult returnResult) {
 				if(call != null){
