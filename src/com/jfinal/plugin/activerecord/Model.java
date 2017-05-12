@@ -120,6 +120,9 @@ public abstract class Model<M extends Model> implements Serializable {
 		getModifyFlag().add(attr);	// Add modify flag, update() need this flag.
 		return (M)this;
 	}
+	public M set(Enum<?> attr, Object value){
+		return set(attr.name(), value);
+	}
 	
 	/**
 	 * Put key value pair to the model without check attribute name.
@@ -127,6 +130,9 @@ public abstract class Model<M extends Model> implements Serializable {
 	public M put(String key, Object value) {
 		attrs.put(key, value);
 		return (M)this;
+	}
+	public M put(Enum<?> key, Object value){
+		return put(key.name(), value);
 	}
 	
 	/**
@@ -707,6 +713,9 @@ public abstract class Model<M extends Model> implements Serializable {
 		getModifyFlag().remove(attr);
 		return (M)this;
 	}
+	public M remove(Enum<?> attr){
+		return remove(attr.name());
+	}
 	
 	/**
 	 * Remove attributes of this model.
@@ -714,10 +723,17 @@ public abstract class Model<M extends Model> implements Serializable {
 	 * @return this model
 	 */
 	public M remove(String... attrs) {
-		if (attrs != null)
+		if (attrs != null && attrs.length > 0)
 			for (String a : attrs) {
 				this.attrs.remove(a);
 				this.getModifyFlag().remove(a);
+			}
+		return (M)this;
+	}
+	public M remove(Enum<?>... attrs){
+		if (attrs != null && attrs.length > 0)
+			for (Enum<?> a : attrs) {
+				remove(a);
 			}
 		return (M)this;
 	}
@@ -762,7 +778,7 @@ public abstract class Model<M extends Model> implements Serializable {
 		}
 		return (M)this;
 	}
-	
+
 	/**
 	 * Keep attribute of this model and remove other attributes.
 	 * @param attr the attribute name of the model
@@ -784,7 +800,7 @@ public abstract class Model<M extends Model> implements Serializable {
 		}
 		return (M)this;
 	}
-	
+
 	/**
 	 * Remove all attributes of this model.
 	 * @return this model
@@ -1064,6 +1080,9 @@ public abstract class Model<M extends Model> implements Serializable {
 		Map<String, Class<?>> columns = getTable().getColumnTypeMap();
 		return columns.containsKey(attr);
 	}
+	public boolean checkAttr(Enum<?> attr){
+		return checkAttr(attr.name());
+	}
 	
 	/**
 	 * Check attribute value is not null
@@ -1074,6 +1093,17 @@ public abstract class Model<M extends Model> implements Serializable {
 		}
 		for(String column : columns){
 			if(StrKit.isBlank(column) || attrs.get(column) == null){
+				return false;
+			}
+		}
+		return true;
+	}
+	public boolean checkAttrNotNull(Enum<?>... columns){
+		if(columns == null){
+			return false;
+		}
+		for(Enum<?> column : columns){
+			if(attrs.get(column.name()) == null){
 				return false;
 			}
 		}
@@ -1090,6 +1120,9 @@ public abstract class Model<M extends Model> implements Serializable {
 	public List<M> getByWhat(String attr,Object value){
 		return getByWhat(attr, Cnd.Type.equal, value);
 	}
+	public List<M> getByWhat(Enum<?> attr,Object value){
+		return getByWhat(attr.name(), value);
+	}
 
 	public List<M> getByWhat(String attr, Cnd.Type cndType,Object value){
 		if(!StrKit.notNull(attr, value)){
@@ -1104,6 +1137,10 @@ public abstract class Model<M extends Model> implements Serializable {
 		Cnd cnd = Cnd.$select().where(attr, cndType, value).build();
 		return find(String.format(Cnd.$SELECT_FROM_TABLE, getTableName()).concat(cnd.getSql()), cnd.getParas());
 	}
+	public List<M> getByWhat(Enum<?> attr, Cnd.Type cndType,Object value){
+		return getByWhat(attr.name(), cndType, value);
+	}
+
 	public List<M> getByWhat(M m){
 		Cnd cnd = Cnd.$modelselect().setCnd(m, "").where().build();
 		return find(String.format(Cnd.$SELECT_FROM_TABLE, getTableName()).concat(cnd.getSql()), cnd.getParas());
@@ -1115,10 +1152,18 @@ public abstract class Model<M extends Model> implements Serializable {
 	public M getFirstByWhat(String attr,Object value){
 		return getFirstByWhat(attr, Cnd.Type.equal, value);
 	}
+	public M getFirstByWhat(Enum<?> attr,Object value){
+		return getFirstByWhat(attr.name(), value);
+	}
+
 	public M getFirstByWhat(String attr, Cnd.Type cndType,Object value){
 		List<M> result = getByWhat(attr, cndType, value);
 		return result.size() > 0 ? result.get(0) : null;
 	}
+	public M getFirstByWhat(Enum<?> attr, Cnd.Type cndType,Object value){
+		return getFirstByWhat(attr.name(), cndType, value);
+	}
+
 	public M getFirstByWhat(M m){
 		List<M> result = getByWhat(m);
 		return result.size() > 0 ? result.get(0) : null;
@@ -1127,6 +1172,10 @@ public abstract class Model<M extends Model> implements Serializable {
 	public boolean delete(String attr, Object value){
 		return delete(attr, Cnd.Type.equal, value);
 	}
+	public boolean delete(Enum<?> attr, Object value){
+		return delete(attr.name(), value);
+	}
+
 	public boolean delete(String attr, Cnd.Type cndType,Object value){
 		if(!StrKit.notNull(attr, value)){
 			throw new IllegalArgumentException("属性attr和value不能为空！");
@@ -1140,6 +1189,10 @@ public abstract class Model<M extends Model> implements Serializable {
 		Cnd cnd = Cnd.$delete().table(getTableName()).where(attr, cndType, value).build();
 		return Db.update(cnd.getSql(), cnd.getParas()) > -1;
 	}
+	public boolean delete(Enum<?> attr, Cnd.Type cndType,Object value){
+		return delete(attr.name(), cndType, value);
+	}
+
 	public boolean delete(M m){
 		Cnd cnd = Cnd.$modelselect().setCnd(m, "").where().build();
 		return Db.update(String.format(Cnd.$DELETE_FROM_TABLE, getTableName()).concat(cnd.getSql()), cnd.getParas()) > -1;
