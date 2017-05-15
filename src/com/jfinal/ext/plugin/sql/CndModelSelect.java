@@ -76,10 +76,10 @@ class CndModelSelect<M extends CndModelSelect<M>> extends CndSelect<M> {
 	}
 
 	void build$Model(String alias, Model<?> model){
-		alias = CndBuilder.getAlias(alias, model.getClass());
 		if(model == null){
 			return;
 		}
+		alias = CndBuilder.getAlias(alias, model.getClass());
 		for(Map.Entry<String, Class<?>> entry : model.getColumns().entrySet()){
 			String newKey = alias + entry.getKey();
 			Object value = model.get(entry.getKey());
@@ -88,7 +88,7 @@ class CndModelSelect<M extends CndModelSelect<M>> extends CndSelect<M> {
 		}
 	}
 
-	static void build$Param(CndModelSelect cnd, String key, Object value){
+	static void build$Param(CndModelSelect<?> cnd, String key, Object value){
 		//禁止值或者为空
 		if(cnd.isDisable(key) || value == null){
 			return;

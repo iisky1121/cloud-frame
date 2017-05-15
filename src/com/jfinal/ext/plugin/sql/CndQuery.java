@@ -146,11 +146,11 @@ class CndQuery<M extends CndQuery<M>> extends CndSelect<M> {
 		}
 	}
 
-	static void build$ModelClass(CndQuery cnd, String alias, Class<? extends Model<?>> clazz){
-		Model<?> model = ModelKit.newInstance(clazz);
-		if(model == null){
+	static void build$ModelClass(CndQuery<?> cnd, String alias, Class<? extends Model<?>> clazz){
+		if(cnd == null || clazz == null || alias == null){
 			return;
 		}
+		Model<?> model = ModelKit.newInstance(clazz);
 		for(Map.Entry<String, Class<?>> column : model.getColumns().entrySet()){
 			String newKey = alias + column.getKey();
 			Object value = cnd.getObject(newKey);
@@ -161,7 +161,10 @@ class CndQuery<M extends CndQuery<M>> extends CndSelect<M> {
 		}
 	}
 
-	static void build$IBeanClass(CndQuery cnd, String alias, Class<? extends IBean> clazz){
+	static void build$IBeanClass(CndQuery<?> cnd, String alias, Class<? extends IBean> clazz){
+		if(cnd == null || clazz == null || alias == null){
+			return;
+		}
 		Field[] fields = clazz.getDeclaredFields();
 		for(Field field : fields){
 			String newKey = alias + field.getName();
@@ -173,9 +176,9 @@ class CndQuery<M extends CndQuery<M>> extends CndSelect<M> {
 		}
 	}
 
-	static void build$Param(CndQuery cnd, String key, Object value){
+	static void build$Param(CndQuery<?> cnd, String key, Object value){
 		//禁止值或者为空
-		if(cnd.isDisable(key) || value == null){
+		if(StrKit.isBlank(key) || cnd.isDisable(key) || value == null){
 			return;
 		}
 		//默认值
