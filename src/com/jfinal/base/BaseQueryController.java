@@ -1,15 +1,15 @@
 package com.jfinal.base;
 
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.util.List;
-import java.util.Map;
-
 import com.jfinal.ext.plugin.sql.Cnd;
 import com.jfinal.kit.StrKit;
 import com.jfinal.plugin.activerecord.IBean;
 import com.jfinal.plugin.activerecord.Model;
 import com.jfinal.plugin.activerecord.Page;
+
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.List;
+import java.util.Map;
 /**
  *BaseQueryController
  */
@@ -69,16 +69,13 @@ public abstract class BaseQueryController<M extends Model<M>> extends CommonCont
 	 * 
 	 * @return M
 	 */
-	public Cnd.Query getQuery(Object ...modelClassAndAlias) {
-		return getQuery(getParaMap(), modelClassAndAlias);
+	public Cnd.Query getQuery() {
+		return getQuery(getParaMap());
 	}
 	public Cnd.Query getQuery(Map<String, String[]> params) {
 		String alias = getAlias();
 		alias = (alias == null? "" : alias);
-		return getQuery(params, getClazz(), alias);
-	}
-	public Cnd.Query getQuery(Map<String, String[]> params, Object ...modelClassAndAlias) {
-		return Cnd.$query().queryToCnd(params, modelClassAndAlias);
+		return Cnd.$query().setParaMap(params).setCnd(getClazz(), alias);
 	}
 
 	/**

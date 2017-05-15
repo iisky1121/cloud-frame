@@ -1142,7 +1142,7 @@ public abstract class Model<M extends Model> implements Serializable {
 	}
 
 	public List<M> getByWhat(M m){
-		Cnd cnd = Cnd.$modelselect().setCnd(m, "").where().build();
+		Cnd cnd = Cnd.$modelselect().toCnd(m, "").where().build();
 		return find(String.format(Cnd.$SELECT_FROM_TABLE, getTableName()).concat(cnd.getSql()), cnd.getParas());
 	}
 	
@@ -1194,7 +1194,7 @@ public abstract class Model<M extends Model> implements Serializable {
 	}
 
 	public boolean delete(M m){
-		Cnd cnd = Cnd.$modelselect().setCnd(m, "").where().build();
+		Cnd cnd = Cnd.$modelselect().toCnd(m, "").where().build();
 		return Db.update(String.format(Cnd.$DELETE_FROM_TABLE, getTableName()).concat(cnd.getSql()), cnd.getParas()) > -1;
 	}
 	public boolean deletes(Object[] idValue){

@@ -1,95 +1,32 @@
 package com.jfinal.ext.plugin.sql;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
-import com.jfinal.plugin.activerecord.IBean;
 import com.jfinal.plugin.activerecord.Model;
+
+import java.util.*;
 
 @SuppressWarnings("unchecked")
 class CndModelSelect<M extends CndModelSelect<M>> extends CndSelect<M> {
-	//字段存储
-	private Map<String, Class<?>> columnMap = new HashMap<String, Class<?>>();
-	private Set<String> fuzzyQueryColumnSet = new HashSet<String>();
-	private Set<String> orderByColumnSet = new HashSet<String>();
+	//全部字段
+	Map<String, Model<?>> aliasCndMap = new HashMap<String, Model<?>>();
 	//默认值设置
-	private Map<String, CndParam> defaults = new HashMap<String, CndParam>();
+	Map<String, CndParam> defaults = new HashMap<String, CndParam>();
 	//排除值设置
-	private Set<String>  removes = new HashSet<String>();
-	//需要进行查询的字段
-	private Map<String, CndParam> querys = new HashMap<String, CndParam>();
-	M addQuery(String key, CndParam value){
-		querys.put(key, value);
-		return (M)this;
+	Set<String>  disables = new HashSet<String>();
+
+	//获取默认值
+	CndParam getDefault(String key) {
+		return defaults.get(key);
+	}
+	//是否被禁止
+	boolean isDisable(String key) {
+		return disables.contains(key);
 	}
 
-	M addColumn(String key, Class<?> classType){
-		columnMap.put(key, classType);
-		return (M)this;
-	}
-
-	M addFuzzyQueryColumn(String column){
-		fuzzyQueryColumnSet.add(column);
-		return (M)this;
-	}
-
-	M addOrderByColumn(String column){
-		orderByColumnSet.add(column);
-		return (M)this;
-	}
-
-	public Map<String, Class<?>> getColumnMap() {
-		return columnMap;
-	}
-
-	public Set<String> getFuzzyQueryColumnSet() {
-		return fuzzyQueryColumnSet;
-	}
-
-	public Set<String> getOrderByColumnSet() {
-		return orderByColumnSet;
-	}
-
-	public Map<String, CndParam> getQuerys() {
-		return querys;
-	}
-
-	public Map<String, CndParam> getDefaults() {
-		return defaults;
-	}
-
-	public Set<String> getRemoves() {
-		return removes;
-	}
-
-	/**
-	 * Model转换成Cnd
-	 */
-	@Deprecated
-	public M toCnd(Model<?> m){
-		return toCnd(m, "");
-	}
-
-	@Deprecated
-	public M toCnd(Object ...modelAndAlias) {
-		CndBuilder.init(this, modelAndAlias);
-		return (M)this;
-	}
-	
-	public M setCnd(Model<?> m){
-		return setCnd(m, m.getAlias());
-	}
-	
-	public M setCnd(Model<?> m, String alias){
-		CndBuilder.init(this, m, alias);
-		return (M)this;
-	}
-	
-	public M setCnd(Class<?> clazz, String alias){
-		CndBuilder.init(this, clazz, alias);
+	public M toCnd(Model<?> m, String alias){
+		if(aliasCndMap.containsKey(alias)){
+			throw new IllegalArgumentException(String.format("别名:%s已存在"));
+		}
+		aliasCndMap.put(alias, m);
 		return (M)this;
 	}
 
@@ -108,9 +45,9 @@ class CndModelSelect<M extends CndModelSelect<M>> extends CndSelect<M> {
 		return (M)this;
 	}
 
-	public M setRemove(String ... keys){
+	public M setDisable(String ... keys){
 		for(String key : keys){
-			removes.add(key);
+			disables.add(key);
 		}
 		return (M)this;
 	}
@@ -121,7 +58,9 @@ class CndModelSelect<M extends CndModelSelect<M>> extends CndSelect<M> {
 
 		CndWhere where = getWhere();
 
-		CndBuilder.build$DRQ(where, defaults, removes, querys);
+		for(Map.Entry<String,Model<?>> entry : aliasCndMap.entrySet()){
+			build$Model(entry.getKey(), entry.getValue());
+		}
 
 		CndBuilder.build$CndWhere(where, sb, paramArrayList);
 		CndBuilder.build$Symbol(where, sb);
@@ -136,15 +75,35 @@ class CndModelSelect<M extends CndModelSelect<M>> extends CndSelect<M> {
 		return (M)this;
 	}
 
-	public static void main(String[] args) {
-		Cnd cnd = Cnd.$modelselect()
-				.toCnd(IBean.class, "test")
-				.where()
-				.and("ccc", "1,2,3")
-				.or("a", 1)
-				.limit(10, 100)
-				.build();
-		System.out.println(cnd.getSql());
-		System.out.println(cnd.getParas());
+	void build$Model(String alias, Model<?> model){
+		alias = CndBuilder.getAlias(alias, model.getClass());
+		if(model == null){
+			return;
+		}
+		for(Map.Entry<String, Class<?>> entry : model.getColumns().entrySet()){
+			String newKey = alias + entry.getKey();
+			Object value = model.get(entry.getKey());
+
+			build$Param(this, newKey, value);
+		}
+	}
+
+	static void build$Param(CndModelSelect cnd, String key, Object value){
+		//禁止值或者为空
+		if(cnd.isDisable(key) || value == null){
+			return;
+		}
+		//默认值
+		CndParam param = cnd.getDefault(key);
+		if(param != null){
+			if(param.getValue() == null && value != null){
+				param.setValue(value);
+			}
+		} else {
+			param = CndParam.create(key, value);
+		}
+		if(param.getValue() != null){
+			cnd.getWhere().and(param);
+		}
 	}
 }
