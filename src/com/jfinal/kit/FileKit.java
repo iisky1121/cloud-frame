@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -200,6 +201,23 @@ public class FileKit {
 			return false;
 		}
 	}
+	
+	public static void writeToFile(String outputDir, String fileName, String content){
+        File dir = new File(outputDir);
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+
+        String target = outputDir + File.separator + fileName;
+        FileWriter fw;
+		try {
+			fw = new FileWriter(target);
+			fw.write(content);
+			fw.close();
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+    }
 	
 	/**
 	 * 读取文件内容
