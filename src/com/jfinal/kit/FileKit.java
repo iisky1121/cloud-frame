@@ -22,6 +22,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.math.BigInteger;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
@@ -209,6 +211,25 @@ public class FileKit {
 	public static String read(File file){
         try {
         	BufferedReader reader = new BufferedReader(new FileReader(file));
+            StringBuilder sb = new StringBuilder();
+            String line = null;
+            // 一次读入一行，直到读入null为文件结束
+            while ((line = reader.readLine()) != null) {
+            	sb.append(line).append("\n");
+            }
+            reader.close();
+            
+            return sb.toString();
+        } catch (Exception e) {
+        	e.printStackTrace();
+            return null;
+        }
+	}
+	
+	public static String readResource(String filePath){
+        try {
+        	InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(filePath);
+        	BufferedReader reader = new BufferedReader(new InputStreamReader(is));
             StringBuilder sb = new StringBuilder();
             String line = null;
             // 一次读入一行，直到读入null为文件结束
