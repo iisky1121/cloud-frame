@@ -16,15 +16,7 @@
 
 package com.jfinal.kit;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.math.BigInteger;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
@@ -178,89 +170,76 @@ public class FileKit {
 		return new File(filePath + fileName);
 	}
 	
-	
 	/**
 	 * 把内容写入到文件
+	 * @param outputDir
+	 * @param fileName
+	 * @param content
+	 * @param isOverWrite
 	 */
-	public static boolean write(String content, String filePath){
-		try {
-			File file = new File(filePath);
-			if (!file.exists()) {
-				file.createNewFile();
-			}
-			
-			FileOutputStream fos = new FileOutputStream(file);
-			byte[] contentInBytes = content.getBytes();
-			 
-			fos.write(contentInBytes);
-			fos.flush();
-			fos.close();
-			return true;
-		} catch (Exception e) {
-			e.printStackTrace();
-			return false;
-		}
-	}
-	
-	public static void writeToFile(String outputDir, String fileName, String content){
+	public static void writeToFile(String outputDir, String fileName, String content, boolean isOverWrite){
         File dir = new File(outputDir);
         if (!dir.exists()) {
             dir.mkdirs();
         }
 
-        String target = outputDir + File.separator + fileName;
+        String filePath = outputDir + File.separator + fileName;
+        File file = new File(filePath);
+        if(!isOverWrite && file.exists()){
+        	LogKit.info("文件：%s,已存在，不覆盖原文件");
+		}
         FileWriter fw;
 		try {
-			fw = new FileWriter(target);
+			fw = new FileWriter(filePath);
 			fw.write(content);
 			fw.close();
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
     }
+	public static void writeToFile(String outputDir, String fileName, String content){
+		writeToFile(outputDir, fileName, content, true);
+	}
 	
 	/**
 	 * 读取文件内容
 	 */
-	public static String read(String filePath){
-		return read(new File(filePath));
-	}
-	
 	public static String read(File file){
         try {
         	BufferedReader reader = new BufferedReader(new FileReader(file));
-            StringBuilder sb = new StringBuilder();
-            String line = null;
-            // 一次读入一行，直到读入null为文件结束
-            while ((line = reader.readLine()) != null) {
-            	sb.append(line).append("\n");
-            }
-            reader.close();
-            
-            return sb.toString();
+            return read(reader);
         } catch (Exception e) {
         	e.printStackTrace();
             return null;
         }
 	}
 	
-	public static String readResource(String filePath){
+	public static String read(String filePath){
         try {
         	InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(filePath);
         	BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-            StringBuilder sb = new StringBuilder();
-            String line = null;
-            // 一次读入一行，直到读入null为文件结束
-            while ((line = reader.readLine()) != null) {
-            	sb.append(line).append("\n");
-            }
-            reader.close();
-            
-            return sb.toString();
+            return read(reader);
         } catch (Exception e) {
         	e.printStackTrace();
             return null;
         }
+	}
+
+	private static String read(BufferedReader reader){
+		try {
+			StringBuilder sb = new StringBuilder();
+			String line = null;
+			// 一次读入一行，直到读入null为文件结束
+			while ((line = reader.readLine()) != null) {
+				sb.append(line).append("\n");
+			}
+			reader.close();
+
+			return sb.toString();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
 	
 	/**
