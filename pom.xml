@@ -201,11 +201,11 @@
     </distributionManagement>
     <build>
         <sourceDirectory>src</sourceDirectory>
-        <resources>
+        <!--<resources>
             <resource>
                 <directory>res</directory>
             </resource>
-        </resources>
+        </resources>-->
         <plugins>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
