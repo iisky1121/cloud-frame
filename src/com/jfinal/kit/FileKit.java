@@ -141,9 +141,9 @@ public class FileKit {
 				target.createNewFile();
 			}
 			FileOutputStream fos = new FileOutputStream(target);
-			byte[] bts = new byte[300];
-			while (fis.read(bts, 0, 300) != -1) {
-				fos.write(bts, 0, 300);
+			byte[] bts = new byte[1024];
+			while (fis.read(bts, 0, 1024) != -1) {
+				fos.write(bts, 0, 1024);
 			}
 			fos.close();
 			fis.close();
