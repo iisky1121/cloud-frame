@@ -98,7 +98,7 @@ class RedisDbBuilder {
      * @return
      */
     static String getAlias(Class<?> beanClass){
-        return StrKit.firstCharToLowerCase(beanClass.getSimpleName());
+        return beanClass.getName();
     }
 
     /**
