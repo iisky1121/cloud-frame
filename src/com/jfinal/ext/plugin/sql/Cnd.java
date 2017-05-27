@@ -6,6 +6,7 @@ import java.util.List;
 public abstract class Cnd {
 	public final static String $SELECT_ = "select * ";
 	public final static String $SELECT_FROM_TABLE = "select * from `%s`";
+	public final static String $SELECT_COUNT_FROM_TABLE = "select count(*) from `%s`";
 	public final static String $_FROM_TABLE = " from %s";
 	public final static String $DELETE_FROM_TABLE = "delete from `%s`";
 	public final static String $UPDATE_TABLE = "update `%s`";

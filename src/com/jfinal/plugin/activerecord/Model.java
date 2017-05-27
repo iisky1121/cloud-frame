@@ -99,7 +99,7 @@ public abstract class Model<M extends Model> implements Serializable {
 		return DbKit.getConfig(getUsefulClass());
 	}*/
 	
-	private Table getTable() {
+	public Table getTable() {
 		return TableMapping.me().getTable(getUsefulClass());
 	}
 	

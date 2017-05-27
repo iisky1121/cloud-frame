@@ -12,6 +12,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.regex.Pattern;
 import java.util.Set;
 
 public class CndKit {
@@ -109,36 +110,56 @@ public class CndKit {
     	}
     	return values;
 	}
-	
 
-	
-	
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public static Map<String,Object> formatValues(Map<String, String[]> paras, Class<?> entryClass){
+	public static Map<String,Object> beanFormatValues(Map<String, String[]> paras, Class<? extends IBean> entryClass){
+		Field[] fields = entryClass.getDeclaredFields();
 		Map<String,Object> map = new HashMap<String, Object>();
 		
 		CndParam param;
-		if(Model.class.isAssignableFrom(entryClass)){
-			Model model = ModelKit.newInstance(entryClass);
-	    	if(model != null){
-	    		Set<Entry<String, Class<?>>> attrs = model.getColumns().entrySet();
-	    		for(Entry<String, Class<?>> entry : attrs){
-	    			if(paras.containsKey(entry.getKey()) && !StrKit.isBlank(paras.get(entry.getKey())[0])){
-	        			param = CndParam.create(entry.getKey(), paras.get(entry.getKey())[0], entry.getValue());
-	        			map.put(param.getKey(), param.getValue());
-	        		}
-	    		}
-	    	}
-		}
-		else if(IBean.class.isAssignableFrom(entryClass)){
-			Field[] fields = entryClass.getDeclaredFields();
-    		for(Field field : fields){
-    			if(paras.containsKey(field.getName()) && !StrKit.isBlank(paras.get(field.getName())[0])){
-        			param = CndParam.create(field.getName(), paras.get(field.getName())[0], field.getType());
-        			map.put(param.getKey(), param.getValue());
-        		}
+		for(Field field : fields){
+			if(paras.containsKey(field.getName()) && !StrKit.isBlank(paras.get(field.getName())[0])){
+    			param = CndParam.create(field.getName(), paras.get(field.getName())[0], field.getType());
+    			map.put(param.getKey(), param.getValue());
     		}
 		}
 		return map;
+	}
+	
+	public static Map<String,Object> modelFormatValues(Map<String, String[]> paras, Class<? extends Model<?>> entryClass){
+		Map<String,Object> map = new HashMap<String, Object>();
+		
+		CndParam param;
+		Model<?> model = ModelKit.newInstance(entryClass);
+    	if(model != null && model.getTable() != null){
+    		Set<Entry<String, Class<?>>> attrs = model.getColumns().entrySet();
+    		for(Entry<String, Class<?>> entry : attrs){
+    			if(paras.containsKey(entry.getKey()) && !StrKit.isBlank(paras.get(entry.getKey())[0])){
+        			param = CndParam.create(entry.getKey(), paras.get(entry.getKey())[0], entry.getValue());
+        			map.put(param.getKey(), param.getValue());
+        		}
+    		}
+    	}
+		return map;
+	}
+	
+	
+	@SuppressWarnings({ "unchecked" })
+	public static Map<String,Object> formatValues(Map<String, String[]> paras, Class<?> entryClass){
+		Map<String,Object> map = new HashMap<String, Object>();
+		if(Model.class.isAssignableFrom(entryClass)){
+			map = modelFormatValues(paras, (Class<? extends Model<?>>) entryClass);
+		}
+		if(map.isEmpty() && IBean.class.isAssignableFrom(entryClass)){
+			return beanFormatValues(paras, (Class<? extends IBean>) entryClass);
+		}
+		return map;
+	}
+	
+	private static final Pattern ORDER_BY_PATTERN = Pattern.compile(
+			"order\\s+by\\s+[^,\\s]+(\\s+asc|\\s+desc)?(\\s*,\\s*[^,\\s]+(\\s+asc|\\s+desc)?)*",
+			Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
+	
+	public static String replaceOrderBy(String sql) {
+		return ORDER_BY_PATTERN.matcher(sql).replaceAll("");
 	}
 }

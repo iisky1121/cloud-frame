@@ -11,12 +11,12 @@ import java.util.Set;
 
 public class RecordKit {
 
-    public static Model<?> toModel(Class<? extends Model<?>> clazz, Record record) {
-        Model<?> model = ModelKit.newInstance(clazz);;
+    public static <T extends Model<T>> T toModel(Class<T> clazz, Record record) {
+        T t = ModelKit.newInstance(clazz);;
         for (String columnName : record.getColumnNames()) {
-            model.set(columnName, record.get("columnName"));
+            t.set(columnName, record.get(columnName));
         }
-        return model;
+        return t;
     }
 
     public static Map<String, Object> toMap(Record record) {
