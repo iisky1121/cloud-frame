@@ -40,6 +40,16 @@ class CndQuery<M extends CndQuery<M>> extends CndSelect<M> {
 	Set<String> fuzzy_cloumns;
 
 	public M setMap(Map<String,Object> paras){
+		if(paras.get("fuzzyQuery")!=null){
+			setFuzzyQuery(paras.get("fuzzyQuery").toString());
+			paras.remove("fuzzyQuery");
+		}
+
+		if(paras.get("orderBy")!=null){
+			orderByValue = paras.get("orderBy").toString();
+			paras.remove("orderBy");
+		}
+		
 		object = paras;
 		return (M)this;
 	}
@@ -51,13 +61,6 @@ class CndQuery<M extends CndQuery<M>> extends CndSelect<M> {
 			if(value != null){
 				map.put(entry.getKey(), value[0]);
 			}
-		}
-		if(params.get("fuzzyQuery")!=null){
-			setFuzzyQuery(params.get("fuzzyQuery")[0]);
-		}
-
-		if(params.get("orderBy")!=null){
-			orderByValue = params.get("orderBy")[0];
 		}
 		return setMap(map);
 	}
