@@ -16,7 +16,8 @@ public class RedisDb {
 	private Cache cache;
 	private Pipeline pipeline;
 	private Object object;
-	private int seconds = 0;
+	private int expireSeconds = 0;
+	private boolean autoRefreshExpireTime = false;
 
 	public static RedisDb use(){
 		RedisDb db = new RedisDb();
@@ -54,12 +55,21 @@ public class RedisDb {
 		return this.pipeline;
 	}
 
-	int getSeconds() {
-		return seconds;
+	int getExpireSeconds() {
+		return expireSeconds;
 	}
 	
-	public RedisDb setSeconds(int seconds) {
-		this.seconds = seconds;
+	public RedisDb setExpireSeconds(int expireSeconds) {
+		this.expireSeconds = expireSeconds;
+		return this;
+	}
+	
+	boolean isAutoRefreshExpireTime() {
+		return autoRefreshExpireTime;
+	}
+	
+	public RedisDb setAutoRefreshExpireTime(boolean autoRefreshExpireTime) {
+		this.autoRefreshExpireTime = autoRefreshExpireTime;
 		return this;
 	}
 	
@@ -159,6 +169,10 @@ public class RedisDb {
 		Object data = this.cache().get(cacheKey);
 		if(data == null || "nil".equals(data.toString())){
 			return null;
+		}
+		//重置过期时间
+		if(autoRefreshExpireTime && expireSeconds > 0){
+			this.cache().pexpire(cacheKey, expireSeconds * 1000);
 		}
 		return (Map<String, Object>) data;
 	}

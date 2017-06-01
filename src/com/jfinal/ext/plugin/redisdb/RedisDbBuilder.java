@@ -76,13 +76,17 @@ class RedisDbBuilder {
         }
         String key = RedisDbBuilder.getKey(alias, idValue);
         if(redisDb.isOpenPipeline()){
-        	if(redisDb.getSeconds() > 0){
-        		redisDb.pipeline().setex(keyToBytes(key), redisDb.getSeconds(), valueToBytes(map));
+        	if(redisDb.getExpireSeconds() > 0){
+        		redisDb.pipeline().setex(keyToBytes(key), redisDb.getExpireSeconds(), valueToBytes(map));
         	} else {
         		redisDb.pipeline().set(keyToBytes(key), valueToBytes(map));
         	}
         } else{
-            redisDb.cache().set(key, map);
+        	if(redisDb.getExpireSeconds() > 0){
+        		redisDb.cache().setex(key, redisDb.getExpireSeconds(), map);
+        	} else {
+        		redisDb.cache().set(key, map);
+        	}
         }
     }
 
