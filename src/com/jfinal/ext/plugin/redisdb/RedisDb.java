@@ -16,6 +16,7 @@ public class RedisDb {
 	private Cache cache;
 	private Pipeline pipeline;
 	private Object object;
+	private int seconds = 0;
 
 	public static RedisDb use(){
 		RedisDb db = new RedisDb();
@@ -53,6 +54,15 @@ public class RedisDb {
 		return this.pipeline;
 	}
 
+	int getSeconds() {
+		return seconds;
+	}
+	
+	public RedisDb setSeconds(int seconds) {
+		this.seconds = seconds;
+		return this;
+	}
+	
 	/**
 	 * 智能查询&拼接
 	 * @param idKey
@@ -164,7 +174,7 @@ public class RedisDb {
 		if(StrKit.isBlank(alias) || object == null || idValue == null){
 			return this;
 		}
-		RedisDbBuilder.addSingleObject(this,object, alias, idValue);
+		RedisDbBuilder.addSingleObjectByValue(this,object, alias, idValue);
 		return this;
 	}
 	public RedisDb add(Class<?> beanClass, Object object, Object idValue){

@@ -43,14 +43,14 @@ class RedisDbBuilder {
         if(isList(object)){
             Collection<Object> collection = (Collection<Object>)object;
             for(Object obj : collection){
-                addSingleObject(redisDb, obj, alias, idKey);
+            	addSingleObjectByKey(redisDb, obj, alias, idKey);
             }
         } else{
-            addSingleObject(redisDb, object, alias, idKey);
+        	addSingleObjectByKey(redisDb, object, alias, idKey);
         }
     }
 
-    static void addSingleObject(RedisDb redisDb, Object object, String alias, Object idValue){
+    static void addSingleObjectByValue(RedisDb redisDb, Object object, String alias, Object idValue){
         if(object == null){
             return;
         }
@@ -60,7 +60,7 @@ class RedisDbBuilder {
         }
     }
 
-    private static void addSingleObject(RedisDb redisDb, Object object, String alias, String idKey){
+    private static void addSingleObjectByKey(RedisDb redisDb, Object object, String alias, String idKey){
         if(object == null){
             return;
         }
@@ -76,7 +76,11 @@ class RedisDbBuilder {
         }
         String key = RedisDbBuilder.getKey(alias, idValue);
         if(redisDb.isOpenPipeline()){
-            redisDb.pipeline().set(keyToBytes(key), valueToBytes(map));
+        	if(redisDb.getSeconds() > 0){
+        		redisDb.pipeline().setex(keyToBytes(key), redisDb.getSeconds(), valueToBytes(map));
+        	} else {
+        		redisDb.pipeline().set(keyToBytes(key), valueToBytes(map));
+        	}
         } else{
             redisDb.cache().set(key, map);
         }
