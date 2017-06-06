@@ -54,6 +54,20 @@ public class KVPFactory {
         return map.get(key);
     }
 
+    public static void put(Object object, String key, Object value){
+        if(object instanceof Map){
+            ((Map<String, Object>) object).put(key, value);
+        } else if(object instanceof JSONObject) {
+            ((JSONObject) object).put(key, value);
+        } else if(Model.class.isAssignableFrom(object.getClass())){
+            ((Model<?>) object).put(key, value);
+        } else if(object instanceof Record){
+            ((Record) object).set(key, value);
+        } else{
+            throw new IllegalArgumentException(String.format("%s类型不支持，暂时只支持Map,JSONObject,Model和Record类型", object.getClass().getName()));
+        }
+    }
+
     /**
      * 拼接map
      * @param object
