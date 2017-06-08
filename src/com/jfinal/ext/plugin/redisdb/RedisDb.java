@@ -13,11 +13,20 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 public class RedisDb {
+	static String prefix = "";
 	private Cache cache;
 	private Pipeline pipeline;
 	private Object object;
 	private int expireSeconds = 0;
 	private boolean autoRefreshExpireTime = false;
+
+	public static void setPrefix(String prefix){
+		RedisDb.prefix = prefix;
+	}
+
+	public static String getPrefix(){
+		return RedisDb.prefix;
+	}
 
 	public static RedisDb use(){
 		RedisDb db = new RedisDb();
