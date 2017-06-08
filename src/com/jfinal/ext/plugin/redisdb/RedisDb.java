@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 public class RedisDb {
-	static String prefix = "";
+	static String prefix;
 	private Cache cache;
 	private Pipeline pipeline;
 	private Object object;
