@@ -88,7 +88,11 @@ public class Cache {
 	public <T> T get(Object key) {
 		Jedis jedis = getJedis();
 		try {
-			return (T)valueFromBytes(jedis.get(keyToBytes(key)));
+			byte[] bytes = jedis.get(keyToBytes(key));
+			if(bytes == null){
+				return null;
+			}
+			return (T)valueFromBytes(bytes);
 		}
 		finally {close(jedis);}
 	}
