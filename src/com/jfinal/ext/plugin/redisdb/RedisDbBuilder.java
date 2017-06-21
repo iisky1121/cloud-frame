@@ -98,7 +98,7 @@ class RedisDbBuilder {
      */
     static String getKey(String alias, Object idValue){
         String prefix = StrKit.isBlank(RedisDb.prefix)?"":RedisDb.prefix.concat(".");
-        return prefix.concat(String.format("%s.%s", alias, idValue));
+        return prefix.concat(String.format("%s:%s", alias, idValue));
     }
 
     /**

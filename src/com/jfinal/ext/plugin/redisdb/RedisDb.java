@@ -6,10 +6,7 @@ import com.jfinal.plugin.redis.Cache;
 import com.jfinal.plugin.redis.Redis;
 import redis.clients.jedis.Pipeline;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 
 public class RedisDb {
@@ -202,6 +199,14 @@ public class RedisDb {
 	}
 	public RedisDb add(Class<?> beanClass, Object object, Object idValue){
 		return add(RedisDbBuilder.getAlias(beanClass), object, idValue);
+	}
+
+	public Set<String> keys(String pattern){
+		return this.cache().keys(pattern);
+	}
+
+	public Set<String> keys(Class<?> beanClass){
+		return keys(RedisDbBuilder.getAlias(beanClass).concat(":*"));
 	}
 
 	@SuppressWarnings("unchecked")
