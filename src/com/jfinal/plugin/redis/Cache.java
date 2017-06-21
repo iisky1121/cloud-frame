@@ -16,17 +16,13 @@
 
 package com.jfinal.plugin.redis;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
+import com.jfinal.kit.StrKit;
 import com.jfinal.plugin.redis.serializer.ISerializer;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
+
+import java.util.*;
+import java.util.Map.Entry;
 
 /**
  * Cache.
@@ -635,7 +631,11 @@ public class Cache {
 	public Long getCounter(Object key) {
 		Jedis jedis = getJedis();
 		try {
-			return Long.parseLong((String)jedis.get(keyNamingPolicy.getKeyName(key)));
+			String value = jedis.get(keyNamingPolicy.getKeyName(key));
+			if(StrKit.isBlank(value) || "nil".equals(value)){
+				return null;
+			}
+			return Long.parseLong(value);
 		}
 		finally {close(jedis);}
 	}
