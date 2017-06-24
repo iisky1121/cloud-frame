@@ -16,6 +16,11 @@
 
 package com.jfinal.kit;
 
+import com.jfinal.core.Const;
+
+import javax.crypto.*;
+import javax.crypto.spec.SecretKeySpec;
+import javax.xml.bind.DatatypeConverter;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -25,17 +30,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.KeyGenerator;
-import javax.crypto.NoSuchPaddingException;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
-import javax.xml.bind.DatatypeConverter;
-
-import com.jfinal.core.Const;
-
 public class HashKit {
 	
 	private static final java.security.SecureRandom random = new java.security.SecureRandom();
@@ -44,6 +38,10 @@ public class HashKit {
 	
 	public static String md5(String srcStr){
 		return hash("MD5", srcStr);
+	}
+
+	public static String md5To16(String srcStr){
+		return md5(srcStr).substring(8, 24);
 	}
 	
 	public static String sha1(String srcStr){
