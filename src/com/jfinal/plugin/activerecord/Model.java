@@ -1203,11 +1203,11 @@ public abstract class Model<M extends Model> implements Serializable {
 	}
 
 	protected boolean beforeSave(){
-		if(checkAttr("createTime")){
+		if(checkAttr("createTime") && get("createTime") == null){
 			set("createTime", new Date());
 		}
 		
-		if(checkAttr("createUser")){
+		if(checkAttr("createUser") && get("createUser") == null){
 			Model user = UserSession.get();
 			if(user != null){
 				set("createUser", user==null?"":user.get("id"));
@@ -1221,11 +1221,11 @@ public abstract class Model<M extends Model> implements Serializable {
 		return true;
 	}
 	private void beforeOnlyUpdate(){
-		if(checkAttr("lastUpdateTime")){
+		if(checkAttr("lastUpdateTime") && get("lastUpdateTime") == null){
 			set("lastUpdateTime", new Date());
 		}
 		
-		if(checkAttr("lastUpdateUser")){
+		if(checkAttr("lastUpdateUser") && get("lastUpdateUser") == null){
 			Model user = UserSession.get();
 			if(user != null){
 				set("lastUpdateUser", user==null?"":user.get("id"));

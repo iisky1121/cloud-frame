@@ -158,4 +158,18 @@ public class DateKit {
 		Date date = unixTimestampToDate(timestamp);
 		return toStr(date, format);
 	}
+
+	/**
+	 * 判断两个时间转换后是否相等
+	 * @param date1
+	 * @param date2
+	 * @param format
+	 * @return
+	 */
+	public static boolean asLike(Date date1, Date date2, String format){
+		if(date1 == null || date2 == null){
+			return false;
+		}
+		return toStr(date1, format).equals(toStr(date2, format));
+	}
 }
