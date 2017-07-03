@@ -18,6 +18,7 @@ package com.jfinal.json;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
+import java.sql.Date;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -49,7 +50,8 @@ public class JFinalJson extends Json {
 	
 	protected int convertDepth = defaultConvertDepth;
 	protected String timestampPattern = "yyyy-MM-dd HH:mm:ss";
-	protected String datePattern = "yyyy-MM-dd";
+	protected String dateStrPattern = "yyyy-MM-dd";
+	protected String datePattern = timestampPattern;
 	
 	/**
 	 * 设置全局性默认转换深度
@@ -235,6 +237,9 @@ public class JFinalJson extends Json {
 		if (value instanceof java.util.Date) {
 			if (value instanceof java.sql.Timestamp) {
 				return "\"" + new SimpleDateFormat(timestampPattern).format(value) + "\"";
+			}
+			if(value instanceof java.sql.Date) {
+				return "\"" + new SimpleDateFormat(dateStrPattern).format(value) + "\"";
 			}
 			if (value instanceof java.sql.Time) {
 				return "\"" + value.toString() + "\"";
