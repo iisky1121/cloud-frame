@@ -44,50 +44,50 @@ public class JdkLog extends Log {
 		return new JdkLog(name);
 	}
 	
-	public void debug(Object message) {
-		log.logp(Level.FINE, clazzName, Thread.currentThread().getStackTrace()[1].getMethodName(), message.toString());
+	public void debug(String message) {
+		log.logp(Level.FINE, clazzName, Thread.currentThread().getStackTrace()[1].getMethodName(), message);
 	}
 	
-	public void debug(Object message,  Throwable t) {
-		log.logp(Level.FINE, clazzName, Thread.currentThread().getStackTrace()[1].getMethodName(), message.toString(), t);
+	public void debug(String message,  Throwable t) {
+		log.logp(Level.FINE, clazzName, Thread.currentThread().getStackTrace()[1].getMethodName(), message, t);
 	}
 	
-	public void info(Object message) {
-		log.logp(Level.INFO, clazzName, Thread.currentThread().getStackTrace()[1].getMethodName(), message.toString());
+	public void info(String message) {
+		log.logp(Level.INFO, clazzName, Thread.currentThread().getStackTrace()[1].getMethodName(), message);
 	}
 	
-	public void info(Object message, Throwable t) {
-		log.logp(Level.INFO, clazzName, Thread.currentThread().getStackTrace()[1].getMethodName(), message.toString(), t);
+	public void info(String message, Throwable t) {
+		log.logp(Level.INFO, clazzName, Thread.currentThread().getStackTrace()[1].getMethodName(), message, t);
 	}
 	
-	public void warn(Object message) {
-		log.logp(Level.WARNING, clazzName, Thread.currentThread().getStackTrace()[1].getMethodName(), message.toString());
+	public void warn(String message) {
+		log.logp(Level.WARNING, clazzName, Thread.currentThread().getStackTrace()[1].getMethodName(), message);
 	}
 	
-	public void warn(Object message, Throwable t) {
-		log.logp(Level.WARNING, clazzName, Thread.currentThread().getStackTrace()[1].getMethodName(), message.toString(), t);
+	public void warn(String message, Throwable t) {
+		log.logp(Level.WARNING, clazzName, Thread.currentThread().getStackTrace()[1].getMethodName(), message, t);
 	}
 	
-	public void error(Object message) {
-		log.logp(Level.SEVERE, clazzName, Thread.currentThread().getStackTrace()[1].getMethodName(), message.toString());
+	public void error(String message) {
+		log.logp(Level.SEVERE, clazzName, Thread.currentThread().getStackTrace()[1].getMethodName(), message);
 	}
 	
-	public void error(Object message, Throwable t) {
-		log.logp(Level.SEVERE, clazzName, Thread.currentThread().getStackTrace()[1].getMethodName(), message.toString(), t);
-	}
-	
-	/**
-	 * JdkLog fatal is the same as the error.
-	 */
-	public void fatal(Object message) {
-		log.logp(Level.SEVERE, clazzName, Thread.currentThread().getStackTrace()[1].getMethodName(), message.toString());
+	public void error(String message, Throwable t) {
+		log.logp(Level.SEVERE, clazzName, Thread.currentThread().getStackTrace()[1].getMethodName(), message, t);
 	}
 	
 	/**
 	 * JdkLog fatal is the same as the error.
 	 */
-	public void fatal(Object message, Throwable t) {
-		log.logp(Level.SEVERE, clazzName, Thread.currentThread().getStackTrace()[1].getMethodName(), message.toString(), t);
+	public void fatal(String message) {
+		log.logp(Level.SEVERE, clazzName, Thread.currentThread().getStackTrace()[1].getMethodName(), message);
+	}
+	
+	/**
+	 * JdkLog fatal is the same as the error.
+	 */
+	public void fatal(String message, Throwable t) {
+		log.logp(Level.SEVERE, clazzName, Thread.currentThread().getStackTrace()[1].getMethodName(), message, t);
 	}
 	
 	public boolean isDebugEnabled() {
