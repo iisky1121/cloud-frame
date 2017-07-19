@@ -43,63 +43,44 @@ public class LogKit {
 		
 	}
 	
-	public static void debug(String message) {
+	public static void debug(Object message) {
 		Holder.log.debug(message);
 	}
 	
-	public static void debug(String message, Throwable t) {
+	public static void debug(Object message, Throwable t) {
 		Holder.log.debug(message, t);
 	}
 	
-	public static void debug(String message, Object... objs) {
-		message = format(message, objs);
-		Holder.log.debug(message);
-	}
-	
-	public static void info(String message) {
+	public static void info(Object message) {
 		Holder.log.info(message);
 	}
 	
-	public static void info(String message, Object... objs) {
-		message = format(message, objs);
-		Holder.log.info(message);
-	}
-	
-	public static void info(String message, Throwable t) {
+	public static void info(Object message, Throwable t) {
 		Holder.log.info(message, t);
 	}
 	
-	public static void warn(String message) {
+	public static void warn(Object message) {
 		Holder.log.warn(message);
 	}
 	
-	public static void warn(String message, Object... objs) {
-		message = format(message, objs);
-		Holder.log.warn(message);
-	}
-	
-	public static void warn(String message, Throwable t) {
+	public static void warn(Object message, Throwable t) {
 		Holder.log.warn(message, t);
 	}
 	
-	public static void error(String message) {
+	public static void error(Object message) {
 		Holder.log.error(message);
 	}
+
 	
-	public static void error(String message, Object... objs) {
-		message = format(message, objs);
-		Holder.log.error(message);
-	}
-	
-	public static void error(String message, Throwable t) {
+	public static void error(Object message, Throwable t) {
 		Holder.log.error(message, t);
 	}
 	
-	public static void fatal(String message) {
+	public static void fatal(Object message) {
 		Holder.log.fatal(message);
 	}
 	
-	public static void fatal(String message, Throwable t) {
+	public static void fatal(Object message, Throwable t) {
 		Holder.log.fatal(message, t);
 	}
 	
@@ -121,13 +102,6 @@ public class LogKit {
 	
 	public static boolean isFatalEnabled() {
 		return Holder.log.isFatalEnabled();
-	}
-	
-	private static String format(String msg, Object... objs){
-		for(Object obj : objs){
-			msg = msg.replaceFirst("[?]", obj.toString());
-		}
-		return msg;
 	}
 }
 

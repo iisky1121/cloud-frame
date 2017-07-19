@@ -42,43 +42,43 @@ public class Log4jLog extends Log {
 		return new Log4jLog(name);
 	}
 	
-	public void info(String message) {
+	public void info(Object message) {
 		log.log(callerFQCN, Level.INFO, message, null);
 	}
 	
-	public void info(String message, Throwable t) {
+	public void info(Object message, Throwable t) {
 		log.log(callerFQCN, Level.INFO, message, t);
 	}
 	
-	public void debug(String message) {
+	public void debug(Object message) {
 		log.log(callerFQCN, Level.DEBUG, message, null);
 	}
 	
-	public void debug(String message, Throwable t) {
+	public void debug(Object message, Throwable t) {
 		log.log(callerFQCN, Level.DEBUG, message, t);
 	}
 	
-	public void warn(String message) {
+	public void warn(Object message) {
 		log.log(callerFQCN, Level.WARN, message, null);
 	}
 	
-	public void warn(String message, Throwable t) {
+	public void warn(Object message, Throwable t) {
 		log.log(callerFQCN, Level.WARN, message, t);
 	}
 	
-	public void error(String message) {
+	public void error(Object message) {
 		log.log(callerFQCN, Level.ERROR, message, null);
 	}
 	
-	public void error(String message, Throwable t) {
+	public void error(Object message, Throwable t) {
 		log.log(callerFQCN, Level.ERROR, message, t);
 	}
 	
-	public void fatal(String message) {
+	public void fatal(Object message) {
 		log.log(callerFQCN, Level.FATAL, message, null);
 	}
 	
-	public void fatal(String message, Throwable t) {
+	public void fatal(Object message, Throwable t) {
 		log.log(callerFQCN, Level.FATAL, message, t);
 	}
 	

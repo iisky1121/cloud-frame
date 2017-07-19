@@ -59,25 +59,25 @@ public abstract class Log {
 		return defaultLogFactory.getLog(name);
 	}
 	
-	public abstract void debug(String message);
+	public abstract void debug(Object message);
 	
-	public abstract void debug(String message, Throwable t);
+	public abstract void debug(Object message, Throwable t);
 	
-	public abstract void info(String message);
+	public abstract void info(Object message);
 	
-	public abstract void info(String message, Throwable t);
+	public abstract void info(Object message, Throwable t);
 	
-	public abstract void warn(String message);
+	public abstract void warn(Object message);
 	
-	public abstract void warn(String message, Throwable t);
+	public abstract void warn(Object message, Throwable t);
 	
-	public abstract void error(String message);
+	public abstract void error(Object message);
 	
-	public abstract void error(String message, Throwable t);
+	public abstract void error(Object message, Throwable t);
 	
-	public abstract void fatal(String message);
+	public abstract void fatal(Object message);
 	
-	public abstract void fatal(String message, Throwable t);
+	public abstract void fatal(Object message, Throwable t);
 	
 	public abstract boolean isDebugEnabled();
 
