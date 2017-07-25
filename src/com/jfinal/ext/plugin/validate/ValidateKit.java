@@ -96,8 +96,4 @@ public class ValidateKit {
 		}
 		return BaseConfig.attrValueError(attr);
 	}
-	
-	public static void main(String[] args) {
-        System.out.println(expressCheck("age", "age >1 && age <3", 1));
-	}
 }

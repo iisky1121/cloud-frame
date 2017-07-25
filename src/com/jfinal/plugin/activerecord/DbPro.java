@@ -22,7 +22,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -38,28 +37,23 @@ import static com.jfinal.plugin.activerecord.DbKit.NULL_PARA_ARRAY;
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class DbPro {
 	
-	private final Config config;
-	
-	static DbPro MAIN = null;
-	private static final Map<String, DbPro> map = new HashMap<String, DbPro>();
+	protected final Config config;
 	
 	/**
-	 * for DbKit.addConfig(configName)
+	 * 建议用 Db.use(configName) 代替，未来版本会去除该方法
 	 */
-	static void init(String configName) {
-		MAIN = new DbPro(configName);
-		map.put(configName, MAIN);
+	@Deprecated
+	public static DbPro use(String configName) {
+		return Db.use(configName);
 	}
 	
-    /**
-     * for DbKit.removeConfig(configName)
-     */
-    static void removeDbProWithConfig(String configName) {
-    	if (MAIN != null && MAIN.config.getName().equals(configName)) {
-    		MAIN = null;
-    	}
-    	map.remove(configName);
-    }
+	/**
+	 * 建议用 Db.use() 代替，未来版本会去除该方法
+	 */
+	@Deprecated
+	public static DbPro use() {
+		return Db.use();
+	}
 	
 	public DbPro() {
 		if (DbKit.config == null) {
@@ -75,17 +69,8 @@ public class DbPro {
 		}
 	}
 	
-	public static DbPro use(String configName) {
-		DbPro result = map.get(configName);
-		if (result == null) {
-			result = new DbPro(configName);
-			map.put(configName, result);
-		}
-		return result;
-	}
-	
-	public static DbPro use() {
-		return MAIN;
+	public Config getConfig() {
+		return config;
 	}
 	
 	<T> List<T> query(Config config, Connection conn, String sql, Object... paras) throws SQLException {
@@ -181,43 +166,48 @@ public class DbPro {
 	}
 	
 	public String queryStr(String sql, Object... paras) {
-		return (String)queryColumn(sql, paras);
+		Object s = queryColumn(sql, paras);
+		return s != null ? s.toString() : null;
 	}
 	
 	public String queryStr(String sql) {
-		return (String)queryColumn(sql, NULL_PARA_ARRAY);
+		return queryStr(sql, NULL_PARA_ARRAY);
 	}
 	
 	public Integer queryInt(String sql, Object... paras) {
-		return (Integer)queryColumn(sql, paras);
+		Number n = queryNumber(sql, paras);
+		return n != null ? n.intValue() : null;
 	}
 	
 	public Integer queryInt(String sql) {
-		return (Integer)queryColumn(sql, NULL_PARA_ARRAY);
+		return queryInt(sql, NULL_PARA_ARRAY);
 	}
 	
 	public Long queryLong(String sql, Object... paras) {
-		return (Long)queryColumn(sql, paras);
+		Number n = queryNumber(sql, paras);
+		return n != null ? n.longValue() : null;
 	}
 	
 	public Long queryLong(String sql) {
-		return (Long)queryColumn(sql, NULL_PARA_ARRAY);
+		return queryLong(sql, NULL_PARA_ARRAY);
 	}
 	
 	public Double queryDouble(String sql, Object... paras) {
-		return (Double)queryColumn(sql, paras);
+		Number n = queryNumber(sql, paras);
+		return n != null ? n.doubleValue() : null;
 	}
 	
 	public Double queryDouble(String sql) {
-		return (Double)queryColumn(sql, NULL_PARA_ARRAY);
+		return queryDouble(sql, NULL_PARA_ARRAY);
 	}
 	
 	public Float queryFloat(String sql, Object... paras) {
-		return (Float)queryColumn(sql, paras);
+		Number n = queryNumber(sql, paras);
+		return n != null ? n.floatValue() : null;
 	}
 	
 	public Float queryFloat(String sql) {
-		return (Float)queryColumn(sql, NULL_PARA_ARRAY);
+		return queryFloat(sql, NULL_PARA_ARRAY);
 	}
 	
 	public java.math.BigDecimal queryBigDecimal(String sql, Object... paras) {
@@ -269,11 +259,12 @@ public class DbPro {
 	}
 	
 	public Short queryShort(String sql, Object... paras) {
-		return (Short)queryColumn(sql, paras);
+		Number n = queryNumber(sql, paras);
+		return n != null ? n.shortValue() : null;
 	}
 	
 	public Short queryShort(String sql) {
-		return (Short)queryColumn(sql, NULL_PARA_ARRAY);
+		return queryShort(sql, NULL_PARA_ARRAY);
 	}
 	
 	public Number queryNumber(String sql, Object... paras) {
@@ -512,7 +503,7 @@ public class DbPro {
 			conn = config.getConnection();
 			String totalRowSql = "select count(*) " + config.dialect.replaceOrderBy(sqlExceptSelect);
 			StringBuilder findSql = new StringBuilder();
-			findSql.append(select).append(" ").append(sqlExceptSelect);
+			findSql.append(select).append(' ').append(sqlExceptSelect);
 			return doPaginateByFullSql(config, conn, pageNumber, pageSize, isGroupBySql, totalRowSql, findSql, paras);
 		} catch (Exception e) {
 			throw new ActiveRecordException(e);
@@ -563,7 +554,7 @@ public class DbPro {
 	Page<Record> paginate(Config config, Connection conn, int pageNumber, int pageSize, String select, String sqlExceptSelect, Object... paras) throws SQLException {
 		String totalRowSql = "select count(*) " + config.dialect.replaceOrderBy(sqlExceptSelect);
 		StringBuilder findSql = new StringBuilder();
-		findSql.append(select).append(" ").append(sqlExceptSelect);
+		findSql.append(select).append(' ').append(sqlExceptSelect);
 		return doPaginateByFullSql(config, conn, pageNumber, pageSize, null, totalRowSql, findSql, paras);
 	}
 	
@@ -595,28 +586,16 @@ public class DbPro {
 		config.dialect.forDbSave(tableName, pKeys, record, sql, paras);
 		
 		PreparedStatement pst;
-		if (config.dialect.isOracle())
+		if (config.dialect.isOracle()) {
 			pst = conn.prepareStatement(sql.toString(), pKeys);
-		else
+		} else {
 			pst = conn.prepareStatement(sql.toString(), Statement.RETURN_GENERATED_KEYS);
-			
+		}
 		config.dialect.fillStatement(pst, paras);
 		int result = pst.executeUpdate();
-		getGeneratedKey(pst, record, pKeys);
+		config.dialect.getRecordGeneratedKey(pst, record, pKeys);
 		DbKit.close(pst);
 		return result >= 1;
-	}
-	
-	/**
-	 * Get id after save record.
-	 */
-	private void getGeneratedKey(PreparedStatement pst, Record record, String[] pKeys) throws SQLException {
-		ResultSet rs = pst.getGeneratedKeys();
-		for (String pKey : pKeys)
-			if (record.get(pKey) == null || config.dialect.isOracle())
-				if (rs.next())
-					record.set(pKey, rs.getObject(1));
-		rs.close();
 	}
 	
 	/**
@@ -973,7 +952,7 @@ public class DbPro {
 		int[] result = new int[size];
 		PreparedStatement pst = conn.prepareStatement(sql);
 		for (int i=0; i<size; i++) {
-			Map map = isModel ? ((Model)list.get(i)).getAttrs() : ((Record)list.get(i)).getColumns();
+			Map map = isModel ? ((Model)list.get(i))._getAttrs() : ((Record)list.get(i)).getColumns();
 			for (int j=0; j<columnArray.length; j++) {
 				Object value = map.get(columnArray[j]);
 				if (config.dialect.isOracle()) {
@@ -1104,7 +1083,7 @@ public class DbPro {
     		return new int[0];
     	
     	Model model = modelList.get(0);
-    	Map<String, Object> attrs = model.getAttrs();
+    	Map<String, Object> attrs = model._getAttrs();
     	int index = 0;
     	StringBuilder columns = new StringBuilder();
     	// the same as the iterator in Dialect.forModelSave() to ensure the order of the attrs
@@ -1117,7 +1096,7 @@ public class DbPro {
 			}
 			
 			if (index++ > 0) {
-				columns.append(",");
+				columns.append(',');
 			}
 			columns.append(e.getKey());
 		}
@@ -1151,7 +1130,7 @@ public class DbPro {
 			}
 			
 			if (index++ > 0) {
-				columns.append(",");
+				columns.append(',');
 			}
 			columns.append(e.getKey());
 		}
@@ -1174,12 +1153,12 @@ public class DbPro {
     	Model model = modelList.get(0);
     	Table table = TableMapping.me().getTable(model.getClass());
     	String[] pKeys = table.getPrimaryKey();
-    	Map<String, Object> attrs = model.getAttrs();
+    	Map<String, Object> attrs = model._getAttrs();
     	List<String> attrNames = new ArrayList<String>();
     	// the same as the iterator in Dialect.forModelSave() to ensure the order of the attrs
     	for (Entry<String, Object> e : attrs.entrySet()) {
     		String attr = e.getKey();
-    		if (config.dialect.isPrimaryKey(attr, pKeys) == false)
+    		if (config.dialect.isPrimaryKey(attr, pKeys) == false && table.hasColumnLabel(attr))
     			attrNames.add(attr);
     	}
     	for (String pKey : pKeys)
@@ -1246,7 +1225,7 @@ public class DbPro {
     }
     
     public SqlPara getSqlPara(String key, Model model) {
-    	return getSqlPara(key, model.getAttrs());
+    	return getSqlPara(key, model._getAttrs());
     }
     
     public SqlPara getSqlPara(String key, Map data) {
@@ -1263,6 +1242,10 @@ public class DbPro {
     
     public Record findFirst(SqlPara sqlPara) {
     	return findFirst(sqlPara.getSql(), sqlPara.getPara());
+    }
+    
+    public int update(SqlPara sqlPara) {
+    	return update(sqlPara.getSql(), sqlPara.getPara());
     }
     
     public Page<Record> paginate(int pageNumber, int pageSize, SqlPara sqlPara) {

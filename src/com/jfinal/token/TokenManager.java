@@ -73,7 +73,7 @@ public class TokenManager {
 	 */
 	private static void createTokenHiddenField(Controller controller, String tokenName, String tokenId) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("<input type='hidden' name='").append(tokenName).append("' value='" + tokenId).append("' />");
+		sb.append("<input type='hidden' name='").append(tokenName).append("' id='").append(tokenName).append("' value='").append(tokenId).append("' />");
 		controller.setAttr("token", sb.toString());
 	}
 	
@@ -103,7 +103,7 @@ public class TokenManager {
 	 * @param tokenName the token name used in view's form
 	 * @return true if token is correct
 	 */
-	public static synchronized boolean validateToken(Controller controller, String tokenName) {
+	public static boolean validateToken(Controller controller, String tokenName) {
 		String clientTokenId = controller.getPara(tokenName);
 		if (tokenCache == null) {
 			String serverTokenId = controller.getSessionAttr(tokenName);
@@ -112,7 +112,7 @@ public class TokenManager {
 		}
 		else {
 			Token token = new Token(clientTokenId);
-			boolean result = tokenCache.contains(token); 
+			boolean result = tokenCache.contains(token);
 			tokenCache.remove(token);
 			return result;
 		}

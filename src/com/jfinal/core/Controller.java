@@ -16,20 +16,6 @@
 
 package com.jfinal.core;
 
-import com.jfinal.aop.Enhancer;
-import com.jfinal.aop.Interceptor;
-import com.jfinal.kit.StrKit;
-import com.jfinal.render.ContentType;
-import com.jfinal.render.JsonRender;
-import com.jfinal.render.Render;
-import com.jfinal.render.RenderManager;
-import com.jfinal.upload.MultipartRequest;
-import com.jfinal.upload.UploadFile;
-
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import java.io.File;
 import java.text.ParseException;
 import java.util.Date;
@@ -37,6 +23,20 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import com.jfinal.aop.Enhancer;
+import com.jfinal.aop.Interceptor;
+import com.jfinal.core.converter.TypeConverter;
+import com.jfinal.kit.StrKit;
+import com.jfinal.render.ContentType;
+import com.jfinal.render.JsonRender;
+import com.jfinal.render.Render;
+import com.jfinal.render.RenderManager;
+import com.jfinal.upload.MultipartRequest;
+import com.jfinal.upload.UploadFile;
 
 /**
  * Controller
@@ -197,7 +197,7 @@ public abstract class Controller {
 			result[i] = Double.parseDouble(values[i]);
 		return result;
 	}
-	
+
 	/**
 	 * Returns an Enumeration containing the names of the attributes available to this request.
 	 * This method returns an empty Enumeration if the request has no attributes available to it. 
@@ -251,7 +251,7 @@ public abstract class Controller {
 			return Integer.parseInt(value);
 		}
 		catch (Exception e) {
-			throw new ActionException(404, renderManager.getRenderFactory().getErrorRender(404),  "Can not parse the parameter \"" + value + "\" to Integer value.");
+			throw new ActionException(400, renderManager.getRenderFactory().getErrorRender(400),  "Can not parse the parameter \"" + value + "\" to Integer value.");
 		}
 	}
 	
@@ -294,7 +294,7 @@ public abstract class Controller {
 	public Double getParaToDouble(String name, Double defaultValue) {
 		return toDouble(request.getParameter(name), defaultValue);
 	}
-	
+
 	private Long toLong(String value, Long defaultValue) {
 		try {
 			if (StrKit.isBlank(value))
@@ -305,7 +305,7 @@ public abstract class Controller {
 			return Long.parseLong(value);
 		}
 		catch (Exception e) {
-			throw new ActionException(404, renderManager.getRenderFactory().getErrorRender(404),  "Can not parse the parameter \"" + value + "\" to Long value.");
+			throw new ActionException(400, renderManager.getRenderFactory().getErrorRender(400),  "Can not parse the parameter \"" + value + "\" to Long value.");
 		}
 	}
 	
@@ -335,7 +335,7 @@ public abstract class Controller {
 			return Boolean.TRUE;
 		else if ("0".equals(value) || "false".equals(value))
 			return Boolean.FALSE;
-		throw new ActionException(404, renderManager.getRenderFactory().getErrorRender(404), "Can not parse the parameter \"" + value + "\" to Boolean value.");
+		throw new ActionException(400, renderManager.getRenderFactory().getErrorRender(400), "Can not parse the parameter \"" + value + "\" to Boolean value.");
 	}
 	
 	/**
@@ -383,7 +383,7 @@ public abstract class Controller {
 				return defaultValue;
 			return new java.text.SimpleDateFormat("yyyy-MM-dd").parse(value.trim());
 		} catch (Exception e) {
-			throw new ActionException(404, renderManager.getRenderFactory().getErrorRender(404),  "Can not parse the parameter \"" + value + "\" to Date value.");
+			throw new ActionException(400, renderManager.getRenderFactory().getErrorRender(400),  "Can not parse the parameter \"" + value + "\" to Date value.");
 		}
 	}
 	
@@ -861,7 +861,7 @@ public abstract class Controller {
 		String[] values = request.getParameterValues(name);
 		if (values != null) {
 			if (values.length == 1)
-				try {request.setAttribute(name, TypeConverter.convert(type, values[0]));} catch (ParseException e) {com.jfinal.kit.LogKit.logNothing(e);}
+				try {request.setAttribute(name, TypeConverter.me().convert(type, values[0]));} catch (ParseException e) {com.jfinal.kit.LogKit.logNothing(e);}
 			else
 				request.setAttribute(name, values);
 		}
@@ -955,16 +955,14 @@ public abstract class Controller {
 	 * Return true if the para value is blank otherwise return false
 	 */
 	public boolean isParaBlank(String paraName) {
-		String value = request.getParameter(paraName);
-		return value == null || value.trim().length() == 0;
+		return StrKit.isBlank(request.getParameter(paraName));
 	}
 	
 	/**
 	 * Return true if the urlPara value is blank otherwise return false
 	 */
 	public boolean isParaBlank(int index) {
-		String value = getPara(index);
-		return value == null || value.trim().length() == 0;
+		return StrKit.isBlank(getPara(index));
 	}
 	
 	/**

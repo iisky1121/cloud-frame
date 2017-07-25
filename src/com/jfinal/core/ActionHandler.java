@@ -16,18 +16,15 @@
 
 package com.jfinal.core;
 
-import com.jfinal.aop.Invocation;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import com.jfinal.config.Constants;
+import com.jfinal.aop.Invocation;
 import com.jfinal.handler.Handler;
 import com.jfinal.log.Log;
 import com.jfinal.render.Render;
 import com.jfinal.render.RenderException;
 import com.jfinal.render.RenderManager;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * ActionHandler
@@ -54,7 +51,6 @@ public class ActionHandler extends Handler {
 		if (target.indexOf('.') != -1) {
 			return ;
 		}
-		Map<String,String[]> firstMap = new HashMap<>(request.getParameterMap());
 		
 		isHandled[0] = true;
 		String[] urlPara = {null};
@@ -77,9 +73,9 @@ public class ActionHandler extends Handler {
 				long startTime = System.currentTimeMillis();
 				if (ActionReporter.isReportAfterInvocation(request)) {
 					new Invocation(action, controller).invoke();
-					ActionReporter.report(target, controller, action, firstMap, startTime);
+					ActionReporter.report(target, controller, action, startTime);
 				} else {
-					ActionReporter.report(target, controller, action, firstMap, startTime);
+					ActionReporter.report(target, controller, action, startTime);
 					new Invocation(action, controller).invoke();
 				}
 			}

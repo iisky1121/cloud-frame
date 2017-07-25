@@ -1,37 +1,14 @@
 package com.jfinal.base;
 
-import com.apis.wechat.Wechat;
-import com.apis.wechat.msg.InMsgParser;
-import com.apis.wechat.msg.in.InImageMsg;
-import com.apis.wechat.msg.in.InLinkMsg;
-import com.apis.wechat.msg.in.InLocationMsg;
-import com.apis.wechat.msg.in.InMsg;
-import com.apis.wechat.msg.in.InNotDefinedMsg;
-import com.apis.wechat.msg.in.InShortVideoMsg;
-import com.apis.wechat.msg.in.InTextMsg;
-import com.apis.wechat.msg.in.InVideoMsg;
-import com.apis.wechat.msg.in.InVoiceMsg;
-import com.apis.wechat.msg.in.event.InCustomEvent;
-import com.apis.wechat.msg.in.event.InFollowEvent;
-import com.apis.wechat.msg.in.event.InLocationEvent;
-import com.apis.wechat.msg.in.event.InMassEvent;
-import com.apis.wechat.msg.in.event.InMenuEvent;
-import com.apis.wechat.msg.in.event.InMerChantOrderEvent;
-import com.apis.wechat.msg.in.event.InNotDefinedEvent;
-import com.apis.wechat.msg.in.event.InPoiCheckNotifyEvent;
-import com.apis.wechat.msg.in.event.InQrCodeEvent;
-import com.apis.wechat.msg.in.event.InShakearoundUserShakeEvent;
-import com.apis.wechat.msg.in.event.InSubmitMemberCardEvent;
-import com.apis.wechat.msg.in.event.InTemplateMsgEvent;
-import com.apis.wechat.msg.in.event.InUpdateMemberCardEvent;
-import com.apis.wechat.msg.in.event.InUserPayFromCardEvent;
-import com.apis.wechat.msg.in.event.InUserViewCardEvent;
-import com.apis.wechat.msg.in.event.InVerifyFailEvent;
-import com.apis.wechat.msg.in.event.InVerifySuccessEvent;
-import com.apis.wechat.msg.in.event.InWifiEvent;
-import com.apis.wechat.msg.in.speech_recognition.InSpeechRecognitionResults;
-import com.apis.wechat.msg.out.OutMsg;
-import com.apis.wechat.msg.out.OutTextMsg;
+import com.allpaycloud.thrid.apis.wechat.Wechat;
+import com.allpaycloud.thrid.apis.wechat.WechatKit;
+import com.allpaycloud.thrid.apis.wechat.cfg.MpCfg;
+import com.allpaycloud.thrid.apis.wechat.mp.msg.InMsgParser;
+import com.allpaycloud.thrid.apis.wechat.mp.msg.in.*;
+import com.allpaycloud.thrid.apis.wechat.mp.msg.in.event.*;
+import com.allpaycloud.thrid.apis.wechat.mp.msg.in.speech_recognition.InSpeechRecognitionResults;
+import com.allpaycloud.thrid.apis.wechat.mp.msg.out.OutMsg;
+import com.allpaycloud.thrid.apis.wechat.mp.msg.out.OutTextMsg;
 import com.jfinal.core.Controller;
 import com.jfinal.kit.HttpKit;
 import com.jfinal.kit.LogKit;
@@ -47,13 +24,13 @@ public abstract class BaseWechatController extends Controller {
 	private static final Log log =  Log.getLog(BaseWechatController.class);
 	private String inMsgXml = null;		// 本次请求 xml数据
 	private InMsg inMsg = null;			// 本次请求 xml 解析后的 InMsg 对象
-	private Wechat.Cfg cfg = Wechat.getCfg();
+	private MpCfg cfg;
 
-	public void setCfg(Wechat.Cfg cfg){
+	public void setCfg(MpCfg cfg){
 		this.cfg = cfg;
 	}
 	
-	protected Wechat.Cfg getCfg() {
+	protected MpCfg getCfg() {
 		return cfg;
 	}
 
@@ -186,7 +163,7 @@ public abstract class BaseWechatController extends Controller {
 	protected InMsg getInMsg() {
 		if (inMsg == null){
 			if(!StrKit.isBlank(getInMsgXml())){
-				inMsg = InMsgParser.parse(getInMsgXml()); 
+				inMsg = InMsgParser.parse(getInMsgXml());
 			}
 		}
 		return inMsg;
@@ -203,7 +180,7 @@ public abstract class BaseWechatController extends Controller {
 		String signature = c.getPara("signature");
 		String timestamp = c.getPara("timestamp");
 		String nonce = c.getPara("nonce");
-		boolean isOk = Wechat.common().checkSignature(signature, timestamp, nonce);
+		boolean isOk = checkSignature(signature, timestamp, nonce);
 		if (isOk)
 			c.renderText(echostr);
 		else
@@ -304,7 +281,7 @@ public abstract class BaseWechatController extends Controller {
 			return false;
 		}
 		
-		if (Wechat.common().checkSignature(signature, timestamp, nonce)) {
+		if (checkSignature(signature, timestamp, nonce)) {
 			return true;
 		}
 		else {
@@ -323,5 +300,9 @@ public abstract class BaseWechatController extends Controller {
 	private boolean isConfigServerRequest() {
 		Controller controller = this;
 		return StrKit.notBlank(controller.getPara("echostr"));
+	}
+
+	protected boolean checkSignature(String signature, String timestamp, String nonce){
+		return WechatKit.checkSignature(cfg.getAppToken(), signature, timestamp, nonce);
 	}
 }

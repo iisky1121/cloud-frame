@@ -34,7 +34,7 @@ public abstract class CPI {
 	 */
 	@SuppressWarnings({"unchecked", "rawtypes"})
 	public static final Map<String, Object> getAttrs(Model model) {
-		return model.getAttrs();
+		return model._getAttrs();
 	}
 	
 	@SuppressWarnings({"unchecked", "rawtypes"})
@@ -57,6 +57,10 @@ public abstract class CPI {
 	public static final Map<String, Object> getColumns(Record record) {
 		return record.getColumns();
 	} */
+	
+	public static void setColumnsMap(Record record, Map<String, Object> columns) {
+		record.setColumnsMap(columns);
+	}
 	
 	public static List<Record> find(Connection conn, String sql, Object... paras) throws SQLException {
 		return Db.find(DbKit.config, conn, sql, paras);

@@ -51,8 +51,7 @@ final class ActionMapping {
 		Set<String> excludedMethodName = new HashSet<String>();
 		Method[] methods = Controller.class.getMethods();
 		for (Method m : methods) {
-			if (m.getParameterTypes().length == 0)
-				excludedMethodName.add(m.getName());
+			excludedMethodName.add(m.getName());
 		}
 		return excludedMethodName;
 	}
@@ -78,7 +77,7 @@ final class ActionMapping {
 			Method[] methods = (sonOfController ? controllerClass.getDeclaredMethods() : controllerClass.getMethods());
 			for (Method method : methods) {
 				String methodName = method.getName();
-				if (excludedMethodName.contains(methodName) || method.getParameterTypes().length != 0)
+				if (excludedMethodName.contains(methodName))
 					continue ;
 				if (sonOfController && !Modifier.isPublic(method.getModifiers()))
 					continue ;
@@ -146,7 +145,7 @@ final class ActionMapping {
 		}
 		
 		// --------
-		int i = url.lastIndexOf(SLASH);
+		int i = url.lastIndexOf('/');
 		if (i != -1) {
 			action = mapping.get(url.substring(0, i));
 			urlPara[0] = url.substring(i + 1);

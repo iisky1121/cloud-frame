@@ -22,12 +22,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import com.jfinal.core.Const;
 import com.jfinal.kit.StrKit;
 import com.jfinal.template.expr.ast.ExprList;
 import com.jfinal.template.expr.ast.SharedMethodKit;
 import com.jfinal.template.ext.directive.*;
 import com.jfinal.template.ext.sharedmethod.Json;
+import com.jfinal.template.source.FileSource;
+import com.jfinal.template.source.FileSourceFactory;
+import com.jfinal.template.source.ISource;
+import com.jfinal.template.source.ISourceFactory;
+import com.jfinal.template.source.StringSource;
 import com.jfinal.template.stat.Location;
 import com.jfinal.template.stat.Parser;
 import com.jfinal.template.stat.ast.Define;
@@ -39,19 +43,22 @@ import com.jfinal.template.stat.ast.Stat;
  */
 public class EngineConfig {
 	
+	public static final String DEFAULT_ENCODING = "UTF-8";
+	
 	private Map<String, Define> sharedFunctionMap = new HashMap<String, Define>();
-	private List<IStringSource> sharedFunctionSourceList = new ArrayList<IStringSource>();		// for devMode only
+	private List<ISource> sharedFunctionSourceList = new ArrayList<ISource>();		// for devMode only
 	
 	Map<String, Object> sharedObjectMap = null;
 	
 	private IOutputDirectiveFactory outputDirectiveFactory = OutputDirectiveFactory.me;
+	private ISourceFactory sourceFactory = new FileSourceFactory();
 	private Map<String, Stat> directiveMap = new HashMap<String, Stat>();
 	private SharedMethodKit sharedMethodKit = new SharedMethodKit();
 	
 	private boolean devMode = false;
 	private boolean reloadModifiedSharedFunctionInDevMode = true;
 	private String baseTemplatePath = null;
-	private String encoding = Const.DEFAULT_ENCODING;
+	private String encoding = DEFAULT_ENCODING;
 	private String datePattern = "yyyy-MM-dd HH:mm";
 	
 	public EngineConfig() {
@@ -70,17 +77,18 @@ public class EngineConfig {
 	 * Add shared function with file
 	 */
 	public void addSharedFunction(String fileName) {
-		FileStringSource fileStringSource = new FileStringSource(baseTemplatePath, fileName, encoding);
-		doAddSharedFunction(fileStringSource, fileName);
+		// FileSource fileSource = new FileSource(baseTemplatePath, fileName, encoding);
+		ISource source = sourceFactory.getSource(baseTemplatePath, fileName, encoding);
+		doAddSharedFunction(source, fileName);
 	}
 	
-	private synchronized void doAddSharedFunction(IStringSource stringSource, String fileName) {
+	private synchronized void doAddSharedFunction(ISource source, String fileName) {
 		Env env = new Env(this);
-		new Parser(env, stringSource.getContent(), fileName).parse();
+		new Parser(env, source.getContent(), fileName).parse();
 		addToSharedFunctionMap(sharedFunctionMap, env);
 		if (devMode) {
-			sharedFunctionSourceList.add(stringSource);
-			env.addStringSource(stringSource);
+			sharedFunctionSourceList.add(source);
+			env.addSource(source);
 		}
 	}
 	
@@ -97,16 +105,18 @@ public class EngineConfig {
 	 * Add shared function by string content
 	 */
 	public void addSharedFunctionByString(String content) {
-		MemoryStringSource memoryStringSource = new MemoryStringSource(content);
-		doAddSharedFunction(memoryStringSource, null);
+		// content 中的内容被解析后会存放在 Env 之中，而 StringSource 所对应的
+		// Template 对象 isModified() 始终返回 false，所以没有必要对其缓存
+		StringSource stringSource = new StringSource(content, false);
+		doAddSharedFunction(stringSource, null);
 	}
 	
 	/**
-	 * Add shared function by IStringSource
+	 * Add shared function by ISource
 	 */
-	public void addSharedFunction(IStringSource stringSource) {
-		String fileName = stringSource instanceof FileStringSource ? ((FileStringSource)stringSource).getFileName() : null;
-		doAddSharedFunction(stringSource, fileName);
+	public void addSharedFunction(ISource source) {
+		String fileName = source instanceof FileSource ? ((FileSource)source).getFileName() : null;
+		doAddSharedFunction(source, fileName);
 	}
 	
 	private void addToSharedFunctionMap(Map<String, Define> sharedFunctionMap, Env env) {
@@ -166,14 +176,14 @@ public class EngineConfig {
 	private synchronized void reloadSharedFunctionSourceList() {
 		Map<String, Define> newMap = new HashMap<String, Define>();
 		for (int i = 0, size = sharedFunctionSourceList.size(); i < size; i++) {
-			IStringSource ss = sharedFunctionSourceList.get(i);
-			String fileName = ss instanceof FileStringSource ? ((FileStringSource)ss).getFileName() : null;
+			ISource source = sharedFunctionSourceList.get(i);
+			String fileName = source instanceof FileSource ? ((FileSource)source).getFileName() : null;
 			
 			Env env = new Env(this);
-			new Parser(env, ss.getContent(), fileName).parse();
+			new Parser(env, source.getContent(), fileName).parse();
 			addToSharedFunctionMap(newMap, env);
 			if (devMode) {
-				env.addStringSource(ss);
+				env.addSource(source);
 			}
 		}
 		this.sharedFunctionMap = newMap;
@@ -217,7 +227,26 @@ public class EngineConfig {
 		return devMode;
 	}
 	
+	/**
+	 * Invoked by Engine only
+	 */
+	void setSourceFactory(ISourceFactory sourceFactory) {
+		if (sourceFactory == null) {
+			throw new IllegalArgumentException("sourceFactory can not be null");
+		}
+		this.sourceFactory = sourceFactory;
+	}
+	
+	public ISourceFactory getSourceFactory() {
+		return sourceFactory;
+	}
+	
 	public void setBaseTemplatePath(String baseTemplatePath) {
+		// 使用 ClassPathSourceFactory 时，允许 baseTemplatePath 为 null 值
+		if (baseTemplatePath == null) {
+			this.baseTemplatePath = null;
+			return ;
+		}
 		if (StrKit.isBlank(baseTemplatePath)) {
 			throw new IllegalArgumentException("baseTemplatePath can not be blank");
 		}
@@ -289,10 +318,17 @@ public class EngineConfig {
 	}
 	
 	/**
+	 * Add shared method from class
+	 */
+	public void addSharedMethod(Class<?> sharedMethodFromClass) {
+		sharedMethodKit.addSharedMethod(sharedMethodFromClass);
+	}
+	
+	/**
 	 * Add shared static method of Class
 	 */
-	public void addSharedStaticMethod(Class<?> sharedClass) {
-		sharedMethodKit.addSharedStaticMethod(sharedClass);
+	public void addSharedStaticMethod(Class<?> sharedStaticMethodFromClass) {
+		sharedMethodKit.addSharedStaticMethod(sharedStaticMethodFromClass);
 	}
 	
 	/**

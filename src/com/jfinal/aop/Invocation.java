@@ -29,7 +29,7 @@ import net.sf.cglib.proxy.MethodProxy;
 public class Invocation {
 	
 	private Action action;
-	private static final Object[] NULL_ARGS = new Object[0];	// Prevent new Object[0] by jvm for paras of action invocation.
+
 	
 	boolean useInjectTarget;
 	private Object target;
@@ -37,7 +37,7 @@ public class Invocation {
 	private Object[] args;
 	private MethodProxy methodProxy;
 	private Interceptor[] inters;
-	private Object returnValue = null;
+	private Object returnValue;
 	
 	private int index = 0;
 	
@@ -50,7 +50,7 @@ public class Invocation {
 		this.action = action;
 		this.inters = action.getInterceptors();
 		this.target = controller;
-		this.args = NULL_ARGS;
+		this.args = action.getParameterGetter().get(controller);
 	}
 	
 	public Invocation(Object target, Method method, Object[] args, MethodProxy methodProxy, Interceptor[] inters) {

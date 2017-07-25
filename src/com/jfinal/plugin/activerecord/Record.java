@@ -45,7 +45,7 @@ public class Record implements Serializable {
 		return this;
 	}
 	
-	// Only used by RecordBuilder
+	// 用于 RecordBuilder 中注入 Map。也可以通过调用 CPI.setColumnsMap(record, columns) 实现
 	void setColumnsMap(Map<String, Object> columns) {
 		this.columns = columns;
 	}
@@ -98,7 +98,7 @@ public class Record implements Serializable {
 	 * @param model the Model object
 	 */
 	public Record setColumns(Model<?> model) {
-		getColumns().putAll(model.getAttrs());
+		getColumns().putAll(model._getAttrs());
 		return this;
 	}
 	
@@ -208,21 +208,25 @@ public class Record implements Serializable {
 	 * Get column of mysql type: varchar, char, enum, set, text, tinytext, mediumtext, longtext
 	 */
 	public String getStr(String column) {
-		return (String)getColumns().get(column);
+		// return (String)getColumns().get(column);
+		Object s = getColumns().get(column);
+		return s != null ? s.toString() : null;
 	}
 	
 	/**
 	 * Get column of mysql type: int, integer, tinyint(n) n > 1, smallint, mediumint
 	 */
 	public Integer getInt(String column) {
-		return (Integer)getColumns().get(column);
+		Number n = getNumber(column);
+		return n != null ? n.intValue() : null;
 	}
 	
 	/**
 	 * Get column of mysql type: bigint
 	 */
 	public Long getLong(String column) {
-		return (Long)getColumns().get(column);
+		Number n = getNumber(column);
+		return n != null ? n.longValue() : null;
 	}
 	
 	/**
@@ -257,14 +261,21 @@ public class Record implements Serializable {
 	 * Get column of mysql type: real, double
 	 */
 	public Double getDouble(String column) {
-		return (Double)getColumns().get(column);
+		Number n = getNumber(column);
+		return n != null ? n.doubleValue() : null;
 	}
 	
 	/**
 	 * Get column of mysql type: float
 	 */
 	public Float getFloat(String column) {
-		return (Float)getColumns().get(column);
+		Number n = getNumber(column);
+		return n != null ? n.floatValue() : null;
+	}
+	
+	public Short getShort(String column) {
+		Number n = getNumber(column);
+		return n != null ? n.shortValue() : null;
 	}
 	
 	/**
@@ -298,7 +309,7 @@ public class Record implements Serializable {
 	
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("{");
+		sb.append('{');
 		boolean first = true;
 		for (Entry<String, Object> e : getColumns().entrySet()) {
 			if (first)
@@ -309,9 +320,9 @@ public class Record implements Serializable {
 			Object value = e.getValue();
 			if (value != null)
 				value = value.toString();
-			sb.append(e.getKey()).append(":").append(value);
+			sb.append(e.getKey()).append(':').append(value);
 		}
-		sb.append("}");
+		sb.append('}');
 		return sb.toString();
 	}
 	

@@ -23,8 +23,8 @@ import java.util.Map;
 import com.jfinal.kit.StrKit;
 import com.jfinal.plugin.activerecord.SqlPara;
 import com.jfinal.template.Engine;
-import com.jfinal.template.IStringSource;
 import com.jfinal.template.Template;
+import com.jfinal.template.source.ISource;
 
 /**
  * SqlKit
@@ -46,7 +46,7 @@ public class SqlKit {
 		this.configName = configName;
 		this.devMode = devMode;
 		
-		engine =  new Engine(configName);
+		engine = new Engine(configName);
 		engine.setDevMode(devMode);
 		
 		engine.addDirective("namespace", new NameSpaceDirective());
@@ -79,7 +79,7 @@ public class SqlKit {
 		sqlSourceList.add(new SqlSource(sqlTemplate));
 	}
 	
-	public void addSqlTemplate(IStringSource sqlTemplate) {
+	public void addSqlTemplate(ISource sqlTemplate) {
 		if (sqlTemplate == null) {
 			throw new IllegalArgumentException("sqlTemplate can not be null");
 		}
@@ -89,7 +89,7 @@ public class SqlKit {
 	public synchronized void parseSqlTemplate() {
 		Map<String, Template> sqlTemplateMap = new HashMap<String, Template>();
 		for (SqlSource ss : sqlSourceList) {
-			Template template = ss.isFile() ? engine.getTemplate(ss.file) : engine.getTemplate(ss.stringSource);
+			Template template = ss.isFile() ? engine.getTemplate(ss.file) : engine.getTemplate(ss.source);
 			Map<Object, Object> data = new HashMap<Object, Object>();
 			data.put(SQL_TEMPLATE_MAP_KEY, sqlTemplateMap);
 			template.renderToString(data);
@@ -153,7 +153,7 @@ public class SqlKit {
 	 *	#end
 	 *
 	 * 2：java 代码
-	 * 	Kv cond = Kv.create("id", 123).set("age", 18);
+	 * 	Kv cond = Kv.by("id", 123).set("age", 18);
 	 * 	getSqlPara("key", cond);
 	 */
 	public SqlPara getSqlPara(String key, Map data) {
@@ -191,6 +191,10 @@ public class SqlKit {
 		data.put(PARA_ARRAY_KEY, paras);
 		sqlPara.setSql(template.renderToString(data));
 		return sqlPara;
+	}
+	
+	public java.util.Set<java.util.Map.Entry<String, Template>> getSqlMapEntrySet() {
+		return sqlTemplateMap.entrySet();
 	}
 	
 	public String toString() {

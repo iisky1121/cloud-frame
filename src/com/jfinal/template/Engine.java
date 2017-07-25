@@ -21,6 +21,10 @@ import java.util.HashMap;
 import java.util.Map;
 import com.jfinal.kit.HashKit;
 import com.jfinal.kit.StrKit;
+import com.jfinal.template.expr.ast.MethodKit;
+import com.jfinal.template.source.ISource;
+import com.jfinal.template.source.ISourceFactory;
+import com.jfinal.template.source.StringSource;
 import com.jfinal.template.stat.Parser;
 import com.jfinal.template.stat.ast.Stat;
 
@@ -47,6 +51,7 @@ public class Engine {
 	private String name;
 	private boolean devMode = false;
 	private EngineConfig config = new EngineConfig();
+	private ISourceFactory sourceFactory = config.getSourceFactory();
 	
 	private Map<String, Template> templateCache = new HashMap<String, Template>();
 	
@@ -130,23 +135,24 @@ public class Engine {
 		
 		Template template = templateCache.get(fileName);
 		if (template == null) {
-			template = buildTemplateByFileStringSource(fileName);
+			template = buildTemplateBySourceFactory(fileName);
 			templateCache.put(fileName, template);
 		} else if (devMode) {
 			if (template.isModified()) {
-				template = buildTemplateByFileStringSource(fileName);
+				template = buildTemplateBySourceFactory(fileName);
 				templateCache.put(fileName, template);
 			}
 		}
 		return template;
 	}
 	
-	private Template buildTemplateByFileStringSource(String fileName) {
-		FileStringSource fileStringSource = new FileStringSource(config.getBaseTemplatePath(), fileName, config.getEncoding());
+	private Template buildTemplateBySourceFactory(String fileName) {
+		// FileSource fileSource = new FileSource(config.getBaseTemplatePath(), fileName, config.getEncoding());
+		ISource source = sourceFactory.getSource(config.getBaseTemplatePath(), fileName, config.getEncoding());
 		Env env = new Env(config);
-		Parser parser = new Parser(env, fileStringSource.getContent(), fileName);
+		Parser parser = new Parser(env, source.getContent(), fileName);
 		if (devMode) {
-			env.addStringSource(fileStringSource);
+			env.addSource(source);
 		}
 		Stat stat = parser.parse();
 		Template template = new Template(env, stat);
@@ -154,17 +160,38 @@ public class Engine {
 	}
 	
 	/**
-	 * Get template by string content
+	 * Get template by string content and do not cache the template
+	 * 
+	 * 重要：StringSource 中的 key = HashKit.md5(content)，也即 key
+	 *     与 content 有紧密的对应关系，当 content 发生变化时 key 值也相应变化
+	 *     因此，原先 key 所对应的 Template 缓存对象已无法被获取，当 getTemplateByString(String)
+	 *     的 String 参数的数量不确定时会引发内存泄漏
+	 *     
+	 *     当 getTemplateByString(String, boolean) 中的 String 参数的
+	 *     数量可控并且确定时，才可对其使用缓存 
 	 */
 	public Template getTemplateByString(String content) {
+		return getTemplateByString(content, false);
+	}
+	
+	/**
+	 * Get template by string content
+	 * @param content 模板内容
+	 * @param cache true 则缓存 Template，否则不缓存
+	 */
+	public Template getTemplateByString(String content, boolean cache) {
+		if (!cache) {
+			return buildTemplateBySource(new StringSource(content, cache));
+		}
+		
 		String key = HashKit.md5(content);
 		Template template = templateCache.get(key);
 		if (template == null) {
-			template = buildTemplateByStringSource(new MemoryStringSource(content));
+			template = buildTemplateBySource(new StringSource(content, cache));
 			templateCache.put(key, template);
 		} else if (devMode) {
 			if (template.isModified()) {
-				template = buildTemplateByStringSource(new MemoryStringSource(content));
+				template = buildTemplateBySource(new StringSource(content, cache));
 				templateCache.put(key, template);
 			}
 		}
@@ -172,28 +199,32 @@ public class Engine {
 	}
 	
 	/**
-	 * Get template with implementation of IStringSource
+	 * Get template with implementation of ISource
 	 */
-	public Template getTemplate(IStringSource stringSource) {
-		String key = stringSource.getKey();
+	public Template getTemplate(ISource source) {
+		String key = source.getKey();
+		if (key == null) {	// key 为 null 则不缓存，详见 ISource.getKey() 注释
+			return buildTemplateBySource(source);
+		}
+		
 		Template template = templateCache.get(key);
 		if (template == null) {
-			template = buildTemplateByStringSource(stringSource);
+			template = buildTemplateBySource(source);
 			templateCache.put(key, template);
 		} else if (devMode) {
 			if (template.isModified()) {
-				template = buildTemplateByStringSource(stringSource);
+				template = buildTemplateBySource(source);
 				templateCache.put(key, template);
 			}
 		}
 		return template;
 	}
 	
-	private Template buildTemplateByStringSource(IStringSource stringSource) {
+	private Template buildTemplateBySource(ISource source) {
 		Env env = new Env(config);
-		Parser parser = new Parser(env, stringSource.getContent(), null);
+		Parser parser = new Parser(env, source.getContent(), null);
 		if (devMode) {
-			env.addStringSource(stringSource);
+			env.addSource(source);
 		}
 		Stat stat = parser.parse();
 		Template template = new Template(env, stat);
@@ -209,10 +240,10 @@ public class Engine {
 	}
 	
 	/**
-	 * Add shared function by IStringSource
+	 * Add shared function by ISource
 	 */
-	public Engine addSharedFunction(IStringSource stringSource) {
-		config.addSharedFunction(stringSource);
+	public Engine addSharedFunction(ISource source) {
+		config.addSharedFunction(source);
 		return this;
 	}
 	
@@ -273,10 +304,18 @@ public class Engine {
 	}
 	
 	/**
+	 * Add shared method from class
+	 */
+	public Engine addSharedMethod(Class<?> sharedMethodFromClass) {
+		config.addSharedMethod(sharedMethodFromClass);
+		return this;
+	}
+	
+	/**
 	 * Add shared static method of Class
 	 */
-	public Engine addSharedStaticMethod(Class<?> sharedClass) {
-		config.addSharedStaticMethod(sharedClass);
+	public Engine addSharedStaticMethod(Class<?> sharedStaticMethodFromClass) {
+		config.addSharedStaticMethod(sharedStaticMethodFromClass);
 		return this;
 	}
 	
@@ -318,6 +357,10 @@ public class Engine {
 		templateCache.clear();
 	}
 	
+	public int getTemplateCacheSize() {
+		return templateCache.size();
+	}
+	
 	public String getName() {
 		return name;
 	}
@@ -332,6 +375,10 @@ public class Engine {
 		return config;
 	}
 	
+	/**
+	 * 设置 true 为开发模式，支持模板文件热加载
+	 * 设置 false 为生产模式，不支持模板文件热加载，以达到更高的性能
+	 */
 	public Engine setDevMode(boolean devMode) {
 		this.devMode = devMode;
 		this.config.setDevMode(devMode);
@@ -343,6 +390,32 @@ public class Engine {
 	
 	public boolean getDevMode() {
 		return devMode;
+	}
+	
+	/**
+	 * 设置 ISourceFactory 用于为 engine 切换不同的 ISource 实现类
+	 * ISource 用于从不同的来源加载模板内容
+	 * 
+	 * <pre>
+	 * 配置为 ClassPathSourceFactory 时特别注意：
+	 *    由于 JFinal 会在 configEngine(Engine me) 方法调用 “之前”，会默认调用一次如下方法：
+	 *       me.setBaseTemplatePath(PathKit.getWebRootPath())
+	 *    
+	 *    而 ClassPathSourceFactory 在以上默认值下不能工作，所以需要通过如下方式清掉该值：
+	 *       me.setBaseTemplatePath(null)
+	 *    
+	 *    或者配置具体要用的 baseTemplatePath 值，例如：
+	 *       me.setBaseTemplatePath("view");
+	 * </pre>
+	 */
+	public Engine setSourceFactory(ISourceFactory sourceFactory) {
+		this.config.setSourceFactory(sourceFactory);	// 放第一行先进行参数验证
+		this.sourceFactory = sourceFactory;
+		return this;
+	}
+	
+	public ISourceFactory getSourceFactory() {
+		return sourceFactory;
 	}
 	
 	public Engine setBaseTemplatePath(String baseTemplatePath) {
@@ -382,6 +455,22 @@ public class Engine {
 	public Engine setReloadModifiedSharedFunctionInDevMode(boolean reloadModifiedSharedFunctionInDevMode) {
 		config.setReloadModifiedSharedFunctionInDevMode(reloadModifiedSharedFunctionInDevMode);
 		return this;
+	}
+	
+	public static void addExtensionMethod(Class<?> targetClass, Object objectOfExtensionClass) {
+		MethodKit.addExtensionMethod(targetClass, objectOfExtensionClass);
+	}
+	
+	public static void addExtensionMethod(Class<?> targetClass, Class<?> extensionClass) {
+		MethodKit.addExtensionMethod(targetClass, extensionClass);
+	}
+	
+	public static void removeExtensionMethod(Class<?> targetClass, Object objectOfExtensionClass) {
+		MethodKit.removeExtensionMethod(targetClass, objectOfExtensionClass);;
+	}
+	
+	public static void removeExtensionMethod(Class<?> targetClass, Class<?> extensionClass) {
+		MethodKit.removeExtensionMethod(targetClass, extensionClass);
 	}
 }
 

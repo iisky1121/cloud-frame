@@ -16,18 +16,19 @@
 
 package com.jfinal.plugin.activerecord;
 
+import java.io.Serializable;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Statement;
+import java.util.*;
+import java.util.Map.Entry;
+
 import com.jfinal.base.UserSession;
 import com.jfinal.ext.plugin.sql.Cnd;
 import com.jfinal.ext.plugin.tablebind.TableBind;
 import com.jfinal.kit.StrKit;
 import com.jfinal.plugin.activerecord.cache.ICache;
-
-import java.io.Serializable;
-import java.sql.*;
-import java.util.*;
-import java.util.Date;
-import java.util.Map.Entry;
-
 import static com.jfinal.plugin.activerecord.DbKit.NULL_PARA_ARRAY;
 
 /**
@@ -39,6 +40,7 @@ import static com.jfinal.plugin.activerecord.DbKit.NULL_PARA_ARRAY;
  */
 @SuppressWarnings({"rawtypes", "unchecked"})
 public abstract class Model<M extends Model> implements Serializable {
+	
 	private static final long serialVersionUID = -990334519496260591L;
 	
 	public static final int FILTER_BY_SAVE = 0;
@@ -56,7 +58,7 @@ public abstract class Model<M extends Model> implements Serializable {
 	private Map<String, Object> attrs = getAttrsMap();	// getConfig().containerFactory.getAttrsMap();	// new HashMap<String, Object>();
 	
 	private Map<String, Object> getAttrsMap() {
-		Config config = getConfig();
+		Config config = _getConfig();
 		if (config == null)
 			return DbKit.brokenConfig.containerFactory.getAttrsMap();
 		return config.containerFactory.getAttrsMap();
@@ -67,9 +69,16 @@ public abstract class Model<M extends Model> implements Serializable {
 	 */
 	private Set<String> modifyFlag;
 	
-	protected Set<String> getModifyFlag() {
+	/*
+	private Set<String> getModifyFlag() {
+		if (modifyFlag == null)
+			modifyFlag = getConfig().containerFactory.getModifyFlagSet();	// new HashSet<String>();
+		return modifyFlag;
+	}*/
+	
+	Set<String> getModifyFlag() {
 		if (modifyFlag == null) {
-			Config config = getConfig();
+			Config config = _getConfig();
 			if (config == null)
 				modifyFlag = DbKit.brokenConfig.containerFactory.getModifyFlagSet();
 			else
@@ -88,7 +97,7 @@ public abstract class Model<M extends Model> implements Serializable {
 		return (M)this;
 	}
 	
-	protected Config getConfig() {
+	protected Config _getConfig() {
 		if (configName != null)
 			return DbKit.getConfig(configName);
 		return DbKit.getConfig(getUsefulClass());
@@ -123,18 +132,25 @@ public abstract class Model<M extends Model> implements Serializable {
 	public M set(Enum<?> attr, Object value){
 		return set(attr.name(), value);
 	}
-	
+
 	/**
 	 * Put key value pair to the model without check attribute name.
 	 */
 	public M put(String key, Object value) {
+		/*
+		if (checkPutKey) {
+			Table table = getTable();	// table 为 null 时用于未启动 ActiveRecordPlugin 的场景
+			if (table != null && table.hasColumnLabel(key)) {
+				throw new ActiveRecordException("The key can not be attribute name: \"" + key + "\", using set(String, Object) for attribute value");
+			}
+		}*/
 		attrs.put(key, value);
 		return (M)this;
 	}
 	public M put(Enum<?> key, Object value){
 		return put(key.name(), value);
 	}
-	
+
 	/**
 	 * Put map to the model without check attribute name.
 	 */
@@ -147,7 +163,7 @@ public abstract class Model<M extends Model> implements Serializable {
 	 * Put other model to the model without check attribute name.
 	 */
 	public M put(Model model) {
-		attrs.putAll(model.getAttrs());
+		attrs.putAll(model._getAttrs());
 		return (M)this;
 	}
 	
@@ -163,7 +179,7 @@ public abstract class Model<M extends Model> implements Serializable {
 	 * Convert model to record.
 	 */
 	public Record toRecord() {
-		return new Record().setColumns(getAttrs());
+		return new Record().setColumns(_getAttrs());
 	}
 	
 	/**
@@ -185,21 +201,25 @@ public abstract class Model<M extends Model> implements Serializable {
 	 * Get attribute of mysql type: varchar, char, enum, set, text, tinytext, mediumtext, longtext
 	 */
 	public String getStr(String attr) {
-		return (String)attrs.get(attr);
+		// return (String)attrs.get(attr);
+		Object s = attrs.get(attr);
+		return s != null ? s.toString() : null;
 	}
 	
 	/**
 	 * Get attribute of mysql type: int, integer, tinyint(n) n > 1, smallint, mediumint
 	 */
 	public Integer getInt(String attr) {
-		return (Integer)attrs.get(attr);
+		Number n = (Number)attrs.get(attr);
+		return n != null ? n.intValue() : null;
 	}
 	
 	/**
 	 * Get attribute of mysql type: bigint, unsign int
 	 */
 	public Long getLong(String attr) {
-		return (Long)attrs.get(attr);
+		Number n = (Number)attrs.get(attr);
+		return n != null ? n.longValue() : null;
 	}
 	
 	/**
@@ -234,14 +254,21 @@ public abstract class Model<M extends Model> implements Serializable {
 	 * Get attribute of mysql type: real, double
 	 */
 	public Double getDouble(String attr) {
-		return (Double)attrs.get(attr);
+		Number n = (Number)attrs.get(attr);
+		return n != null ? n.doubleValue() : null;
 	}
 	
 	/**
 	 * Get attribute of mysql type: float
 	 */
 	public Float getFloat(String attr) {
-		return (Float)attrs.get(attr);
+		Number n = (Number)attrs.get(attr);
+		return n != null ? n.floatValue() : null;
+	}
+	
+	public Short getShort(String attr) {
+		Number n = (Number)attrs.get(attr);
+		return n != null ? n.shortValue() : null;
 	}
 	
 	/**
@@ -304,13 +331,13 @@ public abstract class Model<M extends Model> implements Serializable {
 	}
 	
 	private Page<M> doPaginate(int pageNumber, int pageSize, Boolean isGroupBySql, String select, String sqlExceptSelect, Object... paras) {
-		Config config = getConfig();
+		Config config = _getConfig();
 		Connection conn = null;
 		try {
 			conn = config.getConnection();
 			String totalRowSql = "select count(*) " + config.dialect.replaceOrderBy(sqlExceptSelect);
 			StringBuilder findSql = new StringBuilder();
-			findSql.append(select).append(" ").append(sqlExceptSelect);
+			findSql.append(select).append(' ').append(sqlExceptSelect);
 			return doPaginateByFullSql(config, conn, pageNumber, pageSize, isGroupBySql, totalRowSql, findSql, paras);
 		} catch (Exception e) {
 			throw new ActiveRecordException(e);
@@ -359,7 +386,7 @@ public abstract class Model<M extends Model> implements Serializable {
 	}
 	
 	private Page<M> doPaginateByFullSql(int pageNumber, int pageSize, Boolean isGroupBySql, String totalRowSql, String findSql, Object... paras) {
-		Config config = getConfig();
+		Config config = _getConfig();
 		Connection conn = null;
 		try {
 			conn = config.getConnection();
@@ -386,7 +413,7 @@ public abstract class Model<M extends Model> implements Serializable {
 	 * Danger! The update method will ignore the attribute if you change it directly.
 	 * You must use set method to change attribute that update method can handle it.
 	 */
-	protected Map<String, Object> getAttrs() {
+	protected Map<String, Object> _getAttrs() {
 		return attrs;
 	}
 	
@@ -403,7 +430,7 @@ public abstract class Model<M extends Model> implements Serializable {
 	public boolean save() {
 		filter(FILTER_BY_SAVE);
 		
-		Config config = getConfig();
+		Config config = _getConfig();
 		Table table = getTable();
 		
 		StringBuilder sql = new StringBuilder();
@@ -421,14 +448,14 @@ public abstract class Model<M extends Model> implements Serializable {
 		int result = 0;
 		try {
 			conn = config.getConnection();
-			if (config.dialect.isOracle())
+			if (config.dialect.isOracle()) {
 				pst = conn.prepareStatement(sql.toString(), table.getPrimaryKey());
-			else
+			} else {
 				pst = conn.prepareStatement(sql.toString(), Statement.RETURN_GENERATED_KEYS);
-			
+			}
 			config.dialect.fillStatement(pst, paras);
 			result = pst.executeUpdate();
-			getGeneratedKey(pst, table, config);
+			config.dialect.getModelGeneratedKey(this, pst, table);
 			getModifyFlag().clear();
 			//return result >= 1;
 			if(result >= 1){
@@ -442,28 +469,6 @@ public abstract class Model<M extends Model> implements Serializable {
 		} finally {
 			config.close(pst, conn);
 		}
-	}
-	
-	/**
-	 * Get id after save method.
-	 */
-	private void getGeneratedKey(PreparedStatement pst, Table table, Config config) throws SQLException {
-		String[] pKeys = table.getPrimaryKey();
-		ResultSet rs = pst.getGeneratedKeys();
-		for (String pKey : pKeys) {
-			if (get(pKey) == null || config.dialect.isOracle()) {
-				if (rs.next()) {
-					Class colType = table.getColumnType(pKey);
-					if (colType == Integer.class || colType == int.class)
-						set(pKey, rs.getInt(1));
-					else if (colType == Long.class || colType == long.class)
-						set(pKey, rs.getLong(1));
-					else
-						set(pKey, rs.getObject(1));		// It returns Long object for int colType
-				}
-			}
-		}
-		rs.close();
 	}
 	
 	/**
@@ -506,7 +511,7 @@ public abstract class Model<M extends Model> implements Serializable {
 	}
 	
 	private boolean deleteById(Table table, Object... idValues) {
-		Config config = getConfig();
+		Config config = _getConfig();
 		Connection conn = null;
 		try {
 			conn = config.getConnection();
@@ -537,7 +542,7 @@ public abstract class Model<M extends Model> implements Serializable {
 				throw new ActiveRecordException("You can't update model without Primary Key, " + pKey + " can not be null.");
 		}
 		
-		Config config = getConfig();
+		Config config = _getConfig();
 		StringBuilder sql = new StringBuilder();
 		List<Object> paras = new ArrayList<Object>();
 		// before update
@@ -573,7 +578,7 @@ public abstract class Model<M extends Model> implements Serializable {
 	 * Find model.
 	 */
 	private List<M> find(Connection conn, String sql, Object... paras) throws Exception {
-		Config config = getConfig();
+		Config config = _getConfig();
 		PreparedStatement pst = conn.prepareStatement(sql);
 		config.dialect.fillStatement(pst, paras);
 		ResultSet rs = pst.executeQuery();
@@ -589,7 +594,7 @@ public abstract class Model<M extends Model> implements Serializable {
 	 * @return the list of Model
 	 */
 	public List<M> find(String sql, Object... paras) {
-		Config config = getConfig();
+		Config config = _getConfig();
 		Connection conn = null;
 		try {
 			conn = config.getConnection();
@@ -678,7 +683,7 @@ public abstract class Model<M extends Model> implements Serializable {
 		if (table.getPrimaryKey().length != idValues.length)
 			throw new IllegalArgumentException("id values error, need " + table.getPrimaryKey().length + " id value");
 		
-		String sql = getConfig().dialect.forModelFindById(table, columns);
+		String sql = _getConfig().dialect.forModelFindById(table, columns);
 		List<M> result = find(sql, idValues);
 		return result.size() > 0 ? result.get(0) : null;
 	}
@@ -689,7 +694,7 @@ public abstract class Model<M extends Model> implements Serializable {
 	 * @return this Model
 	 */
 	public M _setAttrs(M model) {
-		return (M)_setAttrs(model.getAttrs());
+		return (M)_setAttrs(model._getAttrs());
 	}
 	
 	/**
@@ -716,14 +721,14 @@ public abstract class Model<M extends Model> implements Serializable {
 	public M remove(Enum<?> attr){
 		return remove(attr.name());
 	}
-	
+
 	/**
 	 * Remove attributes of this model.
 	 * @param attrs the attribute names of the model
 	 * @return this model
 	 */
 	public M remove(String... attrs) {
-		if (attrs != null && attrs.length > 0)
+		if (attrs != null)
 			for (String a : attrs) {
 				this.attrs.remove(a);
 				this.getModifyFlag().remove(a);
@@ -731,13 +736,13 @@ public abstract class Model<M extends Model> implements Serializable {
 		return (M)this;
 	}
 	public M remove(Enum<?>... attrs){
-		if (attrs != null && attrs.length > 0)
+		if (attrs != null)
 			for (Enum<?> a : attrs) {
 				remove(a);
 			}
 		return (M)this;
 	}
-	
+
 	/**
 	 * Remove attributes if it is null.
 	 * @return this model
@@ -760,7 +765,7 @@ public abstract class Model<M extends Model> implements Serializable {
 	 */
 	public M keep(String... attrs) {
 		if (attrs != null && attrs.length > 0) {
-			Config config = getConfig();
+			Config config = _getConfig();
 			Map<String, Object> newAttrs = config.containerFactory.getAttrsMap();	// new HashMap<String, Object>(attrs.length);
 			Set<String> newModifyFlag = config.containerFactory.getModifyFlagSet();	// new HashSet<String>();
 			for (String a : attrs) {
@@ -778,7 +783,7 @@ public abstract class Model<M extends Model> implements Serializable {
 		}
 		return (M)this;
 	}
-
+	
 	/**
 	 * Keep attribute of this model and remove other attributes.
 	 * @param attr the attribute name of the model
@@ -800,7 +805,7 @@ public abstract class Model<M extends Model> implements Serializable {
 		}
 		return (M)this;
 	}
-
+	
 	/**
 	 * Remove all attributes of this model.
 	 * @return this model
@@ -813,7 +818,7 @@ public abstract class Model<M extends Model> implements Serializable {
 	
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("{");
+		sb.append('{');
 		boolean first = true;
 		for (Entry<String, Object> e : attrs.entrySet()) {
 			if (first)
@@ -824,9 +829,9 @@ public abstract class Model<M extends Model> implements Serializable {
 			Object value = e.getValue();
 			if (value != null)
 				value = value.toString();
-			sb.append(e.getKey()).append(":").append(value);
+			sb.append(e.getKey()).append(':').append(value);
 		}
-		sb.append("}");
+		sb.append('}');
 		return sb.toString();
 	}
 	
@@ -852,7 +857,7 @@ public abstract class Model<M extends Model> implements Serializable {
 	 * @return the list of Model
 	 */
 	public List<M> findByCache(String cacheName, Object key, String sql, Object... paras) {
-		ICache cache = getConfig().getCache();
+		ICache cache = _getConfig().getCache();
 		List<M> result = cache.get(cacheName, key);
 		if (result == null) {
 			result = find(sql, paras);
@@ -877,7 +882,7 @@ public abstract class Model<M extends Model> implements Serializable {
 	 * @param paras the parameters of sql
 	 */
 	public M findFirstByCache(String cacheName, Object key, String sql, Object... paras) {
-		ICache cache = getConfig().getCache();
+		ICache cache = _getConfig().getCache();
 		M result = cache.get(cacheName, key);
 		if (result == null) {
 			result = findFirst(sql, paras);
@@ -916,7 +921,7 @@ public abstract class Model<M extends Model> implements Serializable {
 	}
 	
 	private Page<M> doPaginateByCache(String cacheName, Object key, int pageNumber, int pageSize, Boolean isGroupBySql, String select, String sqlExceptSelect, Object... paras) {
-		ICache cache = getConfig().getCache();
+		ICache cache = _getConfig().getCache();
 		Page<M> result = cache.get(cacheName, key);
 		if (result == null) {
 			result = doPaginate(pageNumber, pageSize, isGroupBySql, select, sqlExceptSelect, paras);
@@ -962,7 +967,7 @@ public abstract class Model<M extends Model> implements Serializable {
 	}
 	
 	public String getSql(String key) {
-		return getConfig().getSqlKit().getSql(key);
+		return _getConfig().getSqlKit().getSql(key);
 	}
 	
 	/**
@@ -981,11 +986,11 @@ public abstract class Model<M extends Model> implements Serializable {
 	}
 	
 	public SqlPara getSqlPara(String key, Map data) {
-		return getConfig().getSqlKit().getSqlPara(key, data);
+		return _getConfig().getSqlKit().getSqlPara(key, data);
 	}
 	
 	public SqlPara getSqlPara(String key, Object... paras) {
-		return getConfig().getSqlKit().getSqlPara(key, paras);
+		return _getConfig().getSqlKit().getSqlPara(key, paras);
 	}
 	
 	public List<M> find(SqlPara sqlPara) {
@@ -1000,12 +1005,12 @@ public abstract class Model<M extends Model> implements Serializable {
 		String[] sqls = PageSqlKit.parsePageSql(sqlPara.getSql());
 		return doPaginate(pageNumber, pageSize, null, sqls[0], sqls[1], sqlPara.getPara());
 	}
-	
+
 	/** diy mothed **/
 	private TableBind getTableBind(){
 		return this.getClass().getAnnotation(TableBind.class);
 	}
-	
+
 	/**
 	 * Return tableName values of this model.
 	 */
@@ -1016,7 +1021,7 @@ public abstract class Model<M extends Model> implements Serializable {
 		}
 		return getTable().getName();
 	}
-	
+
 	/**
 	 * Return primary key values of this model.
 	 */
@@ -1029,17 +1034,17 @@ public abstract class Model<M extends Model> implements Serializable {
 		if(pkKeys != null){
 			return StrKit.join(pkKeys, ",");
 		}
-		Config config = getConfig();
+		Config config = _getConfig();
 		return config.dialect.getDefaultPrimaryKey();
 	}
-	
+
 	/**
 	 * Return columns values of this model.
 	 */
 	public Map<String, Class<?>> getColumns(){
 		return getTable().getColumnTypeMap();
 	}
-	
+
 	/**
 	 * Return alias values of this model.
 	 */
@@ -1050,7 +1055,7 @@ public abstract class Model<M extends Model> implements Serializable {
 		}
 		return "";
 	}
-	
+
 	/**
 	 * Return fuzzy query values of this model.
 	 */
@@ -1061,7 +1066,7 @@ public abstract class Model<M extends Model> implements Serializable {
 		}
 		return new String[0];
 	}
-	
+
 	/**
 	 * Return order by values of this model.
 	 */
@@ -1072,7 +1077,7 @@ public abstract class Model<M extends Model> implements Serializable {
 		}
 		return new String[0];
 	}
-	
+
 	/**
 	 * Check attribute exist
 	 */
@@ -1083,7 +1088,7 @@ public abstract class Model<M extends Model> implements Serializable {
 	public boolean checkAttr(Enum<?> attr){
 		return checkAttr(attr.name());
 	}
-	
+
 	/**
 	 * Check attribute value is not null
 	 */
@@ -1109,14 +1114,14 @@ public abstract class Model<M extends Model> implements Serializable {
 		}
 		return true;
 	}
-	
+
 	/**
 	 * Return all results
 	 */
 	public List<M> getAll(){
 		return find(String.format(Cnd.$SELECT_FROM_TABLE, getTableName()));
 	}
-	
+
 	public List<M> getByWhat(String attr,Object value){
 		return getByWhat(attr, Cnd.Type.equal, value);
 	}
@@ -1145,7 +1150,7 @@ public abstract class Model<M extends Model> implements Serializable {
 		Cnd cnd = Cnd.$modelselect().toCnd(m, "").where().build();
 		return find(String.format(Cnd.$SELECT_FROM_TABLE, getTableName()).concat(cnd.getSql()), cnd.getParas());
 	}
-	
+
 	/**
 	 * Find model by composite attribute values.
 	 */
@@ -1206,7 +1211,7 @@ public abstract class Model<M extends Model> implements Serializable {
 		if(checkAttr("createTime")){
 			set("createTime", new Date());
 		}
-		
+
 		if(checkAttr("createUser")){
 			Model user = UserSession.get();
 			if(user != null){
@@ -1224,7 +1229,7 @@ public abstract class Model<M extends Model> implements Serializable {
 		if(checkAttr("lastUpdateTime")){
 			set("lastUpdateTime", new Date());
 		}
-		
+
 		if(checkAttr("lastUpdateUser")){
 			Model user = UserSession.get();
 			if(user != null){
@@ -1232,18 +1237,18 @@ public abstract class Model<M extends Model> implements Serializable {
 			}
 		}
 	}
-	
+
 	/**
 	 * afterSave () 保存成功回调
 	 */
 	protected void afterSave() {
-		
+
 	}
-	
+
 	/**
 	 * afterUpdate () 修改成功回调
 	 */
 	protected void afterUpdate() {
-		
+
 	}
 }

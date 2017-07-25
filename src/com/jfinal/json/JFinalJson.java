@@ -18,7 +18,6 @@ package com.jfinal.json;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
-import java.sql.Date;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -50,8 +49,7 @@ public class JFinalJson extends Json {
 	
 	protected int convertDepth = defaultConvertDepth;
 	protected String timestampPattern = "yyyy-MM-dd HH:mm:ss";
-	protected String dateStrPattern = "yyyy-MM-dd";
-	protected String datePattern = timestampPattern;
+	protected String datePattern = "yyyy-MM-dd";
 	
 	/**
 	 * 设置全局性默认转换深度
@@ -113,7 +111,7 @@ public class JFinalJson extends Json {
 		return sb.toString();
 	}
 	
-	protected String toKeyValue(String key, Object value, StringBuilder sb, int depth){
+	protected void toKeyValue(String key, Object value, StringBuilder sb, int depth){
 		sb.append('\"');
         if(key == null)
             sb.append("null");
@@ -122,8 +120,6 @@ public class JFinalJson extends Json {
 		sb.append('\"').append(':');
 		
 		sb.append(toJson(value, depth));
-		
-		return sb.toString();
 	}
 	
 	protected String iteratorToJson(Iterator iter, int depth) {
@@ -238,9 +234,6 @@ public class JFinalJson extends Json {
 			if (value instanceof java.sql.Timestamp) {
 				return "\"" + new SimpleDateFormat(timestampPattern).format(value) + "\"";
 			}
-			if(value instanceof java.sql.Date) {
-				return "\"" + new SimpleDateFormat(dateStrPattern).format(value) + "\"";
-			}
 			if (value instanceof java.sql.Time) {
 				return "\"" + value.toString() + "\"";
 			}
@@ -347,7 +340,7 @@ public class JFinalJson extends Json {
 	public <T> T parse(String jsonString, Class<T> type) {
 		throw new RuntimeException("jfinal " + com.jfinal.core.Const.JFINAL_VERSION + 
 		"默认 json 实现暂不支持 json 到 object 的转换,建议使用 active recrord 的 Generator 生成 base model，" +
-		"再通过 me.setJsonFactory(new JacksonFactory()) 来支持");
+		"再通过 me.setJsonFactory(new MixedJsonFactory()) 来支持");
 	}
 }
 

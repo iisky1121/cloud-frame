@@ -16,12 +16,15 @@
 
 package com.jfinal.plugin.activerecord.dialect;
 
+import java.math.BigInteger;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import com.jfinal.plugin.activerecord.Model;
 import com.jfinal.plugin.activerecord.Record;
 import com.jfinal.plugin.activerecord.Table;
 
@@ -44,12 +47,12 @@ public class PostgreSqlDialect extends Dialect {
 					sql.append(", ");
 					temp.append(", ");
 				}
-				sql.append("\"").append(colName).append("\"");
-				temp.append("?");
+				sql.append('\"').append(colName).append('\"');
+				temp.append('?');
 				paras.add(e.getValue());
 			}
 		}
-		sql.append(temp.toString()).append(")");
+		sql.append(temp.toString()).append(')');
 	}
 	
 	public String forModelDeleteById(Table table) {
@@ -62,7 +65,7 @@ public class PostgreSqlDialect extends Dialect {
 			if (i > 0) {
 				sql.append(" and ");
 			}
-			sql.append("\"").append(pKeys[i]).append("\" = ?");
+			sql.append('\"').append(pKeys[i]).append("\" = ?");
 		}
 		return sql.toString();
 	}
@@ -76,7 +79,7 @@ public class PostgreSqlDialect extends Dialect {
 				if (paras.size() > 0) {
 					sql.append(", ");
 				}
-				sql.append("\"").append(colName).append("\" = ? ");
+				sql.append('\"').append(colName).append("\" = ? ");
 				paras.add(e.getValue());
 			}
 		}
@@ -85,7 +88,7 @@ public class PostgreSqlDialect extends Dialect {
 			if (i > 0) {
 				sql.append(" and ");
 			}
-			sql.append("\"").append(pKeys[i]).append("\" = ?");
+			sql.append('\"').append(pKeys[i]).append("\" = ?");
 			paras.add(attrs.get(pKeys[i]));
 		}
 	}
@@ -94,15 +97,15 @@ public class PostgreSqlDialect extends Dialect {
 		StringBuilder sql = new StringBuilder("select ");
 		columns = columns.trim();
 		if ("*".equals(columns)) {
-			sql.append("*");
+			sql.append('*');
 		}
 		else {
 			String[] arr = columns.split(",");
 			for (int i=0; i<arr.length; i++) {
 				if (i > 0) {
-					sql.append(",");
+					sql.append(',');
 				}
-				sql.append("\"").append(arr[i].trim()).append("\"");
+				sql.append('\"').append(arr[i].trim()).append('\"');
 			}
 		}
 		
@@ -114,7 +117,7 @@ public class PostgreSqlDialect extends Dialect {
 			if (i > 0) {
 				sql.append(" and ");
 			}
-			sql.append("\"").append(pKeys[i]).append("\" = ?");
+			sql.append('\"').append(pKeys[i]).append("\" = ?");
 		}
 		return sql.toString();
 	}
@@ -128,7 +131,7 @@ public class PostgreSqlDialect extends Dialect {
 			if (i > 0) {
 				sql.append(" and ");
 			}
-			sql.append("\"").append(pKeys[i]).append("\" = ?");
+			sql.append('\"').append(pKeys[i]).append("\" = ?");
 		}
 		return sql.toString();
 	}
@@ -142,7 +145,7 @@ public class PostgreSqlDialect extends Dialect {
 			if (i > 0) {
 				sql.append(" and ");
 			}
-			sql.append("\"").append(pKeys[i]).append("\" = ?");
+			sql.append('\"').append(pKeys[i]).append("\" = ?");
 		}
 		return sql.toString();
 	}
@@ -161,11 +164,11 @@ public class PostgreSqlDialect extends Dialect {
 				sql.append(", ");
 				temp.append(", ");
 			}
-			sql.append("\"").append(e.getKey()).append("\"");
-			temp.append("?");
+			sql.append('\"').append(e.getKey()).append('\"');
+			temp.append('?');
 			paras.add(e.getValue());
 		}
-		sql.append(temp.toString()).append(")");
+		sql.append(temp.toString()).append(')');
 	}
 	
 	public void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Record record, StringBuilder sql, List<Object> paras) {
@@ -179,7 +182,7 @@ public class PostgreSqlDialect extends Dialect {
 				if (paras.size() > 0) {
 					sql.append(", ");
 				}
-				sql.append("\"").append(colName).append("\" = ? ");
+				sql.append('\"').append(colName).append("\" = ? ");
 				paras.add(e.getValue());
 			}
 		}
@@ -188,7 +191,7 @@ public class PostgreSqlDialect extends Dialect {
 			if (i > 0) {
 				sql.append(" and ");
 			}
-			sql.append("\"").append(pKeys[i]).append("\" = ?");
+			sql.append('\"').append(pKeys[i]).append("\" = ?");
 			paras.add(ids[i]);
 		}
 	}
@@ -200,28 +203,58 @@ public class PostgreSqlDialect extends Dialect {
 	}
 	
 	public void fillStatement(PreparedStatement pst, List<Object> paras) throws SQLException {
-		for (int i=0, size=paras.size(); i<size; i++) {
-			Object value = paras.get(i);
-			if (value instanceof java.sql.Date) {
-				pst.setDate(i + 1, (java.sql.Date)value);
-			} else if (value instanceof java.sql.Timestamp) {
-				pst.setTimestamp(i + 1, (java.sql.Timestamp)value);
-			} else {
-				pst.setObject(i + 1, value);
-			}
-		}
+		fillStatementHandleDateType(pst, paras);
 	}
 	
 	public void fillStatement(PreparedStatement pst, Object... paras) throws SQLException {
-		for (int i=0; i<paras.length; i++) {
-			Object value = paras[i];
-			if (value instanceof java.sql.Date) {
-				pst.setDate(i + 1, (java.sql.Date)value);
-			} else if (value instanceof java.sql.Timestamp) {
-				pst.setTimestamp(i + 1, (java.sql.Timestamp)value);
-			} else {
-				pst.setObject(i + 1, value);
+		fillStatementHandleDateType(pst, paras);
+	}
+	
+	/**
+	 * 解决 PostgreSql 获取自增主键时 rs.getObject(1) 总是返回第一个字段的值，而非返回了 id 值
+	 * issue: https://www.oschina.net/question/2312705_2243354
+	 * 
+	 * 相对于 Dialect 中的默认实现，仅将 rs.getXxx(1) 改成了 rs.getXxx(pKey)
+	 */
+	public void getModelGeneratedKey(Model<?> model, PreparedStatement pst, Table table) throws SQLException {
+		String[] pKeys = table.getPrimaryKey();
+		ResultSet rs = pst.getGeneratedKeys();
+		for (String pKey : pKeys) {
+			if (model.get(pKey) == null || isOracle()) {
+				if (rs.next()) {
+					Class<?> colType = table.getColumnType(pKey);
+					if (colType != null) {
+						if (colType == Integer.class || colType == int.class) {
+							model.set(pKey, rs.getInt(pKey));
+						} else if (colType == Long.class || colType == long.class) {
+							model.set(pKey, rs.getLong(pKey));
+						} else if (colType == BigInteger.class) {
+							processGeneratedBigIntegerKey(model, pKey, rs.getObject(pKey));
+						} else {
+							model.set(pKey, rs.getObject(pKey));
+						}
+					}
+				}
 			}
 		}
+		rs.close();
+	}
+	
+	/**
+	 * 解决 PostgreSql 获取自增主键时 rs.getObject(1) 总是返回第一个字段的值，而非返回了 id 值
+	 * issue: https://www.oschina.net/question/2312705_2243354
+	 * 
+	 * 相对于 Dialect 中的默认实现，仅将 rs.getXxx(1) 改成了 rs.getXxx(pKey)
+	 */
+	public void getRecordGeneratedKey(PreparedStatement pst, Record record, String[] pKeys) throws SQLException {
+		ResultSet rs = pst.getGeneratedKeys();
+		for (String pKey : pKeys) {
+			if (record.get(pKey) == null || isOracle()) {
+				if (rs.next()) {
+					record.set(pKey, rs.getObject(pKey));
+				}
+			}
+		}
+		rs.close();
 	}
 }

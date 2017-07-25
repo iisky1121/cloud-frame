@@ -39,7 +39,7 @@ public class ActiveRecordPlugin implements IPlugin {
 	
 	private Config config = null;
 	
-	private boolean isStarted = false;
+	private volatile boolean isStarted = false;
 	private List<Table> tableList = new ArrayList<Table>();
 	
 	public ActiveRecordPlugin(String configName, DataSource dataSource, int transactionLevel) {
@@ -109,7 +109,7 @@ public class ActiveRecordPlugin implements IPlugin {
 		return this;
 	}
 	
-	public ActiveRecordPlugin addSqlTemplate(com.jfinal.template.IStringSource sqlTemplate) {
+	public ActiveRecordPlugin addSqlTemplate(com.jfinal.template.source.ISource sqlTemplate) {
 		config.sqlKit.addSqlTemplate(sqlTemplate);
 		return this;
 	}
@@ -176,6 +176,14 @@ public class ActiveRecordPlugin implements IPlugin {
 			throw new IllegalArgumentException("containerFactory can not be null");
 		}
 		config.containerFactory = containerFactory;
+		return this;
+	}
+	
+	public ActiveRecordPlugin setDbProFactory(IDbProFactory dbProFactory) {
+		if (dbProFactory == null) {
+			throw new IllegalArgumentException("dbProFactory can not be null");
+		}
+		config.dbProFactory = dbProFactory;
 		return this;
 	}
 	
@@ -287,6 +295,10 @@ public class ActiveRecordPlugin implements IPlugin {
 	 */
 	public static void useAsDataTransfer() {
 		useAsDataTransfer(new com.jfinal.plugin.activerecord.dialect.MysqlDialect(), IContainerFactory.defaultContainerFactory, new com.jfinal.plugin.activerecord.cache.EhCache());
+	}
+	
+	public Config getConfig() {
+		return config;
 	}
 }
 
