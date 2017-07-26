@@ -1,18 +1,18 @@
-package com.jfinal.ext.plugin.globalerror;
+package com.jfinal.ext.plugin.global;
 
 import com.jfinal.ext.kit.JFinalKit;
 import com.jfinal.plugin.IPlugin;
 
-public class GlobalErrorPlugin implements IPlugin{
-	private GlobalErrorInterceptor interceptor;
-	public GlobalErrorInterceptor getInterceptor() {
+public class GlobalConfigPlugin implements IPlugin{
+	private GlobalInterceptor interceptor;
+	public GlobalInterceptor getInterceptor() {
 		if(interceptor == null){
-			interceptor = new GlobalErrorInterceptor();
+			interceptor = new GlobalInterceptor();
 		}
 		return interceptor;
 	}
 
-	public void setInterceptor(GlobalErrorInterceptor interceptor) {
+	public void setInterceptor(GlobalInterceptor interceptor) {
 		this.interceptor = interceptor;
 	}
 

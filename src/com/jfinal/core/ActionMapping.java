@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 import com.jfinal.aop.Interceptor;
 import com.jfinal.aop.InterceptorManager;
+import com.jfinal.base.CommonController;
 import com.jfinal.config.Interceptors;
 import com.jfinal.config.Routes;
 import com.jfinal.config.Routes.Route;
@@ -50,6 +51,11 @@ final class ActionMapping {
 	private Set<String> buildExcludedMethodName() {
 		Set<String> excludedMethodName = new HashSet<String>();
 		Method[] methods = Controller.class.getMethods();
+		for (Method m : methods) {
+			excludedMethodName.add(m.getName());
+		}
+		//增加一个忽略列表
+		methods = CommonController.class.getMethods();
 		for (Method m : methods) {
 			excludedMethodName.add(m.getName());
 		}

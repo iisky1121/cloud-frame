@@ -3,59 +3,17 @@ package com.jfinal.base;
 import com.jfinal.aop.Before;
 import com.jfinal.core.Controller;
 import com.jfinal.ext.interceptor.NotAction;
+import com.jfinal.ext.kit.ControllerKit;
 import com.jfinal.ext.plugin.validate.ValidateKit;
 
 public abstract class CommonController extends Controller{
-	/**
-	 * 设置登录用户信息
-	 * 
-	 * @return T
-	 */
-	public void setLoginUser(Object obj){
-		setSessionAttr(BaseConfig.loginUserSessionAttr, obj);
-		UserSession.set(obj);
-	}
-	
-	/**
-	 * 清除登录用户信息
-	 * 
-	 * @return T
-	 */
-	@Before(NotAction.class)
-	public void clearLoginUser(){
-		getSession().removeAttribute(BaseConfig.loginUserSessionAttr);
-		UserSession.set(null);
-	}
-	
-	/**
-	 * 获取用户登录信息
-	 * 
-	 * @return T
-	 */
-	public <T> T loginUser(){
-		return getSessionAttr(BaseConfig.loginUserSessionAttr);
-	}
 	
 	/**
 	 * 智能判断各种返回结果,默认为失败
 	 * 
 	 */
 	public void renderResult(Object object) {
-		if(object == null){
-			renderJson(ReturnResult.create(false).render());
-		}
-		else if(object instanceof Boolean){
-			renderJson(ReturnResult.create((Boolean)object).render());
-		}
-		else if(object instanceof ReturnResult){
-			renderJson(((ReturnResult)object).render());
-		}
-		else if(object instanceof String){
-			renderError((String)object);
-		}
-		else{
-			renderSucc(object);
-		}
+		renderJson(ReturnResult.toResult(object));
 	}
 	
 	/**
@@ -95,8 +53,8 @@ public abstract class CommonController extends Controller{
 	 * 检查必填属性
 	 * 
 	 */
-	public ReturnResult checkNotNull(String... attrs){
-		return ValidateKit.checkNotNull(this, attrs);
+	protected ReturnResult checkNotNull(String... attrs){
+		return ControllerKit.checkNotNull(this, attrs);
 	}
 	
 	/**
@@ -104,7 +62,7 @@ public abstract class CommonController extends Controller{
 	 * 
 	 */
 	public ReturnResult checkAttrValue(String attr, Object... values){
-		return ValidateKit.checkAttrValue(this, attr, values);
+		return ControllerKit.checkAttrValue(this, attr, values);
 	}
 	
 	/**
@@ -112,6 +70,6 @@ public abstract class CommonController extends Controller{
 	 * 
 	 */
 	public ReturnResult checkAttrValue(String attr, Class<Enum<?>> enumClass){
-		return ValidateKit.checkAttrValue(this, attr, enumClass);
+		return ControllerKit.checkAttrValue(this, attr, enumClass);
 	}
 }

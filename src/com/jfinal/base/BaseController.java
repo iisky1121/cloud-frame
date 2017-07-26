@@ -1,64 +1,37 @@
 package com.jfinal.base;
 
-import com.jfinal.interfaces.ISuccCallback;
 import com.jfinal.kit.StrKit;
 import com.jfinal.plugin.activerecord.Model;
+
 /**
  *BaseController
  */
-public abstract class BaseController<M extends Model<M>> extends BaseQueryController<M> {
+public abstract class BaseController<M extends Model<M>> extends CommonController {
+	protected BaseControllerKit<M> kit = new BaseControllerKit<M>(this);
 	/**
 	 * 通用删除
 	 * 
 	 */
 	public void delete() {
-		delete(null);
-	}
-
-	public void delete(ISuccCallback<ReturnResult> call){
 		String id = getPara();
 		if(StrKit.isBlank(id)){
 			renderResult(BaseConfig.attrValueEmpty("id"));
 			return;
 		}
-		ReturnResult result = ReturnResult.create(getM().deleteById(id)).call(new ISuccCallback<ReturnResult>() {
-			@Override
-			public ReturnResult callback(ReturnResult returnResult) {
-				if(call != null){
-					returnResult.setResult(id);
-					call.callback(returnResult);
-				}
-				return returnResult;
-			}
-		});
-		renderResult(result);
+		renderResult(kit.delete(id, null));
 	}
 
 	/**
 	 * 通用批量删除
 	 * 
 	 */
-	public void deletes() {
-		deletes(null);
-	}
-	public void deletes(ISuccCallback<ReturnResult> call){
-		ReturnResult result = checkNotNull("ids").call(new ISuccCallback<ReturnResult>() {
-			@Override
-			public ReturnResult callback(ReturnResult returnResult) {
-				String ids[] = getPara("ids").split(",");
-				return ReturnResult.create(getM().deletes(ids)).call(new ISuccCallback<ReturnResult>() {
-					@Override
-					public ReturnResult callback(ReturnResult returnResult) {
-						if(call != null){
-							returnResult.setResult(ids);
-							call.callback(returnResult);
-						}
-						return returnResult;
-					}
-				});
-			}
-		});
-		renderResult(result);
+	public void deletes(){
+		ReturnResult result = checkNotNull("ids");
+		if(!result.isSucceed()){
+			renderResult(result);
+			return;
+		}
+		renderResult(kit.deletes(getPara("ids").split(","), null));
 	}
 
 	/**
@@ -66,33 +39,7 @@ public abstract class BaseController<M extends Model<M>> extends BaseQueryContro
 	 * 
 	 */
 	public void save(){
-		renderResult(save(getData(), null));
-	}
-	
-	public void save(ISuccCallback<ReturnResult> call){
-		renderResult(save(getData(), call));
-	}
-
-	public ReturnResult save(M data){
-		return save(data, null);
-	}
-
-	public ReturnResult save(M data, ISuccCallback<ReturnResult> call){
-		return checkSaveOrUpdate(data).call(new ISuccCallback<ReturnResult>() {
-			@Override
-			public ReturnResult callback(ReturnResult returnResult) {
-				return ReturnResult.create(data.save()).call(new ISuccCallback<ReturnResult>() {
-					@Override
-					public ReturnResult callback(ReturnResult returnResult) {
-						if(call != null){
-							returnResult.setResult(data);
-							call.callback(returnResult);
-						}
-						return returnResult;
-					}
-				});
-			}
-		});
+		renderResult(kit.save(kit.getData(), null));
 	}
 
 	/**
@@ -100,39 +47,32 @@ public abstract class BaseController<M extends Model<M>> extends BaseQueryContro
 	 * 
 	 */
 	public void update(){
-		renderResult(update(getData(), null));
+		renderResult(kit.update(kit.getData(), null));
 	}
 
-	public void update(ISuccCallback<ReturnResult> call){
-		renderResult(update(getData(), call));
+	/**
+	 * 通用分页查找
+	 */
+	public void getByPage() {
+		renderSucc(kit.getPage(getParaMap()));
 	}
 
-	public ReturnResult update(M data){
-		return update(data, null);
+	/**
+	 * 通用查找全部
+	 */
+	public void getAll() {
+		renderSucc(kit.getList(getParaMap()));
 	}
 
-	public ReturnResult update(M data, ISuccCallback<ReturnResult> call){
-		return checkSaveOrUpdate(data).call(new ISuccCallback<ReturnResult>() {
-			@Override
-			public ReturnResult callback(ReturnResult returnResult) {
-				return ReturnResult.create(data.update()).call(new ISuccCallback<ReturnResult>() {
-					@Override
-					public ReturnResult callback(ReturnResult returnResult) {
-						if(call != null){
-							returnResult.setResult(data);
-							call.callback(returnResult);
-						}
-						return returnResult;
-					}
-				});
-			}
-		});
-	}
-
-	private ReturnResult checkSaveOrUpdate(M data){
-		if(data == null || data._getAttrNames() == null || data._getAttrNames().length == 0){
-			return BaseConfig.dataError();
+	/**
+	 * 通用根据id查找
+	 */
+	public void getById() {
+		String id = getPara();
+		if(StrKit.isBlank(id)){
+			renderResult(BaseConfig.attrValueEmpty("id"));
+			return;
 		}
-		return ReturnResult.success();
+		renderSucc(kit.getById(id));
 	}
 }

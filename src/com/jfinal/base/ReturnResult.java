@@ -11,7 +11,6 @@ public class ReturnResult {
 	private String msg;//错误提示语
 	private String error_code;//自定义错误code
 	private Object result;//返回结果对象
-	private Exception exception;//异常信息
 	private String cause;//错误原因
 
 	public String getCode() {
@@ -46,10 +45,6 @@ public class ReturnResult {
 		return this;
 	}
 
-	public Exception getException() {
-		return exception;
-	}
-	
 	public String getCause() {
 		return cause;
 	}
@@ -59,23 +54,14 @@ public class ReturnResult {
 		return this;
 	}
 
-	ReturnResult(String code, String msg, String error_code, Object result,Exception exception, String cause) {
+	ReturnResult(String code, String msg, String error_code, Object result, String cause) {
 		this.code = code;
 		this.msg = msg;
 		this.error_code = error_code;
 		this.result = result;
-		this.exception = exception;
 		this.cause = cause;
 	}
-	
-	ReturnResult(String code, String msg, String error_code, Object result, Exception exception) {
-		this.code = code;
-		this.msg = msg;
-		this.error_code = error_code;
-		this.result = result;
-		this.exception = exception;
-	}
-	
+
 	/**
 	 * 自定义
 	 */
@@ -91,18 +77,41 @@ public class ReturnResult {
 		}
 		return failure(errorStr);
 	}
+
+
+	/**
+	 * 智能判断各种返回结果,默认为失败
+	 *
+	 */
+	public static ReturnResult toResult(Object object) {
+		if(object == null){
+			return ReturnResult.create(false);
+		}
+		else if(object instanceof Boolean){
+			return ReturnResult.create((Boolean)object);
+		}
+		else if(object instanceof ReturnResult){
+			return ((ReturnResult)object);
+		}
+		else if(object instanceof String){
+			return ReturnResult.failure((String)object);
+		}
+		else{
+			return ReturnResult.success(object);
+		}
+	}
 	
 	/**
 	 * 成功
 	 */
 	public static ReturnResult success() {
-		return new ReturnResult(BaseConfig.success_code, BaseConfig.success_msg, null, null, null);
+		return success(BaseConfig.success_msg);
 	}
 	public static ReturnResult success(String msg) {
-		return new ReturnResult(BaseConfig.success_code, msg, null, null, null);
+		return success(msg, null);
 	}
 	public static ReturnResult success(Object result) {
-		return new ReturnResult(BaseConfig.success_code, BaseConfig.success_msg, null, result, null);
+		return success(BaseConfig.success_msg, result);
 	}
 	public static ReturnResult success(String msg, Object result) {
 		return new ReturnResult(BaseConfig.success_code, msg, null, result, null);
@@ -112,22 +121,13 @@ public class ReturnResult {
 	 * 失败
 	 */
 	public static ReturnResult failure() {
-		return new ReturnResult(BaseConfig.failure_code, BaseConfig.failure_msg, null, null, null);
+		return failure(BaseConfig.failure_msg);
 	}
 	public static ReturnResult failure(String msg) {
-		return new ReturnResult(BaseConfig.failure_code, msg, null, null, null);
-	}
-	public static ReturnResult failure(Exception exception, String cause) {
-		return new ReturnResult(BaseConfig.failure_code, BaseConfig.failure_msg, null, null, exception, cause);
-	}
-	public static ReturnResult failure(String msg, Exception exception) {
-		return new ReturnResult(BaseConfig.failure_code, msg, null, null, exception);
-	}
-	public static ReturnResult failure(String msg, String error_code) {
-		return new ReturnResult(BaseConfig.failure_code, msg, error_code, null, null);
+		return failure(msg, null);
 	}
 	public static ReturnResult failure(String msg, Object result) {
-		return new ReturnResult(BaseConfig.failure_code, msg, null, result, null);
+		return failure(msg, null, result);
 	}
     public static ReturnResult failure(String msg, String error_code, Object result) {
     	return new ReturnResult(BaseConfig.failure_code, msg, error_code, result, null);
@@ -153,9 +153,6 @@ public class ReturnResult {
 		}
 		if(result != null){
 			map.put("result", result);
-		}
-		if(exception != null){
-			map.put("exception", StrKit.isBlank(exception.getMessage())?exception.getCause():exception.getMessage());
 		}
 		if(!StrKit.isBlank(cause)){
 			map.put("cause", cause);
