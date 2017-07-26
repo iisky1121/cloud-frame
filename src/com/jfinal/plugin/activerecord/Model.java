@@ -76,7 +76,7 @@ public abstract class Model<M extends Model> implements Serializable {
 		return modifyFlag;
 	}*/
 	
-	Set<String> getModifyFlag() {
+	protected Set<String> getModifyFlag() {
 		if (modifyFlag == null) {
 			Config config = _getConfig();
 			if (config == null)
