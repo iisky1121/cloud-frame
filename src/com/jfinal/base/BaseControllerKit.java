@@ -45,7 +45,7 @@ public class BaseControllerKit<M extends Model<M>> {
     }
 
     private Class<M> getClazz() {
-        Type t = getClass().getGenericSuperclass();
+        Type t = controller.getClass().getGenericSuperclass();
         Type[] params = ((ParameterizedType) t).getActualTypeArguments();
         return (Class<M>) params[0];
     }

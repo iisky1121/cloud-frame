@@ -1,7 +1,7 @@
 package com.jfinal.ext.kit;
 
+import com.jfinal.base.BaseConfig;
 import com.jfinal.base.ReturnResult;
-import com.jfinal.base.UserSession;
 import com.jfinal.core.Controller;
 import com.jfinal.ext.plugin.validate.ValidateKit;
 
@@ -14,8 +14,8 @@ public class ControllerKit{
      *
      * @return T
      */
-    public static void setLoginUser(Object obj){
-        UserSession.set(obj);
+    public static void setLoginUser(Controller controller, Object obj){
+        controller.setSessionAttr(BaseConfig.loginUserSessionAttr, obj);
     }
 
     /**
@@ -23,8 +23,8 @@ public class ControllerKit{
      *
      * @return T
      */
-    public static void clearLoginUser(){
-        UserSession.set(null);
+    public static void clearLoginUser(Controller controller){
+        controller.removeSessionAttr(BaseConfig.loginUserSessionAttr);
     }
 
     /**
@@ -32,8 +32,8 @@ public class ControllerKit{
      *
      * @return T
      */
-    public static <T> T loginUser(){
-        return UserSession.get();
+    public static <T> T loginUser(Controller controller){
+        return controller.getSessionAttr(BaseConfig.loginUserSessionAttr);
     }
 
     /**
