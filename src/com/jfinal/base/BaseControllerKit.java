@@ -2,9 +2,7 @@ package com.jfinal.base;
 
 import com.jfinal.core.Controller;
 import com.jfinal.ext.plugin.sql.Cnd;
-import com.jfinal.ext.plugin.validate.ValidateKit;
 import com.jfinal.interfaces.ISuccCallback;
-import com.jfinal.kit.StrKit;
 import com.jfinal.plugin.activerecord.IBean;
 import com.jfinal.plugin.activerecord.Model;
 import com.jfinal.plugin.activerecord.Page;
@@ -22,57 +20,6 @@ public class BaseControllerKit<M extends Model<M>> {
 
     public BaseControllerKit(Controller controller){
         this.controller = controller;
-    }
-
-    /**
-     * 设置登录用户信息
-     *
-     * @return T
-     */
-    public void setLoginUser(Object obj){
-        UserSession.set(obj);
-    }
-
-    /**
-     * 清除登录用户信息
-     *
-     * @return T
-     */
-    public void clearLoginUser(){
-        UserSession.set(null);
-    }
-
-    /**
-     * 获取用户登录信息
-     *
-     * @return T
-     */
-    public <T> T loginUser(){
-        return UserSession.get();
-    }
-
-    /**
-     * 检查必填属性
-     *
-     */
-    public ReturnResult checkNotNull(Controller controller, String... attrs){
-        return ValidateKit.checkNotNull(controller, attrs);
-    }
-
-    /**
-     * 检查属性值
-     *
-     */
-    public ReturnResult checkAttrValue(Controller controller, String attr, Object... values){
-        return ValidateKit.checkAttrValue(controller, attr, values);
-    }
-
-    /**
-     * 检查属性值
-     *
-     */
-    public ReturnResult checkAttrValue(Controller controller, String attr, Class<Enum<?>> enumClass){
-        return ValidateKit.checkAttrValue(controller, attr, enumClass);
     }
 
     public M getData(){
