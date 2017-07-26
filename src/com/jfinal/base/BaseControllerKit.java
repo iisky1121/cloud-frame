@@ -87,6 +87,9 @@ public class BaseControllerKit<M extends Model<M>> {
     /**
      * 通用分页查找
      */
+    public Page<M> getPage() {
+        return getPage(controller.getParaMap());
+    }
     public Page<M> getPage(Map<String, String[]> params) {
         Cnd.Query cnd = getQuery(params).where().build();
 
@@ -102,6 +105,9 @@ public class BaseControllerKit<M extends Model<M>> {
     /**
      * 通用查找全部
      */
+    public List<M> getList() {
+        return getList(controller.getParaMap());
+    }
     public List<M> getList(Map<String, String[]> params) {
         Cnd.Query cnd =getQuery(params).where().build();
         List<M> list = getM().find(String.format(Cnd.$SELECT_FROM_TABLE, getM().getTableName()).concat(getM().getAlias()==null?"":" "+getM().getAlias()).concat(cnd.getSql()), cnd.getParas());
