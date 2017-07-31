@@ -456,13 +456,13 @@ public abstract class Model<M extends Model> implements Serializable {
 			config.dialect.fillStatement(pst, paras);
 			result = pst.executeUpdate();
 			config.dialect.getModelGeneratedKey(this, pst, table);
-			getModifyFlag().clear();
-			//return result >= 1;
 			if(result >= 1){
 				//after save
 				afterSave();
+				getModifyFlag().clear();
 				return true;
 			}
+			getModifyFlag().clear();
 			return false;
 		} catch (Exception e) {
 			throw new ActiveRecordException(e);
@@ -561,9 +561,9 @@ public abstract class Model<M extends Model> implements Serializable {
 			conn = config.getConnection();
 			int result = Db.update(config, conn, sql.toString(), paras.toArray());
 			if (result >= 1) {
-				getModifyFlag().clear();
 				//after update
 				afterUpdate();
+				getModifyFlag().clear();
 				return true;
 			}
 			return false;
