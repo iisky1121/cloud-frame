@@ -1,10 +1,7 @@
 package com.jfinal.base;
 
-import com.jfinal.aop.Before;
 import com.jfinal.core.Controller;
-import com.jfinal.ext.interceptor.NotAction;
 import com.jfinal.ext.kit.ControllerKit;
-import com.jfinal.ext.plugin.validate.ValidateKit;
 
 public abstract class CommonController extends Controller{
 	
@@ -13,7 +10,7 @@ public abstract class CommonController extends Controller{
 	 * 
 	 */
 	public void renderResult(Object object) {
-		renderJson(ReturnResult.toResult(object));
+		renderJson(ReturnResult.toResult(object).render());
 	}
 	
 	/**
