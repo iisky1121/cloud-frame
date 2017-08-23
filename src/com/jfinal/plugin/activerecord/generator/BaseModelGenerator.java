@@ -59,7 +59,7 @@ public class BaseModelGenerator {
 	
 	protected String getterTemplate =
 			"\tpublic %s %s() {%n" +
-				"\t\treturn get(\"%s\");%n" +
+				"\t\treturn %s(\"%s\");%n" +
 			"\t}%n%n";
 	
 	protected String baseModelPackageName;
@@ -144,7 +144,12 @@ public class BaseModelGenerator {
 	
 	protected void genGetMethodName(ColumnMeta columnMeta, StringBuilder ret) {
 		String getterMethodName = "get" + StrKit.firstCharToUpperCase(columnMeta.attrName);
-		String getter = String.format(getterTemplate, columnMeta.javaType, getterMethodName, columnMeta.name);
+		String modelGetMethodName = "get";
+		if(ModelGetMapping.mapping.containsKey(columnMeta.javaType)){
+			modelGetMethodName = ModelGetMapping.mapping.get(columnMeta.javaType);
+		}
+
+		String getter = String.format(getterTemplate, columnMeta.javaType, getterMethodName, modelGetMethodName, columnMeta.name);
 		ret.append(getter);
 	}
 	

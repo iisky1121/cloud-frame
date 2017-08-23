@@ -21,26 +21,19 @@ import java.util.Map;
 import com.jfinal.json.Json;
 
 /**
- * Kv ---> Key Value 
- * Kv 用于取代 JMap，前者输入量少，且输入更顺滑
- * 
- * 参数或者返回值封装，常用于业务层传参与返回值
+ * Kv (Key Value)
  * 
  * Example：
- * 1：Kv para = Kv.by("id", 123);
+ *    Kv para = Kv.by("id", 123);
  *    User user = user.findFirst(getSqlPara("find", para));
- * 
- * 2：return Kv.fail("msg", "用户名或密码错误");	// 登录失败返回
- *   return Kv.ok("loginUser", user);			// 登录成功返回
- * 
- * 3：Kv kv = loginService.login(...);
- *   renderJson(kv);
  */
 @SuppressWarnings({"serial", "rawtypes", "unchecked"})
 public class Kv extends HashMap {
-
-	private static final String STATUS_OK = "isOk";
-	private static final String STATUS_FAIL = "isFail";
+	
+	@Deprecated
+	private static final String STATE_OK = "isOk";
+	@Deprecated
+	private static final String STATE_FAIL = "isFail";
 	
 	public Kv() {
 	}
@@ -53,42 +46,66 @@ public class Kv extends HashMap {
 		return new Kv();
 	}
 	
+	@Deprecated
 	public static Kv ok() {
 		return new Kv().setOk();
 	}
 	
+	@Deprecated
 	public static Kv ok(Object key, Object value) {
 		return ok().set(key, value);
 	}
 	
+	@Deprecated
 	public static Kv fail() {
 		return new Kv().setFail();
 	}
 	
+	@Deprecated
 	public static Kv fail(Object key, Object value) {
 		return fail().set(key, value);
 	}
 	
+	@Deprecated
 	public Kv setOk() {
-		super.put(STATUS_OK, Boolean.TRUE);
-		super.put(STATUS_FAIL, Boolean.FALSE);
+		super.put(STATE_OK, Boolean.TRUE);
+		super.put(STATE_FAIL, Boolean.FALSE);
 		return this;
 	}
 	
+	@Deprecated
 	public Kv setFail() {
-		super.put(STATUS_OK, Boolean.FALSE);
-		super.put(STATUS_FAIL, Boolean.TRUE);
+		super.put(STATE_FAIL, Boolean.TRUE);
+		super.put(STATE_OK, Boolean.FALSE);
 		return this;
 	}
 	
+	@Deprecated
 	public boolean isOk() {
-		Boolean isOk = (Boolean)get(STATUS_OK);
-		return isOk != null && isOk;
+		Boolean isOk = (Boolean)get(STATE_OK);
+		if (isOk != null) {
+			return isOk;
+		}
+		Boolean isFail = (Boolean)get(STATE_FAIL);
+		if (isFail != null) {
+			return !isFail;
+		}
+		
+		throw new IllegalStateException("调用 isOk() 之前，必须先调用 ok()、fail() 或者 setOk()、setFail() 方法");
 	}
 	
+	@Deprecated
 	public boolean isFail() {
-		Boolean isFail = (Boolean)get(STATUS_FAIL);
-		return isFail != null && isFail;
+		Boolean isFail = (Boolean)get(STATE_FAIL);
+		if (isFail != null) {
+			return isFail;
+		}
+		Boolean isOk = (Boolean)get(STATE_OK);
+		if (isOk != null) {
+			return !isOk;
+		}
+		
+		throw new IllegalStateException("调用 isFail() 之前，必须先调用 ok()、fail() 或者 setOk()、setFail() 方法");
 	}
 	
 	public Kv set(Object key, Object value) {
@@ -116,17 +133,24 @@ public class Kv extends HashMap {
 	}
 	
 	public String getStr(Object key) {
-		return (String)get(key);
+		Object s = get(key);
+		return s != null ? s.toString() : null;
 	}
-
+	
 	public Integer getInt(Object key) {
-		return (Integer)get(key);
+		Number n = (Number)get(key);
+		return n != null ? n.intValue() : null;
 	}
-
+	
 	public Long getLong(Object key) {
-		return (Long)get(key);
+		Number n = (Number)get(key);
+		return n != null ? n.longValue() : null;
 	}
-
+	
+	public Number getNumber(Object key) {
+		return (Number)get(key);
+	}
+	
 	public Boolean getBoolean(Object key) {
 		return (Boolean)get(key);
 	}

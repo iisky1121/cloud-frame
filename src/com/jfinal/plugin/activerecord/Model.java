@@ -16,6 +16,12 @@
 
 package com.jfinal.plugin.activerecord;
 
+import com.jfinal.base.UserSession;
+import com.jfinal.ext.plugin.sql.Cnd;
+import com.jfinal.ext.plugin.tablebind.TableBind;
+import com.jfinal.kit.StrKit;
+import com.jfinal.plugin.activerecord.cache.ICache;
+
 import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -24,11 +30,6 @@ import java.sql.Statement;
 import java.util.*;
 import java.util.Map.Entry;
 
-import com.jfinal.base.UserSession;
-import com.jfinal.ext.plugin.sql.Cnd;
-import com.jfinal.ext.plugin.tablebind.TableBind;
-import com.jfinal.kit.StrKit;
-import com.jfinal.plugin.activerecord.cache.ICache;
 import static com.jfinal.plugin.activerecord.DbKit.NULL_PARA_ARRAY;
 
 /**
