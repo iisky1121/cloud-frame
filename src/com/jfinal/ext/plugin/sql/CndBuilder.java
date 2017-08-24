@@ -229,40 +229,10 @@ class CndBuilder {
 		}
 	}
 
-	static void build$DRQ(CndWhere where, Map<String, CndParam> defaults, Set<String> removes, Map<String, CndParam> querys){
-		//默认值优先
-		for(Map.Entry<String, CndParam> entry : defaults.entrySet()){
-			if(removes.contains(entry.getKey())){
-				continue;
-			}
-			if(querys.containsKey(entry.getKey()) && entry.getValue().getValue()==null){
-				entry.getValue().setValue(querys.get(entry.getKey()).getValue());
-				where.and(entry.getValue());
-				querys.remove(entry.getKey());
-			} else {
-				where.and(entry.getValue());
-			}
-		}
-		//构建查询条件
-		for(Map.Entry<String, CndParam> entry : querys.entrySet()){
-			if(removes.contains(entry.getKey())){
-				continue;
-			}
-			where.and(entry.getValue());
-		}
-	}
-
 	static void build$Symbol(CndWhere where, StringBuilder sb){
 		//设置where关键字，解决1=1效率的问题
 		if(!StrKit.isBlank(sb.toString())){
 			if(where.hasWhere()){
-				/*if(sb.toString().indexOf(String.format(Cnd.$BLANK_FNT, "=")) != -1
-						|| sb.toString().indexOf(String.format(Cnd.$BLANK_FNT, Cnd.Symbol.and.name())) != -1
-						|| sb.toString().indexOf(String.format(Cnd.$BLANK_FNT, Cnd.Symbol.or.name())) != -1){
-					sql.append(String.format(Cnd.$BLANK_FNT, Cnd.$WHERE).concat(sb.toString()));
-				} else {
-					sql.append(sb.toString());
-				}*/
 				sb.insert(0, String.format(Cnd.$BLANK_FNT, Cnd.$WHERE));
 			} else {
 				sb.insert(0, String.format(Cnd.$BLANK_FNT, Cnd.Symbol.and.name()));

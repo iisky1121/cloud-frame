@@ -181,7 +181,7 @@ class CndQuery<M extends CndQuery<M>> extends CndSelect<M> {
 
 	static void build$Param(CndQuery<?> cnd, String key, Object value){
 		//禁止值或者为空
-		if(StrKit.isBlank(key) || cnd.isDisable(key) || value == null){
+		if(StrKit.isBlank(key) || cnd.isDisable(key)){
 			return;
 		}
 		//默认值
@@ -190,10 +190,6 @@ class CndQuery<M extends CndQuery<M>> extends CndSelect<M> {
 			if(param.getValue() == null && value != null){
 				param.setValue(value);
 			}
-		} else {
-			param = CndParam.create(key, value, cnd.all_cloumns.get(key));
-		}
-		if(param.getValue() != null){
 			cnd.getWhere().and(param);
 		}
 	}

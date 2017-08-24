@@ -16,9 +16,8 @@
 
 package com.jfinal.kit;
 
-import java.io.File;
-
 import javax.servlet.http.HttpServletRequest;
+import java.io.File;
 
 /**
  * new File("..\path\abc.txt") 中的三个方法获取路径的方法
@@ -106,7 +105,11 @@ public class PathKit {
 		return request.getScheme() + "://" + request.getServerName()	+ (request.getServerPort()==80?"":(":" + request.getServerPort()))+request.getContextPath();
 	}
 	public static String getUri(HttpServletRequest request){
-		String contentPath = request.getScheme() + "://" + request.getServerName()	+ (request.getServerPort()==80?"":(":" + request.getServerPort()));
+		return getUri(request, false);
+	}
+
+	public static String getUri(HttpServletRequest request, boolean isHttps){
+		String contentPath = (isHttps ? "https" : request.getScheme()) + "://" + request.getServerName()	+ (request.getServerPort()==80?"":(":" + request.getServerPort()));
 		String requestUri = request.getRequestURI();
 		String queryString = request.getQueryString() == null?"":"?"+request.getQueryString();
 		return contentPath+requestUri+queryString;
