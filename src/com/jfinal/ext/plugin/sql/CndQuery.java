@@ -191,6 +191,8 @@ class CndQuery<M extends CndQuery<M>> extends CndSelect<M> {
 				param.setValue(value);
 			}
 			cnd.getWhere().and(param);
+		} else if(value != null) {
+			cnd.getWhere().and(CndParam.create(key, value, cnd.all_cloumns.get(key)));
 		}
 	}
 
