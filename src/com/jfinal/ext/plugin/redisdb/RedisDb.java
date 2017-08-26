@@ -50,6 +50,9 @@ public class RedisDb {
 	 * @return
 	 */
 	public Cache cache(){
+		if(this.cache == null){
+			throw new RuntimeException("redis没有配置或者启动失败");
+		}
 		return this.cache;
 	}
 
@@ -58,6 +61,9 @@ public class RedisDb {
 	 * @return
 	 */
 	Pipeline pipeline(){
+		if(this.pipeline == null){
+			throw new RuntimeException("redis pipeline没有开启");
+		}
 		return this.pipeline;
 	}
 
