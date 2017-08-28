@@ -4,6 +4,12 @@ import com.jfinal.core.Controller;
 import com.jfinal.ext.kit.ControllerKit;
 
 public abstract class CommonController extends Controller{
+	public int pageSize(){
+		return getParaToInt("pageSize", 10);
+	}
+	public int pageNumber(){
+		return getParaToInt("pageNumber", 1);
+	}
 	
 	/**
 	 * 智能判断各种返回结果,默认为失败
@@ -15,7 +21,7 @@ public abstract class CommonController extends Controller{
 	
 	/**
 	 * 返回成功或者失败json数据
-	 * 
+	 * 统一使用renderResult
 	 */
 	@Deprecated
 	public void renderJson(boolean b) {
@@ -24,24 +30,27 @@ public abstract class CommonController extends Controller{
 	
 	/**
 	 * 返回失败json数据
-	 * 
+	 * 统一使用renderResult
 	 */
+	@Deprecated
 	public void renderError(String errorStr){
 		renderResult(ReturnResult.failure(errorStr));
 	}
 	
 	/**
 	 * 返回成功json数据
-	 * 
+	 * 统一使用renderResult
 	 */
+	@Deprecated
 	public void renderSucc(String succStr){
 		renderResult(ReturnResult.success(succStr));
 	}
 	
 	/**
 	 * 返回成功json数据
-	 * 
+	 * 统一使用renderResult
 	 */
+	@Deprecated
 	public void renderSucc(Object object){
 		renderResult(ReturnResult.success(object));
 	}
