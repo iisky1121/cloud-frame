@@ -117,9 +117,7 @@ public class CndGroup {
     }
 
 	private CndGroup add(CndParam p) {
-        if(p.getValue() != null){
-            params.add(p);
-        }
+        params.add(p);
 		return this;
 	}
 
