@@ -61,9 +61,6 @@ public class RedisDb {
 	 * @return
 	 */
 	Pipeline pipeline(){
-		if(this.pipeline == null){
-			throw new RuntimeException("redis pipeline没有开启");
-		}
 		return this.pipeline;
 	}
 
@@ -266,7 +263,7 @@ public class RedisDb {
 	 */
 	public RedisDb openPipeline(){
 		if(!isOpenPipeline()){
-			this.pipeline = this.cache().getJedis().pipelined();
+			this.pipeline = cache().getJedis().pipelined();
 		}
 		return this;
 	}
