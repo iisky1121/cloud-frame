@@ -197,7 +197,8 @@ class CndBuilder {
 		int index = 0;
 		sb.append("(");
 		for(CndParam param : group.getParams()){
-			if(index > 0 && param.getSymbol() != null){
+			if(index > 0 && param.getSymbol() != null
+					&& (param.getValue() != null || param.getType() == Cnd.Type.empty || param.getType() == Cnd.Type.not_empty)){
 				sb.append(String.format(Cnd.$BLANK_FNT, param.getSymbol().name()));
 			}
 			buildSql(sb, param, params);
