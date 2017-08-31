@@ -5,10 +5,12 @@ import com.jfinal.ext.kit.ControllerKit;
 
 public abstract class CommonController extends Controller{
 	public int pageSize(){
-		return getParaToInt("pageSize", 10);
+		int pageSize = getParaToInt("pageSize", 10);
+		return pageSize>0?pageSize:10;
 	}
 	public int pageNumber(){
-		return getParaToInt("pageNumber", 1);
+		int pageNumber = getParaToInt("pageNumber", 1);
+		return pageNumber>0?pageNumber:1;
 	}
 	
 	/**

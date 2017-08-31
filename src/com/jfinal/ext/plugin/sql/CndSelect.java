@@ -63,11 +63,11 @@ class CndSelect<M extends CndSelect<M>> extends CndBaseSelect<M> {
 		return (M)this;
 	}
 
-	public M limit(int limit){
+	public M limit(Integer limit){
 		this.limit = limit;
 		return (M)this;
 	}
-	public M limit(int offset, int limit){
+	public M limit(Integer offset, Integer limit){
 		this.offset = offset;
 		return limit(limit);
 	}
