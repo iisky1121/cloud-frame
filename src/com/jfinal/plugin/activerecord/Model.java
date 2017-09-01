@@ -511,7 +511,7 @@ public abstract class Model<M extends Model> implements Serializable {
 		return deleteById(table, idValues);
 	}
 	
-	private boolean deleteById(Table table, Object... idValues) {
+	protected boolean deleteById(Table table, Object... idValues) {
 		Config config = _getConfig();
 		Connection conn = null;
 		try {

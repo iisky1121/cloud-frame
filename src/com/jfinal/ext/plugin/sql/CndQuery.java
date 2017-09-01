@@ -128,6 +128,8 @@ class CndQuery<M extends CndQuery<M>> extends CndSelect<M> {
 			set$OrderBy();
 		}
 		CndBuilder.build$OrderBy(sb, getOrderBys());
+		//构建limit
+		CndBuilder.build$Limit(sb, getOffset(), getLimit());
 
 		sql.append(sb.toString());
 		paramList.addAll(paramArrayList);

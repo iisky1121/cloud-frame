@@ -69,6 +69,8 @@ class CndModelSelect<M extends CndModelSelect<M>> extends CndSelect<M> {
 		CndBuilder.build$GroupBy(sb, getGroupBys());
 		//构建排序
 		CndBuilder.build$OrderBy(sb, getOrderBys());
+		//构建limit
+		CndBuilder.build$Limit(sb, getOffset(), getLimit());
 
 		sql.append(sb.toString());
 		paramList.addAll(paramArrayList);
