@@ -45,6 +45,9 @@ class CndBuilder {
 					throw new IllegalArgumentException("使用IN条件的时候传入的值必须是个Collection对象或者Object[]对象或者String对象(多个以,分隔)");
 				}
 				StringBuilder instr = new StringBuilder();
+				if(values.length == 0){
+					return new Object[]{" = '###' ", null};
+				}
 				for (int i =0; i< values.length; i++) {
 					instr.append(StrKit.notBlank(instr.toString()) ? ",?" : "?");
 				}
@@ -54,6 +57,9 @@ class CndBuilder {
 				Object[] values = CndKit.toValues(queryType, fieldValue);
 				if(values == null){
 					throw new IllegalArgumentException("使用Not IN条件的时候传入的值必须是个Collection对象或者Object[]对象或者String对象(多个以,分隔)");
+				}
+				if(values.length == 0){
+					return new Object[]{" = '###' ", null};
 				}
 				StringBuilder instr = new StringBuilder();
 				for (int i =0; i< values.length; i++) {

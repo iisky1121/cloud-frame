@@ -92,6 +92,9 @@ public class CndKit {
 	
 	@SuppressWarnings("rawtypes")
 	public static Object[] toValues(Cnd.Type queryType, Object object){
+		if(object == null){
+			return null;
+		}
 		Object[] values = null;
     	if (object instanceof Collection) {
 			values = ((Collection)object).toArray();
