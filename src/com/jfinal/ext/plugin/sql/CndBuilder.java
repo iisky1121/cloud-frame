@@ -90,14 +90,14 @@ class CndBuilder {
 		return null;
 	}
 
-    static void buildSql(StringBuilder sb, CndParam param, List<Object> params){
+    static boolean buildSql(StringBuilder sb, CndParam param, List<Object> params){
 		Object[] values = buildValue(param.getType(), param.getValue());
 		if(values == null){
-			return;
+			return false;
 		}
 		sb.append(param.getKey() + values[0]);
 		if(values[1] == null){
-			return;
+			return true;
 		}
 
 		if(values[1] instanceof Object[]){
@@ -108,6 +108,7 @@ class CndBuilder {
 		else{
 			params.add(values[1]);
 		}
+		return true;
 	}
 
 	static String getAlias(String alias, Class<?> clazz){
@@ -200,15 +201,23 @@ class CndBuilder {
 		if(group.getSymbol() != null){
 			sb.append(String.format(Cnd.$BLANK_FNT, group.getSymbol().name()));
 		}
-		int index = 0;
+		boolean cndSymbol = false;
 		sb.append("(");
 		for(CndParam param : group.getParams()){
-			if(index > 0 && param.getSymbol() != null
+			StringBuilder builder = new StringBuilder();
+			if(buildSql(builder, param, params)){
+				if(cndSymbol){
+					sb.append(String.format(Cnd.$BLANK_FNT, param.getSymbol().name()));
+				}
+				sb.append(builder.toString());
+				cndSymbol = true;
+			}
+			/*if(index > 0 && param.getSymbol() != null
 					&& (param.getValue() != null || param.getType() == Cnd.Type.empty || param.getType() == Cnd.Type.not_empty)){
 				sb.append(String.format(Cnd.$BLANK_FNT, param.getSymbol().name()));
 			}
 			buildSql(sb, param, params);
-			index++;
+			index++;*/
 		}
 		if(group.hasGroup()){
 			for(CndGroup g : group.getGroupList()){

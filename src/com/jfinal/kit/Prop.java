@@ -16,13 +16,13 @@
 
 package com.jfinal.kit;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.Properties;
 import com.jfinal.core.Const;
+
+import java.io.*;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Properties;
 
 /**
  * Prop. Prop can load properties file from CLASSPATH or File object.
@@ -169,5 +169,30 @@ public class Prop {
 	
 	public Properties getProperties() {
 		return properties;
+	}
+
+	public <T> T toBean(Class<T> clazz){
+		Field[] fields = clazz.getDeclaredFields();
+		try {
+			T t = clazz.newInstance();
+			for(Field field : fields){
+				Object value = getProperties().get(String.format("%s", field.getName()));
+				if(value == null){
+					continue;
+				}
+				Method method = clazz.getMethod(String.format("set%s", StrKit.firstCharToUpperCase(field.getName())), field.getType());
+				method.invoke(t, new Object[]{value});
+			}
+			return t;
+		} catch (InstantiationException e) {
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+		} catch (NoSuchMethodException e) {
+			e.printStackTrace();
+		} catch (InvocationTargetException e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 }
