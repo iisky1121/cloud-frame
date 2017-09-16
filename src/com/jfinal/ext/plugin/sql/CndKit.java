@@ -12,8 +12,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.regex.Pattern;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 public class CndKit {
 	private final static String START_TIME_STR="####0101000000";
@@ -156,6 +156,11 @@ public class CndKit {
 			return beanFormatValues(paras, (Class<? extends IBean>) entryClass);
 		}
 		return map;
+	}
+
+	public static boolean isEqualQuery(Object value){
+		CndParam param = CndParam.create("key", value);
+		return param != null && param.getType() == Cnd.Type.equal;
 	}
 	
 	private static final Pattern ORDER_BY_PATTERN = Pattern.compile(
