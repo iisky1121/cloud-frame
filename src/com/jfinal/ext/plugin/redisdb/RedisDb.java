@@ -181,7 +181,7 @@ public class RedisDb {
 		}
 		//重置过期时间
 		if(autoRefreshExpireTime && expireSeconds > 0){
-			this.cache().pexpire(cacheKey, expireSeconds * 1000);
+			this.cache().expire(cacheKey, expireSeconds);
 		}
 		return (Map<String, Object>) data;
 	}
