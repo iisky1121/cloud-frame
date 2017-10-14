@@ -6,7 +6,7 @@ import java.util.*;
 
 @SuppressWarnings("unchecked")
 class CndSelect<M extends CndSelect<M>> extends CndBaseSelect<M> {
-	private Map<String,Cnd.OrderByType> orderBys = new HashMap<String, Cnd.OrderByType>();
+	private Map<String,Cnd.OrderByType> orderBys = new LinkedHashMap<String, Cnd.OrderByType>();
 	//分组值设置
 	private Set<String> groupBys = new HashSet<String>();
 

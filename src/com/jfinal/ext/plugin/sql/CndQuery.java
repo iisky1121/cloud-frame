@@ -211,16 +211,43 @@ class CndQuery<M extends CndQuery<M>> extends CndSelect<M> {
 				if(!StrKit.isBlank(orderBy)){
 					String[] values = orderBy.split("_");
 					//前端传入的参数必须是一些存在的字段，而不是一些自定义的属性
-					if(!all_cloumns.containsKey(values[0])){
-						continue;
-					}
-					if(values.length == 1){
-						orderBy(values[0]);
-					} else if(values.length == 2){
-						orderBy(values[0], Cnd.OrderByType.valueOf(values[1]));
+//					if(!all_cloumns.containsKey(values[0])){
+//						continue;
+//					}
+//					if(values.length == 1){
+//						orderBy(values[0]);
+//					} else if(values.length == 2){
+//						orderBy(values[0], Cnd.OrderByType.valueOf(values[1]));
+//					}
+					if(all_cloumns.containsKey(values[0]) || isSpecialOrderBy(values[0])){
+						if(values.length == 1){
+							orderBy(values[0]);
+						} else if(values.length == 2){
+							orderBy(values[0], Cnd.OrderByType.valueOf(values[1]));
+						}
 					}
 				}
 			}
 		}
+	}
+	
+	/**
+	 * 是否特殊的orderBy，一般指含有函数的orderBy
+	 * @param value orderBy的值
+	 */
+	private boolean isSpecialOrderBy(String value){
+		return isFunctionOrderBy("length", value) || isFunctionOrderBy("count", value) || isFunctionOrderBy("sum", value);
+	}
+	
+	/**
+	 * 是否含有函数的orderBy
+	 * @param function 函数名
+	 * @param value orderBy的值
+	 */
+	private boolean isFunctionOrderBy(String function, String value){
+		String valueStart = value.substring(0, function.length() + 1);
+		String valueCloumn = value.substring(function.length() + 1, value.length() - 1);
+		String valueEnd = value.substring(value.length() - 1);
+		return (function + "(").equals(valueStart.toLowerCase()) && all_cloumns.containsKey(valueCloumn) && ")".equals(valueEnd);
 	}
 }
