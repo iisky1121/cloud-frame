@@ -258,7 +258,7 @@ public class HashKit {
 	 * @return
 	 */
 	public static String decryptToBase64Url(String encodeUrl){
-		encodeUrl = encryptToBase64Url(encodeUrl);
+		encodeUrl = decryptToBase64(encodeUrl);
 		if(encodeUrl.indexOf("*") != -1){
 			encodeUrl = encodeUrl.replaceAll("\\*", "\\+");
 		}
