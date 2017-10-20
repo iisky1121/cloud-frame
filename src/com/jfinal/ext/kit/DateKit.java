@@ -172,4 +172,34 @@ public class DateKit {
 		}
 		return toStr(date1, format).equals(toStr(date2, format));
 	}
+
+	/**
+	 * 获取两个时间的差
+	 * @param date1
+	 * @param date2
+	 * @return
+	 */
+	public static long getDatePoor(Date date1, Date date2){
+		return date1.getTime() - date2.getTime();
+	}
+	public static long getDatePoor(String dateStr1, String dateStr2){
+		return getDatePoor(toDate(dateStr1), toDate(dateStr2));
+	}
+	public static long getDatePoor(Date date){
+		return getDatePoor(new Date(), date);
+	}
+	public static long getDatePoor(String dateStr){
+		return getDatePoor(toDate(dateStr));
+	}
+
+	/**
+	 * 日期格式转换
+	 * @param dateStr
+	 * @param format
+	 * @param transformat
+	 * @return
+	 */
+	public static String transformat(String dateStr, String format, String transformat){
+		return toStr(toDate(dateStr, format), transformat);
+	}
 }
