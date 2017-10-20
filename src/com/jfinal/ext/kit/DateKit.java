@@ -1,5 +1,7 @@
 package com.jfinal.ext.kit;
 
+import com.jfinal.kit.StrKit;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -179,16 +181,28 @@ public class DateKit {
 	 * @param date2
 	 * @return
 	 */
-	public static long getDatePoor(Date date1, Date date2){
+	public static Long getDatePoor(Date date1, Date date2){
+		if(date1 == null || date2 == null){
+			return null;
+		}
 		return date1.getTime() - date2.getTime();
 	}
-	public static long getDatePoor(String dateStr1, String dateStr2){
+	public static Long getDatePoor(String dateStr1, String dateStr2){
+		if(StrKit.isBlank(dateStr1) || StrKit.isBlank(dateStr2)){
+			return null;
+		}
 		return getDatePoor(toDate(dateStr1), toDate(dateStr2));
 	}
-	public static long getDatePoor(Date date){
+	public static Long getDatePoor(Date date){
+		if(date == null){
+			return null;
+		}
 		return getDatePoor(new Date(), date);
 	}
-	public static long getDatePoor(String dateStr){
+	public static Long getDatePoor(String dateStr){
+		if(StrKit.isBlank(dateStr)){
+			return null;
+		}
 		return getDatePoor(toDate(dateStr));
 	}
 
