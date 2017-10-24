@@ -1208,6 +1208,28 @@ public abstract class Model<M extends Model> implements Serializable {
 		return Db.update(cnd.getSql(), cnd.getParas()) > -1;
 	}
 
+	/**
+	 * 此方法简化只是方便设置默认值的步骤
+	 * @param attr
+	 * @param value
+	 * @return
+	 */
+	public M setIsNull(Enum<?> attr, Object value){
+		if(get(attr.name()) == null){
+			return set(attr, value);
+		}
+		return (M)this;
+	}
+
+	/**
+	 * 方便redis存储情况，通过ids集获取数据
+	 * @param ids
+	 * @return
+	 */
+	public List<M> findByIds(List<?> ids){
+		return getByWhat(getPkName(), Cnd.Type.in, ids);
+	}
+
 	protected boolean beforeSave(){
 		if(checkAttr("createTime")){
 			set("createTime", new Date());
