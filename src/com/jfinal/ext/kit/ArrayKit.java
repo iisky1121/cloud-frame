@@ -1,5 +1,9 @@
 package com.jfinal.ext.kit;
 
+import com.jfinal.kit.StrKit;
+
+import java.util.Collection;
+
 public class ArrayKit {
 
     /**
@@ -75,5 +79,22 @@ public class ArrayKit {
             return objArr;
         }
         return Object[].class.cast(array);
+    }
+
+    public static String join(Collection collection) {
+        return join(collection, ",");
+    }
+
+    public static String join(Collection collection, String separator) {
+        StringBuilder sb = new StringBuilder();
+        int i = 0;
+        for(Object object : collection){
+            if (i > 0 && StrKit.notBlank(separator)) {
+                sb.append(separator);
+            }
+            sb.append(object);
+            i++;
+        }
+        return sb.toString();
     }
 }

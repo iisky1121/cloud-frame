@@ -210,7 +210,7 @@ public class StrKit {
 	}
 	
 	public static String join(String[] stringArray) {
-		return join(stringArray);
+		return join(stringArray, ",");
 	}
 	
 	public static String join(String[] stringArray, String separator) {
