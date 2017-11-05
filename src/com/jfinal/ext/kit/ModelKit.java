@@ -1,11 +1,16 @@
 package com.jfinal.ext.kit;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.jfinal.kit.JsonKit;
 import com.jfinal.kit.StrKit;
 import com.jfinal.plugin.activerecord.Model;
+import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
 import com.jfinal.plugin.activerecord.TableMapping;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -106,6 +111,21 @@ public class ModelKit {
 			}
 		}
 		return true;
+	}
+
+	public static JSONArray toJsonArray(List<?> list){
+		String jsonStr = JsonKit.toJson(list);
+		return JSONArray.parseArray(jsonStr);
+	}
+
+	public static JSONObject toJson(Object object){
+		String jsonStr = JsonKit.toJson(object);
+		return JSONObject.parseObject(jsonStr);
+	}
+
+	public static JSONObject toJson(Page<?> page){
+		String jsonStr = JsonKit.toJson(page);
+		return JSONObject.parseObject(jsonStr);
 	}
 
 }
