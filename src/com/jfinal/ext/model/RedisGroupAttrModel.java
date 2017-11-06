@@ -1,10 +1,8 @@
-package com.jfinal.plugin.redis.model;
+package com.jfinal.ext.model;
 
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.jfinal.base.ReturnResult;
 import com.jfinal.ext.kit.ModelKit;
-import com.jfinal.kit.JsonKit;
 import com.jfinal.kit.StrKit;
 import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Model;

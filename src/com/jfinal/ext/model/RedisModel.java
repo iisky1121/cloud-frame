@@ -1,4 +1,4 @@
-package com.jfinal.plugin.redis.model;
+package com.jfinal.ext.model;
 
 import com.jfinal.ext.kit.ModelKit;
 import com.jfinal.ext.plugin.redisdb.RedisDb;

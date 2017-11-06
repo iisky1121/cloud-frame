@@ -1,4 +1,4 @@
-package com.jfinal.plugin.redis.model;
+package com.jfinal.ext.model;
 
 import com.jfinal.interfaces.IDataLoader;
 import com.jfinal.plugin.activerecord.Model;
