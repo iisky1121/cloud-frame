@@ -216,7 +216,7 @@ public class StrKit {
 	public static String join(String[] stringArray, String separator) {
 		StringBuilder sb = new StringBuilder();
 		for (int i=0,len = stringArray.length; i<len; i++) {
-			if (i > 0 && StrKit.notBlank(separator)) {
+			if (i > 0 && separator!=null) {
 				sb.append(separator);
 			}
 			sb.append(stringArray[i]);
