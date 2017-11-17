@@ -15,13 +15,11 @@ import jxl.Workbook;
 import jxl.read.biff.BiffException;
 import jxl.write.*;
 import jxl.write.Number;
-import jxl.write.biff.RowsExceededException;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.*;
@@ -69,6 +67,15 @@ public class ExcelKit {
 		Workbook rwb = Workbook.getWorkbook(file);
 		return toList(rwb, sheetNum);
 	}
+
+	public static void downloadExcel(String fileName, HttpServletResponse response) throws Exception {
+		// 设这输出的类型和文件格式
+		response.setContentType("application/vnd.ms-excel;charset=utf-8");
+		// 设置文件名和并且解决中文名不能下载
+		response.addHeader("Content-Disposition", "attachment;   filename=\""+ new String(fileName.getBytes(), "iso8859-1") + "\"");
+		response.getOutputStream().flush();
+		response.getOutputStream().close();
+	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private static List toList(Workbook rwb, int sheetNum){
@@ -109,14 +116,7 @@ public class ExcelKit {
 	 * @throws
 	 */
 	public static void writeListToExcel(String fileName, String[] titles,List<Object[]> list,HttpServletResponse response) throws Exception {
-		// 设这输出的类型和文件格式
-		response.setContentType("application/vnd.ms-excel;charset=utf-8");
-		// 设置文件名和并且解决中文名不能下载
-		response.addHeader("Content-Disposition", "attachment;   filename=\""+ new String(fileName.getBytes(), "iso8859-1") + "\"");
-		// 创建输出流
-		OutputStream os = response.getOutputStream();
-
-		WritableWorkbook wbook = Workbook.createWorkbook(os);
+		WritableWorkbook wbook = Workbook.createWorkbook(response.getOutputStream());
 		// 生成名为“sheet1”的工作表，参数0表示这是第一页
 		int sheetNum = 0;
 		
@@ -136,11 +136,10 @@ public class ExcelKit {
 		//写入数据并关闭文件   
 		wbook.write();   
 		wbook.close();
-		os.flush();
-		os.close();
+		downloadExcel(fileName, response);
 	}
-	
-	private static void addSheetRow(WritableSheet sheet, Object[] datas, int i) throws RowsExceededException, WriteException{
+
+	private static void addSheetRow(WritableSheet sheet, Object[] datas, int i) throws WriteException{
 		for(int j=0,dataLength = datas.length;j<dataLength;j++){
 			sheet.addCell(toFmt(j, i, datas[j]));
 		}
