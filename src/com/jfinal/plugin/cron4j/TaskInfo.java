@@ -15,7 +15,7 @@ public class TaskInfo {
     boolean daemon;
     boolean enable;
 
-    TaskInfo(String cron, Object task, boolean daemon, boolean enable) {
+    public TaskInfo(String cron, Object task, boolean daemon, boolean enable) {
         if (StrKit.isBlank(cron)) {
             throw new IllegalArgumentException("cron 不能为空.");
         }
@@ -29,7 +29,7 @@ public class TaskInfo {
         this.enable = enable;
     }
 
-    void schedule() {
+    public void schedule() {
         if (enable) {
             scheduler = new Scheduler();
             if (task instanceof Runnable) {
@@ -44,13 +44,13 @@ public class TaskInfo {
         }
     }
 
-    void start() {
+    public void start() {
         if (enable) {
             scheduler.start();
         }
     }
 
-    void stop() {
+    public void stop() {
         if (enable) {
             if (task instanceof ITask) {   // 如果任务实现了 ITask 接口，则回调 ITask.stop() 方法
                 ((ITask)task).stop();
