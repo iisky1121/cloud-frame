@@ -16,14 +16,14 @@
 
 package com.jfinal.plugin.cron4j;
 
-import it.sauronsoftware.cron4j.ProcessTask;
-import it.sauronsoftware.cron4j.Scheduler;
-import java.util.ArrayList;
-import java.util.List;
 import com.jfinal.kit.Prop;
 import com.jfinal.kit.StrKit;
 import com.jfinal.plugin.IPlugin;
+import it.sauronsoftware.cron4j.ProcessTask;
 import it.sauronsoftware.cron4j.Task;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Cron4jPlugin 封装 cron4j，使用 cron 表达式调试 Task 执行
@@ -214,8 +214,6 @@ public class Cron4jPlugin implements IPlugin {
 	public boolean start() {
 		for (TaskInfo taskInfo : taskInfoList) {
 			taskInfo.schedule();
-		}
-		for (TaskInfo taskInfo : taskInfoList) {
 			taskInfo.start();
 		}
 		return true;
@@ -226,59 +224,6 @@ public class Cron4jPlugin implements IPlugin {
 			taskInfo.stop();
 		}
 		return true;
-	}
-	
-	private static class TaskInfo {
-		Scheduler scheduler;
-
-		String cron;
-		Object task;
-		boolean daemon;
-		boolean enable;
-
-		TaskInfo(String cron, Object task, boolean daemon, boolean enable) {
-			if (StrKit.isBlank(cron)) {
-				throw new IllegalArgumentException("cron 不能为空.");
-			}
-			if (task == null) {
-				throw new IllegalArgumentException("task 不能为 null.");
-			}
-
-			this.cron = cron.trim();
-			this.task = task;
-			this.daemon = daemon;
-			this.enable = enable;
-		}
-
-		void schedule() {
-			if (enable) {
-				scheduler = new Scheduler();
-				if (task instanceof Runnable) {
-					scheduler.schedule(cron, (Runnable) task);
-				} else if (task instanceof Task) {
-					scheduler.schedule(cron, (Task) task);
-				} else {
-					scheduler = null;
-					throw new IllegalStateException("Task 必须是 Runnable、ITask、ProcessTask 或者 Task 类型");
-				}
-				scheduler.setDaemon(daemon);
-			}
-		}
-
-		void start() {
-			if (enable) {
-				scheduler.start();
-			}
-		}
-
-		void stop() {
-			if (enable) {
-				if (task instanceof ITask) {   // 如果任务实现了 ITask 接口，则回调 ITask.stop() 方法
-					((ITask)task).stop();
-				}
-				scheduler.stop();
-			}
-		}
 	}
 }
 
