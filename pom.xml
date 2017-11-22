@@ -5,7 +5,7 @@
 
     <groupId>com.cloud</groupId>
     <artifactId>frame</artifactId>
-    <version>1.9.1.4</version>
+    <version>2.0.0</version>
     <packaging>jar</packaging>
 
     <name>cloud-frame</name>
