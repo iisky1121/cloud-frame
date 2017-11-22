@@ -29,7 +29,7 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.*;
 import java.util.Map.Entry;
-
+import com.jfinal.plugin.activerecord.cache.ICache;
 import static com.jfinal.plugin.activerecord.DbKit.NULL_PARA_ARRAY;
 
 /**
@@ -270,6 +270,11 @@ public abstract class Model<M extends Model> implements Serializable {
 	public Short getShort(String attr) {
 		Number n = (Number)attrs.get(attr);
 		return n != null ? n.shortValue() : null;
+	}
+	
+	public Byte getByte(String attr) {
+		Number n = (Number)attrs.get(attr);
+		return n != null ? n.byteValue() : null;
 	}
 	
 	/**
@@ -954,9 +959,12 @@ public abstract class Model<M extends Model> implements Serializable {
 		return com.jfinal.kit.JsonKit.toJson(attrs);
 	}
 	
-	private Class<? extends Model> getUsefulClass() {
+	protected Class<? extends Model> getUsefulClass() {
 		Class c = getClass();
-		return c.getName().indexOf("EnhancerByCGLIB") == -1 ? c : c.getSuperclass();	// com.demo.blog.Blog$$EnhancerByCGLIB$$69a17158
+		// guice : Model$$EnhancerByGuice$$40471411
+		// cglib : com.demo.blog.Blog$$EnhancerByCGLIB$$69a17158
+		// return c.getName().indexOf("EnhancerByCGLIB") == -1 ? c : c.getSuperclass();
+		return c.getName().indexOf("$$EnhancerBy") == -1 ? c : c.getSuperclass();
 	}
 	
 	/**

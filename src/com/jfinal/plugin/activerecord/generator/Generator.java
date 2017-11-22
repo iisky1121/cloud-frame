@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2011-2016, James Zhan 詹波 (jfinal@126.com).
+ * Copyright (c) 2011-2017, James Zhan 詹波 (jfinal@126.com).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,9 @@
 
 package com.jfinal.plugin.activerecord.generator;
 
-import com.jfinal.plugin.activerecord.dialect.Dialect;
-
-import javax.sql.DataSource;
 import java.util.List;
+import javax.sql.DataSource;
+import com.jfinal.plugin.activerecord.dialect.Dialect;
 
 /**
  * 生成器
@@ -33,15 +32,13 @@ import java.util.List;
  */
 public class Generator {
 	
+	protected Dialect dialect = null;
 	protected MetaBuilder metaBuilder;
 	protected BaseModelGenerator baseModelGenerator;
 	protected ModelGenerator modelGenerator;
 	protected MappingKitGenerator mappingKitGenerator;
 	protected DataDictionaryGenerator dataDictionaryGenerator;
-	protected  BeanGenerator beanGenerator;
 	protected boolean generateDataDictionary = false;
-	protected boolean isBuildBaseModelColunms = false;
-	protected  boolean isBuildBean = false;
 	
 	/**
 	 * 构造 Generator，生成 BaseModel、Model、MappingKit 三类文件，其中 MappingKit 输出目录与包名与 Model相同
@@ -116,15 +113,6 @@ public class Generator {
 	}
 	
 	/**
-	 * 设置 是否生成 MappingKit对象
-	 */
-	public void setGenerateMappingKit(boolean generateMappingKit) {
-		if (mappingKitGenerator != null) {
-			mappingKitGenerator.setGenerateMappingKit(generateMappingKit);
-		}
-	}
-	
-	/**
 	 * 设置 MappingKitGenerator，便于扩展自定义 MappingKitGenerator
 	 */
 	public void setMappingKitGenerator(MappingKitGenerator mappingKitGenerator) {
@@ -146,7 +134,23 @@ public class Generator {
 	 * 设置数据库方言，默认为 MysqlDialect
 	 */
 	public void setDialect(Dialect dialect) {
-		metaBuilder.setDialect(dialect);
+		this.dialect = dialect;
+	}
+	
+	/**
+	 * 设置用于生成 BaseModel 的模板文件，模板引擎将在 class path 与 jar 包内寻找模板文件
+	 * 
+	 * 默认模板为："/com/jfinal/plugin/activerecord/generator/base_model_template.jf"
+	 */
+	public void setBaseModelTemplate(String baseModelTemplate) {
+		baseModelGenerator.setTemplate(baseModelTemplate);
+	}
+	
+	/**
+	 * 设置 BaseModel 是否生成链式 setter 方法
+	 */
+	public void setGenerateChainSetter(boolean generateChainSetter) {
+		baseModelGenerator.setGenerateChainSetter(generateChainSetter);
 	}
 	
 	/**
@@ -163,37 +167,15 @@ public class Generator {
 	public void addExcludedTable(String... excludedTables) {
 		metaBuilder.addExcludedTable(excludedTables);
 	}
-
-	public void addIncludedTable(String tableName){
-		addIncludedTable(tableName, null);
-	}
-	public void addIncludedTable(String tableName, String alias){
-		addIncludedTable(tableName, alias, null);
-	}
-	public void addIncludedTable(String tableName, String alias, Class<?> modelExtendsClass){
-		metaBuilder.addIncludedTable(tableName, alias, modelExtendsClass);
-	}
 	
 	/**
-	 * 添加不需要处理的数据表类型
+	 * 设置用于生成 Model 的模板文件，模板引擎将在 class path 与 jar 包内寻找模板文件
+	 * 
+	 * 默认模板为："/com/jfinal/plugin/activerecord/generator/model_template.jf"
 	 */
-	public void addExcludedTableType(String... excludedTables) {
-		metaBuilder.addExcludedTableType(excludedTables);
-	}
-	
-	/**
-	 * 添加数据表别名
-	 */
-	public void addTableAlias(String tableName, String alias) {
-		metaBuilder.addTableAlias(tableName, alias);
-	}
-	
-	/**
-	 * 设置生产Model 对象，默认生成
-	 */
-	public void setGenerateModel(boolean generateModel) {
+	public void setModelTemplate(String modelTemplate) {
 		if (modelGenerator != null) {
-			modelGenerator.setGenerateModel(generateModel);
+			modelGenerator.setTemplate(modelTemplate);
 		}
 	}
 	
@@ -207,24 +189,21 @@ public class Generator {
 	}
 	
 	/**
-	 * 设置是否在 Model 中生成 dao 对象，默认生成
-	 */
-	public void setIsBuildBaseModelColunms(boolean isBuildBaseModelColunms) {
-		this.isBuildBaseModelColunms = isBuildBaseModelColunms;
-	}
-
-	/**
-	 * 设置bean对象，默认不生成
-	 */
-	public void setBeanGenerator(String beanPackageName, String beanOutputDir) {
-		this.beanGenerator = new BeanGenerator(beanPackageName, beanOutputDir);
-	}
-	
-	/**
 	 * 设置是否生成数据字典 Dictionary 文件，默认不生成
 	 */
 	public void setGenerateDataDictionary(boolean generateDataDictionary) {
 		this.generateDataDictionary = generateDataDictionary;
+	}
+	
+	/**
+	 * 设置用于生成 MappingKit 的模板文件，模板引擎将在 class path 与 jar 包内寻找模板文件
+	 * 
+	 * 默认模板为："/com/jfinal/plugin/activerecord/generator/mapping_kit_template.jf"
+	 */
+	public void setMappingKitTemplate(String mappingKitTemplate) {
+		if (this.mappingKitGenerator != null) {
+			this.mappingKitGenerator.setTemplate(mappingKitTemplate);
+		}
 	}
 	
 	/**
@@ -248,6 +227,15 @@ public class Generator {
 	}
 	
 	/**
+	 * 设置 MappingKit 类名，默认值为: "_MappingKit"
+	 */
+	public void setMappingKitClassName(String mappingKitClassName) {
+		if (this.mappingKitGenerator != null) {
+			this.mappingKitGenerator.setMappingKitClassName(mappingKitClassName);
+		}
+	}
+	
+	/**
 	 * 设置数据字典 DataDictionary 文件输出目录，默认与 modelOutputDir 相同
 	 */
 	public void setDataDictionaryOutputDir(String dataDictionaryOutputDir) {
@@ -266,6 +254,10 @@ public class Generator {
 	}
 	
 	public void generate() {
+		if (dialect != null) {
+			metaBuilder.setDialect(dialect);
+		}
+		
 		long start = System.currentTimeMillis();
 		List<TableMeta> tableMetas = metaBuilder.build();
 		if (tableMetas.size() == 0) {
@@ -273,16 +265,12 @@ public class Generator {
 			return ;
 		}
 		
-		baseModelGenerator.generate(tableMetas, isBuildBaseModelColunms);
+		baseModelGenerator.generate(tableMetas);
 		
 		if (modelGenerator != null) {
 			modelGenerator.generate(tableMetas);
 		}
-
-		if(beanGenerator != null){
-			beanGenerator.generate(tableMetas);
-		}
-
+		
 		if (mappingKitGenerator != null) {
 			mappingKitGenerator.generate(tableMetas);
 		}

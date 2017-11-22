@@ -47,7 +47,7 @@ public class ImageKit {
      * @throws IOException
      */
     public static String encodeDataUri(File imageFile) throws IOException{
-        String type = FileKit.getExtension(imageFile).toLowerCase();
+        String type = FileKit.getFileExtension(imageFile).toLowerCase();
         if("jpg".equals(type)) {
             type = "jpeg";
         }
@@ -74,7 +74,7 @@ public class ImageKit {
      */
     public static String encodeBase64(File imageFile) throws IOException{
         BufferedImage bi = ImageIO.read(imageFile);
-        String type = FileKit.getExtension(imageFile).toLowerCase();
+        String type = FileKit.getFileExtension(imageFile).toLowerCase();
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ImageIO.write(bi,type, baos);
         return Base64Kit.encode(baos.toByteArray());

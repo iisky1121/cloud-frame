@@ -29,21 +29,21 @@ public class StrKit {
 	public static String uuid(){
 		return UUID.randomUUID().toString();
 	}
-	
+
 	/**
 	 * UUID NONE LINE
 	 */
 	public static String uuidNoneLine(){
 		return uuid().replaceAll("-", "");
 	}
-	
+
 	/**
 	 * 随机16位数
 	 */
 	public static String createNoncestr() {
 		return createNoncestr(16);
 	}
-	
+
 	/**
 	 * 随机数
 	 */
@@ -51,7 +51,7 @@ public class StrKit {
 		String chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 		return createNoncestr(chars, length);
 	}
-	
+
 	/**
 	 * 随机数字
 	 */
@@ -59,7 +59,7 @@ public class StrKit {
 		String chars = "0123456789";
 		return createNoncestr(chars, length);
 	}
-	
+
 	/**
 	 * 随机数
 	 */
@@ -129,7 +129,7 @@ public class StrKit {
 	}
 	
 	public static boolean notBlank(String... strings) {
-		if (strings == null) {
+		if (strings == null || strings.length == 0) {
 			return false;
 		}
 		for (String str : strings) {
@@ -208,7 +208,7 @@ public class StrKit {
 		}
 		return sb.toString();
 	}
-	
+
 	public static String join(String[] stringArray) {
 		return join(stringArray, ",");
 	}
@@ -233,7 +233,7 @@ public class StrKit {
 	public static String getRandomUUID() {
 		return java.util.UUID.randomUUID().toString().replace("-", "");
 	}
-	
+
 	/**
 	 * 检查两个值是否相同
 	 * @param object1
@@ -249,7 +249,7 @@ public class StrKit {
 			return false;
 		}
 	}
-	
+
 	public static boolean equals(String a, String b) {
 		return a == null ? b == null : a.equals(b);
 	}

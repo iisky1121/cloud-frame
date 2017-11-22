@@ -32,9 +32,21 @@ import java.security.SecureRandom;
 
 public class HashKit {
 	
+	public static final long FNV_OFFSET_BASIS_64 = 0xcbf29ce484222325L;
+	public static final long FNV_PRIME_64 = 0x100000001b3L;
+	
 	private static final java.security.SecureRandom random = new java.security.SecureRandom();
 	private static final char[] HEX_DIGITS = "0123456789abcdef".toCharArray();
 	private static final char[] CHAR_ARRAY = "_-0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();
+	
+	public static long fnv1a64(String key) {
+		long hash = FNV_OFFSET_BASIS_64;
+		for(int i=0, size=key.length(); i<size; i++) {
+			hash ^= key.charAt(i);
+			hash *= FNV_PRIME_64;
+		}
+		return hash;
+	}
 	
 	public static String md5(String srcStr){
 		return hash("MD5", srcStr);
@@ -43,7 +55,7 @@ public class HashKit {
 	public static String md5To16(String srcStr){
 		return md5(srcStr).substring(8, 24);
 	}
-	
+
 	public static String sha1(String srcStr){
 		return hash("SHA-1", srcStr);
 	}
@@ -73,7 +85,7 @@ public class HashKit {
 	
 	/**
 	 * 将二进制转换成16进制
-	 * 
+	 *
 	 * @param bytes
 	 * @return
 	 */
@@ -88,7 +100,7 @@ public class HashKit {
 	
 	/**
 	 * 将16进制转换为二进制
-	 * 
+	 *
 	 * @param hexStr
 	 * @return
 	 */
@@ -104,7 +116,7 @@ public class HashKit {
 		}
 		return result;
 	}
-	
+
 	/**
 	 * md5 128bit 16bytes
 	 * sha1 160bit 20bytes
@@ -113,7 +125,7 @@ public class HashKit {
 	 * sha512 512bit 64bytes
 	 */
 	public static String generateSalt(int saltLength) {
-		StringBuilder salt = new StringBuilder();
+		StringBuilder salt = new StringBuilder(saltLength);
 		for (int i=0; i<saltLength; i++) {
 			salt.append(CHAR_ARRAY[random.nextInt(CHAR_ARRAY.length)]);
 		}
@@ -139,7 +151,7 @@ public class HashKit {
 		}
 		return diff == 0;
     }
-	
+
 	private final static String AES = "AES";
 	/**
 	 * AES加密
@@ -157,7 +169,7 @@ public class HashKit {
 			throw new RuntimeException(" 初始化密钥出现异常 ");
 		}
 	}
-	
+
 	public static String encryptToAes(String content, String pwd) {
 		if(StrKit.isBlank(content) || StrKit.isBlank(pwd)){
 			return null;
@@ -213,9 +225,9 @@ public class HashKit {
 		}
 		return null;
 	}
-	
+
 	private static Charset CHARSET = Charset.forName(Const.DEFAULT_ENCODING);
-	
+
 	/**
 	 * Base64加密
 	 * @param content
@@ -225,7 +237,7 @@ public class HashKit {
 		byte[] val = content.getBytes(CHARSET);
 		return DatatypeConverter.printBase64Binary(val);
 	}
-	
+
 	/**
 	 * Base64解密
 	 * @param content
@@ -235,7 +247,7 @@ public class HashKit {
 		byte[] decodedValue = DatatypeConverter.parseBase64Binary(content);
 		return new String(decodedValue, CHARSET);
 	}
-	
+
 	/**
 	 * Base64加密 url变种，[+替换成*] [/替换成_]
 	 * @param url
@@ -251,7 +263,7 @@ public class HashKit {
 		}
 		return url;
 	}
-	
+
 	/**
 	 * Base64解密 url变种
 	 * @param encodeUrl
@@ -267,7 +279,7 @@ public class HashKit {
 		}
 		return encodeUrl;
 	}
-	
+
 	/**
 	 * url encode
 	 * @param url
@@ -280,7 +292,7 @@ public class HashKit {
             return url;
         }
     }
-	
+
 	/**
 	 * url decode
 	 * @param url

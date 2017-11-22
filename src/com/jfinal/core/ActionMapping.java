@@ -27,42 +27,34 @@ import java.util.Map;
 import java.util.Set;
 import com.jfinal.aop.Interceptor;
 import com.jfinal.aop.InterceptorManager;
-import com.jfinal.base.CommonController;
-import com.jfinal.config.Interceptors;
 import com.jfinal.config.Routes;
 import com.jfinal.config.Routes.Route;
 
 /**
  * ActionMapping
  */
-final class ActionMapping {
+public class ActionMapping {
 	
-	private static final String SLASH = "/";
-	private Routes routes;
-	// private Interceptors interceptors;
+	protected static final String SLASH = "/";
 	
-	private final Map<String, Action> mapping = new HashMap<String, Action>();
+	protected Routes routes;
+	protected Map<String, Action> mapping = new HashMap<String, Action>();
 	
-	ActionMapping(Routes routes, Interceptors interceptors) {
+	public ActionMapping(Routes routes) {
 		this.routes = routes;
-		// this.interceptors = interceptors;
 	}
 	
-	private Set<String> buildExcludedMethodName() {
+	protected Set<String> buildExcludedMethodName() {
 		Set<String> excludedMethodName = new HashSet<String>();
 		Method[] methods = Controller.class.getMethods();
 		for (Method m : methods) {
-			excludedMethodName.add(m.getName());
-		}
-		//增加一个忽略列表
-		methods = CommonController.class.getMethods();
-		for (Method m : methods) {
-			excludedMethodName.add(m.getName());
+			if (m.getParameterTypes().length == 0)
+				excludedMethodName.add(m.getName());
 		}
 		return excludedMethodName;
 	}
 	
-	private List<Routes> getRoutesList() {
+	protected List<Routes> getRoutesList() {
 		List<Routes> routesList = Routes.getRoutesList();
 		List<Routes> ret = new ArrayList<Routes>(routesList.size() + 1);
 		ret.add(routes);
@@ -70,7 +62,7 @@ final class ActionMapping {
 		return ret;
 	}
 	
-	void buildActionMapping() {
+	protected void buildActionMapping() {
 		mapping.clear();
 		Set<String> excludedMethodName = buildExcludedMethodName();
 		InterceptorManager interMan = InterceptorManager.me();
@@ -83,7 +75,7 @@ final class ActionMapping {
 			Method[] methods = (sonOfController ? controllerClass.getDeclaredMethods() : controllerClass.getMethods());
 			for (Method method : methods) {
 				String methodName = method.getName();
-				if (excludedMethodName.contains(methodName))
+				if (excludedMethodName.contains(methodName) || method.getParameterTypes().length != 0)
 					continue ;
 				if (sonOfController && !Modifier.isPublic(method.getModifiers()))
 					continue ;
@@ -124,7 +116,7 @@ final class ActionMapping {
 		}
 	}
 	
-	private static final String buildMsg(String actionKey, Class<? extends Controller> controllerClass, Method method) {
+	protected String buildMsg(String actionKey, Class<? extends Controller> controllerClass, Method method) {
 		StringBuilder sb = new StringBuilder("The action \"")
 			.append(controllerClass.getName()).append(".")
 			.append(method.getName()).append("()\" can not be mapped, ")
@@ -144,7 +136,7 @@ final class ActionMapping {
 	 * The controllerKey can also contains "/"
 	 * Example: http://abc.com/uvw/xyz/method/para
 	 */
-	Action getAction(String url, String[] urlPara) {
+	public Action getAction(String url, String[] urlPara) {
 		Action action = mapping.get(url);
 		if (action != null) {
 			return action;
@@ -160,7 +152,7 @@ final class ActionMapping {
 		return action;
 	}
 	
-	List<String> getAllActionKeys() {
+	public List<String> getAllActionKeys() {
 		List<String> allActionKeys = new ArrayList<String>(mapping.keySet());
 		Collections.sort(allActionKeys);
 		return allActionKeys;

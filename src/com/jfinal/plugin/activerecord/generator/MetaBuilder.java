@@ -16,15 +16,22 @@
 
 package com.jfinal.plugin.activerecord.generator;
 
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Types;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+import javax.sql.DataSource;
 import com.jfinal.kit.StrKit;
-import com.jfinal.plugin.activerecord.Model;
 import com.jfinal.plugin.activerecord.dialect.Dialect;
 import com.jfinal.plugin.activerecord.dialect.MysqlDialect;
 import com.jfinal.plugin.activerecord.dialect.OracleDialect;
-
-import javax.sql.DataSource;
-import java.sql.*;
-import java.util.*;
 
 /**
  * MetaBuilder
@@ -33,11 +40,7 @@ public class MetaBuilder {
 	
 	protected DataSource dataSource;
 	protected Dialect dialect = new MysqlDialect();
-	protected Set<String> includedTables = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
 	protected Set<String> excludedTables = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
-	protected Set<String> excludedTableTypes = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
-	protected Map<String, String> tableAliass = new HashMap<String, String>();
-	protected Map<String, Class<?>> tableModelExtendsClass = new HashMap<String, Class<?>>();
 	
 	protected Connection conn = null;
 	protected DatabaseMetaData dbMeta = null;
@@ -58,44 +61,12 @@ public class MetaBuilder {
 			this.dialect = dialect;
 		}
 	}
-
-	public void addIncludedTable(String tableName, String alias, Class<?> modelExtendsClass) {
-		if (StrKit.notBlank(tableName)) {
-			this.includedTables.add(tableName);
-			if(StrKit.notBlank(alias)){
-				this.addTableAlias(tableName, alias);
-			}
-			if(modelExtendsClass != null){
-				this.addTableExtentModelClass(tableName, modelExtendsClass);
-			}
-		}
-	}
-
+	
 	public void addExcludedTable(String... excludedTables) {
 		if (excludedTables != null) {
 			for (String table : excludedTables) {
 				this.excludedTables.add(table);
 			}
-		}
-	}
-	
-	public void addExcludedTableType(String... excludedTableTypes) {
-		if (excludedTableTypes != null) {
-			for (String table : excludedTableTypes) {
-				this.excludedTableTypes.add(table);
-			}
-		}
-	}
-	
-	public void addTableAlias(String tableName, String alias) {
-		if (tableAliass != null) {
-			this.tableAliass.put(tableName, alias);
-		}
-	}
-
-	public void addTableExtentModelClass(String tableName, Class<?> modelExtendsClass){
-		if (tableModelExtendsClass != null) {
-			this.tableModelExtendsClass.put(tableName, modelExtendsClass);
 		}
 	}
 	
@@ -120,8 +91,11 @@ public class MetaBuilder {
 			dbMeta = conn.getMetaData();
 			
 			List<TableMeta> ret = new ArrayList<TableMeta>();
-			buildTables(ret);
-
+			buildTableNames(ret);
+			for (TableMeta tableMeta : ret) {
+				buildPrimaryKey(tableMeta);
+				buildColumnMetas(tableMeta);
+			}
 			return ret;
 		}
 		catch (SQLException e) {
@@ -147,34 +121,22 @@ public class MetaBuilder {
 	 * oracle 之下的 tableName 建议使用下划线分隔多单词名，无论 mysql还是 oralce，tableName 都不建议使用驼峰命名
 	 */
 	protected String buildModelName(String tableName) {
-		if (tableAliass != null && !StrKit.isBlank(tableAliass.get(tableName))) {
-			return tableAliass.get(tableName);
-		}
-		else{
-			// 移除表名前缀仅用于生成 modelName、baseModelName，而 tableMeta.name 表名自身不能受影响
-			if (removedTableNamePrefixes != null) {
-				for (String prefix : removedTableNamePrefixes) {
-					if (tableName.startsWith(prefix)) {
-						tableName = tableName.replaceFirst(prefix, "");
-						break;
-					}
+		// 移除表名前缀仅用于生成 modelName、baseModelName，而 tableMeta.name 表名自身不能受影响
+		if (removedTableNamePrefixes != null) {
+			for (String prefix : removedTableNamePrefixes) {
+				if (tableName.startsWith(prefix)) {
+					tableName = tableName.replaceFirst(prefix, "");
+					break;
 				}
 			}
-			
-			// 将 oralce 大写的 tableName 转成小写，再生成 modelName
-			if (dialect instanceof OracleDialect) {
-				tableName = tableName.toLowerCase();
-			}
-			
-			return StrKit.firstCharToUpperCase(StrKit.toCamelCase(tableName));
 		}
-	}
-
-	protected Class<?> buildModelExtendsClass(String tableName) {
-		if (tableModelExtendsClass != null && tableModelExtendsClass.get(tableName) != null) {
-			return tableModelExtendsClass.get(tableName);
+		
+		// 将 oralce 大写的 tableName 转成小写，再生成 modelName
+		if (dialect instanceof OracleDialect) {
+			tableName = tableName.toLowerCase();
 		}
-		return Model.class;
+		
+		return StrKit.firstCharToUpperCase(StrKit.toCamelCase(tableName));
 	}
 	
 	/**
@@ -194,43 +156,30 @@ public class MetaBuilder {
 	 */
 	protected ResultSet getTablesResultSet() throws SQLException {
 		String schemaPattern = dialect instanceof OracleDialect ? dbMeta.getUserName() : null;
-		return dbMeta.getTables(conn.getCatalog(), schemaPattern, null, new String[]{"TABLE", "VIEW"});
+		// return dbMeta.getTables(conn.getCatalog(), schemaPattern, null, new String[]{"TABLE", "VIEW"});
+		return dbMeta.getTables(conn.getCatalog(), schemaPattern, null, new String[]{"TABLE"});	// 不支持 view 生成
 	}
 	
-	protected void buildTables(List<TableMeta> ret) throws SQLException {
+	protected void buildTableNames(List<TableMeta> ret) throws SQLException {
 		ResultSet rs = getTablesResultSet();
 		while (rs.next()) {
 			String tableName = rs.getString("TABLE_NAME");
-			String tableType = rs.getString("TABLE_TYPE");
-			if(includedTables.contains(tableName)) {
-
-			} else {
-				if (excludedTableTypes.contains(tableType.toLowerCase())) {
-					System.out.println("Skip tableType :" + tableType + ", table :" + tableName);
-					continue;
-				}
-				if (excludedTables.contains(tableName)) {
-					System.out.println("Skip table :" + tableName);
-					continue;
-				}
-				if (isSkipTable(tableName)) {
-					System.out.println("Skip table :" + tableName);
-					continue;
-				}
+			
+			if (excludedTables.contains(tableName)) {
+				System.out.println("Skip table :" + tableName);
+				continue ;
 			}
-
+			if (isSkipTable(tableName)) {
+				System.out.println("Skip table :" + tableName);
+				continue ;
+			}
+			
 			TableMeta tableMeta = new TableMeta();
 			tableMeta.name = tableName;
-			tableMeta.type = tableType;
 			tableMeta.remarks = rs.getString("REMARKS");
 			
 			tableMeta.modelName = buildModelName(tableName);
 			tableMeta.baseModelName = buildBaseModelName(tableMeta.modelName);
-			tableMeta.modelExtendsClass = buildModelExtendsClass(tableName);
-
-			buildPrimaryKey(tableMeta);
-			buildColumnMetas(tableMeta);
-
 			ret.add(tableMeta);
 		}
 		rs.close();
@@ -248,7 +197,7 @@ public class MetaBuilder {
 			primaryKey += rs.getString("COLUMN_NAME");
 		}
 		if (StrKit.isBlank(primaryKey)) {
-			throw new RuntimeException("primaryKey required by active record pattern");
+			throw new RuntimeException("primaryKey of table \"" + tableMeta.name + "\" required by active record pattern");
 		}
 		tableMeta.primaryKey = primaryKey;
 		rs.close();
@@ -277,23 +226,32 @@ public class MetaBuilder {
 			ColumnMeta cm = new ColumnMeta();
 			cm.name = rsmd.getColumnName(i);
 			
-			String colClassName = rsmd.getColumnClassName(i);
-			String typeStr = typeMapping.getType(colClassName);
-			if (typeStr != null) {
-				cm.javaType = typeStr;
-			}
-			else {
+			String typeStr = null;
+			if (dialect.isKeepByteAndShort()) {
 				int type = rsmd.getColumnType(i);
-				if (type == Types.BINARY || type == Types.VARBINARY || type == Types.BLOB) {
-					cm.javaType = "byte[]";
-				}
-				else if (type == Types.CLOB || type == Types.NCLOB) {
-					cm.javaType = "java.lang.String";
-				}
-				else {
-					cm.javaType = "java.lang.String";
+				if (type == Types.TINYINT) {
+					typeStr = "java.lang.Byte";
+				} else if (type == Types.SMALLINT) {
+					typeStr = "java.lang.Short";
 				}
 			}
+			
+			if (typeStr == null) {
+				String colClassName = rsmd.getColumnClassName(i);
+				typeStr = typeMapping.getType(colClassName);
+			}
+			
+			if (typeStr == null) {
+				int type = rsmd.getColumnType(i);
+				if (type == Types.BINARY || type == Types.VARBINARY || type == Types.LONGVARBINARY || type == Types.BLOB) {
+					typeStr = "byte[]";
+				} else if (type == Types.CLOB || type == Types.NCLOB) {
+					typeStr = "java.lang.String";
+				} else {
+					typeStr = "java.lang.String";
+				}
+			}
+			cm.javaType = typeStr;
 			
 			// 构造字段对应的属性名 attrName
 			cm.attrName = buildAttrName(cm.name);

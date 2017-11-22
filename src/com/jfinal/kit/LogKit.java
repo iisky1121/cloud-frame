@@ -90,7 +90,7 @@ public class LogKit {
 		message = format(message, objs);
 		Holder.log.error(message);
 	}
-	
+
 	public static void error(String message, Throwable t) {
 		Holder.log.error(message, t);
 	}

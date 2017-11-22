@@ -49,8 +49,7 @@ public class JFinalJson extends Json {
 	
 	protected int convertDepth = defaultConvertDepth;
 	protected String timestampPattern = "yyyy-MM-dd HH:mm:ss";
-	protected String dateStrPattern = "yyyy-MM-dd";
-	protected String datePattern = timestampPattern;
+	protected String datePattern = "yyyy-MM-dd";
 	
 	/**
 	 * 设置全局性默认转换深度
@@ -234,9 +233,6 @@ public class JFinalJson extends Json {
 		if (value instanceof java.util.Date) {
 			if (value instanceof java.sql.Timestamp) {
 				return "\"" + new SimpleDateFormat(timestampPattern).format(value) + "\"";
-			}
-			if(value instanceof java.sql.Date) {
-				return "\"" + new SimpleDateFormat(dateStrPattern).format(value) + "\"";
 			}
 			if (value instanceof java.sql.Time) {
 				return "\"" + value.toString() + "\"";
