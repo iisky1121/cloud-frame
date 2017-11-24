@@ -84,11 +84,7 @@ public class ControllerKit{
     }
 
     public static String showPage(Controller controller){
-        Enumeration<String> paras = controller.getParaNames();
-        while(paras.hasMoreElements()){
-            String paraName=paras.nextElement();
-            controller.setAttr(paraName, controller.getPara(paraName));
-        }
+        setAttrs(controller);
         return replacePageUrl(controller.getPara())+".html";
     }
     /**
@@ -116,5 +112,26 @@ public class ControllerKit{
             url = url.replaceFirst("__", "");
         }
         return url.replaceAll("__", "/");
+    }
+
+    public static String appendUrlParas(Controller controller, String url){
+        StringBuilder builder = new StringBuilder();
+        Enumeration<String> paras = controller.getParaNames();
+        while(paras.hasMoreElements()){
+            String paraName=paras.nextElement();
+            builder.append("&"+paraName+"="+controller.getPara(paraName));
+        }
+        if(url.indexOf("?") == -1 && builder.length() > 0){
+            return url+"?"+builder.substring(1);
+        }
+        return url+builder.toString();
+    }
+
+    public static void setAttrs(Controller controller){
+        Enumeration<String> paras = controller.getParaNames();
+        while(paras.hasMoreElements()){
+            String paraName=paras.nextElement();
+            controller.setAttr(paraName, controller.getPara(paraName));
+        }
     }
 }
