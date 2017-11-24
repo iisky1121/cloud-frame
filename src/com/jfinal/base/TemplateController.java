@@ -9,6 +9,7 @@ public class TemplateController<M extends Model<M>> extends BaseController<M> {
 	 * 模块首页
 	 */
 	public void index(){
+		ControllerKit.setAttrs(this);
 		setAttr("_dataUrl", ControllerKit.controlerUrl(this));
 		render("_index.html");
 	}
