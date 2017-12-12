@@ -167,7 +167,7 @@ class CndBuilder {
 	/**
 	 * 组装全局模糊查询条件
 	 */
-	static void bulid$FuzzyQuery(StringBuilder sb, List<Object> paramList, Set<String> fuzzy_cloumns, String fuzzyQueryValue){
+	static void bulid$FuzzyQuery(StringBuilder sb, List<Object> paramList, Set<String> pk_cloumns, Set<String> fuzzy_cloumns, String fuzzyQueryValue){
 		if(fuzzy_cloumns != null && fuzzy_cloumns.size() > 0 && StrKit.notBlank(fuzzyQueryValue)){
 			int i = 0;
 			if(sb.length() > 0){
@@ -175,6 +175,7 @@ class CndBuilder {
 			} else {
 				sb.append(" where (");
 			}
+
 			for(String column : fuzzy_cloumns){
 				if (i > 0) {
 					sb.append(" or ");
@@ -182,6 +183,16 @@ class CndBuilder {
 				sb.append(column + " like ?");
 		    	paramList.add("%" + fuzzyQueryValue + "%");
 		    	i++;
+				pk_cloumns.remove(column);
+			}
+
+			//主键处理
+			for(String column : pk_cloumns){
+				if (i > 0) {
+					sb.append(" or ");
+				}
+				sb.append(column + " = ?");
+				paramList.add(fuzzyQueryValue);
 			}
 			sb.append(")");
 		    i++;

@@ -38,6 +38,8 @@ class CndQuery<M extends CndQuery<M>> extends CndSelect<M> {
 	Map<String, Class<?>> all_cloumns = new HashMap<String, Class<?>>();
 	//全文搜索值设置
 	Set<String> fuzzy_cloumns;
+	//主键
+	Set<String> pk_cloumns = new HashSet<String>();
 
 	public M setMap(Map<String,Object> paras){
 		if(paras.get("fuzzyQuery")!=null){
@@ -119,7 +121,7 @@ class CndQuery<M extends CndQuery<M>> extends CndSelect<M> {
 			}
 		}
 		//构建全文搜索
-		CndBuilder.bulid$FuzzyQuery(sb, paramArrayList, fuzzy_cloumns, fuzzyQueryValue);
+		CndBuilder.bulid$FuzzyQuery(sb, paramArrayList, pk_cloumns, fuzzy_cloumns, fuzzyQueryValue);
 		//构建分组
 		CndBuilder.build$GroupBy(sb, getGroupBys());
 		//构建排序
@@ -156,6 +158,7 @@ class CndQuery<M extends CndQuery<M>> extends CndSelect<M> {
 			return;
 		}
 		Model<?> model = ModelKit.newInstance(clazz);
+		cnd.pk_cloumns.add(model.getPkName());
 		for(Map.Entry<String, Class<?>> column : model.getColumns().entrySet()){
 			String newKey = alias + column.getKey();
 			Object value = cnd.getObject(newKey);
